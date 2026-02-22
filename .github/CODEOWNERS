@@ -1,0 +1,7 @@
+# widgetdc-contracts — CODEOWNERS
+# All changes to contract schemas require system owner review.
+
+*                    @Clauskraft
+src/                 @Clauskraft
+schemas/             @Clauskraft
+scripts/             @Clauskraft
