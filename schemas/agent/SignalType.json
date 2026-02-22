@@ -1,0 +1,42 @@
+{
+  "$id": "SignalType",
+  "description": "Agent signal event type",
+  "anyOf": [
+    {
+      "const": "task_started",
+      "type": "string"
+    },
+    {
+      "const": "task_completed",
+      "type": "string"
+    },
+    {
+      "const": "task_failed",
+      "type": "string"
+    },
+    {
+      "const": "escalation",
+      "type": "string"
+    },
+    {
+      "const": "quality_gate",
+      "type": "string"
+    },
+    {
+      "const": "tool_executed",
+      "type": "string"
+    },
+    {
+      "const": "deliverable_generated",
+      "type": "string"
+    },
+    {
+      "const": "insight",
+      "type": "string"
+    },
+    {
+      "const": "warning",
+      "type": "string"
+    }
+  ]
+}

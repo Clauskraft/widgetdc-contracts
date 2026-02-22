@@ -1,0 +1,71 @@
+{
+  "name": "@widgetdc/contracts",
+  "version": "0.1.0",
+  "description": "Shared type contracts for the WidgeTDC platform — single source of truth across backend, RLM engine, and frontend",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cognitive": {
+      "types": "./dist/cognitive/index.d.ts",
+      "import": "./dist/cognitive/index.js"
+    },
+    "./health": {
+      "types": "./dist/health/index.d.ts",
+      "import": "./dist/health/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js"
+    },
+    "./consulting": {
+      "types": "./dist/consulting/index.d.ts",
+      "import": "./dist/consulting/index.js"
+    },
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js"
+    },
+    "./graph": {
+      "types": "./dist/graph/index.d.ts",
+      "import": "./dist/graph/index.js"
+    },
+    "./schemas/*": "./schemas/*"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "schemas": "tsx scripts/export-schemas.ts",
+    "python": "bash scripts/generate-python.sh",
+    "generate": "npm run build && npm run schemas",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "validate": "tsx scripts/validate-sync.ts",
+    "prepublishOnly": "npm run generate && npm run test"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Clauskraft/widgetdc-contracts.git"
+  },
+  "license": "UNLICENSED"
+}

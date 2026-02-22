@@ -1,0 +1,61 @@
+{
+  "$id": "DomainProfile",
+  "description": "Domain profile for domain explorer.",
+  "type": "object",
+  "required": [
+    "name",
+    "competencies"
+  ],
+  "properties": {
+    "name": {
+      "description": "Canonical domain name",
+      "type": "string"
+    },
+    "competencies": {
+      "description": "List of competencies within this domain",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "frameworks": {
+      "description": "Consulting frameworks applicable",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "kpis": {
+      "description": "Key Performance Indicators tracked",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent_count": {
+      "description": "Number of agents specialized in this domain",
+      "type": "integer"
+    },
+    "strength": {
+      "description": "Domain maturity level",
+      "anyOf": [
+        {
+          "const": "emerging",
+          "type": "string"
+        },
+        {
+          "const": "moderate",
+          "type": "string"
+        },
+        {
+          "const": "strong",
+          "type": "string"
+        },
+        {
+          "const": "expert",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

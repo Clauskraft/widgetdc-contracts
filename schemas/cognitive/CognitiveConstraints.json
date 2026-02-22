@@ -1,0 +1,22 @@
+{
+  "type": "object",
+  "properties": {
+    "max_tokens": {
+      "minimum": 100,
+      "maximum": 32000,
+      "type": "integer"
+    },
+    "timeout_ms": {
+      "minimum": 1000,
+      "type": "integer"
+    },
+    "fold_context": {
+      "default": true,
+      "type": "boolean"
+    },
+    "preferred_provider": {
+      "type": "string"
+    }
+  },
+  "$id": "CognitiveConstraints"
+}

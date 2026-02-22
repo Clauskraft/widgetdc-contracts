@@ -1,0 +1,57 @@
+{
+  "anyOf": [
+    {
+      "const": "context_folded",
+      "type": "string"
+    },
+    {
+      "const": "routing_decision",
+      "type": "string"
+    },
+    {
+      "const": "recommendation_ready",
+      "type": "string"
+    },
+    {
+      "const": "learning_update",
+      "type": "string"
+    },
+    {
+      "const": "health_change",
+      "type": "string"
+    },
+    {
+      "const": "quality_scored",
+      "type": "string"
+    },
+    {
+      "const": "q_learning_updated",
+      "type": "string"
+    },
+    {
+      "const": "meta_learning_applied",
+      "type": "string"
+    },
+    {
+      "const": "agent_memory_persisted",
+      "type": "string"
+    },
+    {
+      "const": "attention_fold_complete",
+      "type": "string"
+    },
+    {
+      "const": "circuit_breaker_triggered",
+      "type": "string"
+    },
+    {
+      "const": "sse_bridge_connected",
+      "type": "string"
+    },
+    {
+      "const": "error",
+      "type": "string"
+    }
+  ],
+  "$id": "IntelligenceEventType"
+}

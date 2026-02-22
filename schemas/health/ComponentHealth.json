@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": [
+    "status"
+  ],
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "latency_ms": {
+      "type": "number"
+    },
+    "last_check": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "$id": "ComponentHealth"
+}

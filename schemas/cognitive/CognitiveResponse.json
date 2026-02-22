@@ -1,0 +1,110 @@
+{
+  "$id": "CognitiveResponse",
+  "description": "Unified response schema for /cognitive/* endpoints. RLM Engine → Backend.",
+  "type": "object",
+  "required": [
+    "recommendation",
+    "reasoning",
+    "confidence"
+  ],
+  "properties": {
+    "recommendation": {
+      "description": "Primary recommendation or answer",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reasoning": {
+      "description": "Detailed reasoning behind the recommendation",
+      "type": "string"
+    },
+    "confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Model confidence score",
+      "type": "number"
+    },
+    "reasoning_chain": {
+      "description": "Step-by-step reasoning chain (for deep mode)",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trace": {
+      "type": "object",
+      "required": [
+        "trace_id"
+      ],
+      "properties": {
+        "trace_id": {
+          "type": "string"
+        },
+        "total_spans": {
+          "type": "integer"
+        },
+        "total_duration_ms": {
+          "type": "number"
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": [
+        "overall_score"
+      ],
+      "properties": {
+        "overall_score": {
+          "minimum": 0,
+          "maximum": 1,
+          "type": "number"
+        },
+        "parsability": {
+          "type": "number"
+        },
+        "relevance": {
+          "type": "number"
+        },
+        "completeness": {
+          "type": "number"
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "latency_ms": {
+          "type": "number"
+        },
+        "cost": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$id": "ProcessStatus",
+  "description": "L1/L2 process maturity status",
+  "anyOf": [
+    {
+      "const": "live",
+      "type": "string"
+    },
+    {
+      "const": "shell",
+      "type": "string"
+    },
+    {
+      "const": "new",
+      "type": "string"
+    }
+  ]
+}

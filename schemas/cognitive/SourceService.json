@@ -1,0 +1,18 @@
+{
+  "$id": "SourceService",
+  "description": "Originating service identifier",
+  "anyOf": [
+    {
+      "const": "frontend",
+      "type": "string"
+    },
+    {
+      "const": "backend",
+      "type": "string"
+    },
+    {
+      "const": "rlm-engine",
+      "type": "string"
+    }
+  ]
+}

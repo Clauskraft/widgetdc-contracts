@@ -1,0 +1,46 @@
+{
+  "$id": "AgentPersona",
+  "description": "RLM Engine agent persona",
+  "anyOf": [
+    {
+      "const": "RESEARCHER",
+      "type": "string"
+    },
+    {
+      "const": "ENGINEER",
+      "type": "string"
+    },
+    {
+      "const": "CUSTODIAN",
+      "type": "string"
+    },
+    {
+      "const": "ARCHITECT",
+      "type": "string"
+    },
+    {
+      "const": "SENTINEL",
+      "type": "string"
+    },
+    {
+      "const": "ARCHIVIST",
+      "type": "string"
+    },
+    {
+      "const": "HARVESTER",
+      "type": "string"
+    },
+    {
+      "const": "ANALYST",
+      "type": "string"
+    },
+    {
+      "const": "INTEGRATOR",
+      "type": "string"
+    },
+    {
+      "const": "TESTER",
+      "type": "string"
+    }
+  ]
+}

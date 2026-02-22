@@ -1,0 +1,33 @@
+{
+  "anyOf": [
+    {
+      "const": "VALIDATION_ERROR",
+      "type": "string"
+    },
+    {
+      "const": "AUTH_ERROR",
+      "type": "string"
+    },
+    {
+      "const": "NOT_FOUND",
+      "type": "string"
+    },
+    {
+      "const": "RATE_LIMIT",
+      "type": "string"
+    },
+    {
+      "const": "INTERNAL_ERROR",
+      "type": "string"
+    },
+    {
+      "const": "TIMEOUT",
+      "type": "string"
+    },
+    {
+      "const": "SERVICE_UNAVAILABLE",
+      "type": "string"
+    }
+  ],
+  "$id": "ApiErrorCode"
+}

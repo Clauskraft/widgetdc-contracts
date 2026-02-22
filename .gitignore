@@ -1,0 +1,5 @@
+node_modules/
+dist/
+
+# schemas/ and python/ are committed — they are generated artifacts consumed by other repos
+# Do NOT add schemas/ or python/ here

@@ -1,0 +1,18 @@
+{
+  "$id": "ReasoningMode",
+  "description": "Reasoning depth for cognitive operations",
+  "anyOf": [
+    {
+      "const": "quick",
+      "type": "string"
+    },
+    {
+      "const": "deep",
+      "type": "string"
+    },
+    {
+      "const": "strategic",
+      "type": "string"
+    }
+  ]
+}

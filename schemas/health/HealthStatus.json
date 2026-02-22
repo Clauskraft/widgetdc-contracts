@@ -1,0 +1,77 @@
+{
+  "$id": "HealthStatus",
+  "description": "Unified health status schema for all services.",
+  "type": "object",
+  "required": [
+    "service",
+    "status"
+  ],
+  "properties": {
+    "service": {
+      "type": "string"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "const": "healthy",
+          "type": "string"
+        },
+        {
+          "const": "degraded",
+          "type": "string"
+        },
+        {
+          "const": "unhealthy",
+          "type": "string"
+        },
+        {
+          "const": "unknown",
+          "type": "string"
+        }
+      ]
+    },
+    "uptime_seconds": {
+      "type": "number"
+    },
+    "version": {
+      "type": "string"
+    },
+    "components": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "latency_ms": {
+              "type": "number"
+            },
+            "last_check": {
+              "format": "date-time",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "meta_learning": {
+      "type": "object",
+      "properties": {
+        "domains_tracked": {
+          "type": "integer"
+        },
+        "total_llm_calls": {
+          "type": "integer"
+        },
+        "avg_quality": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "required": [
+    "overall_score"
+  ],
+  "properties": {
+    "overall_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "parsability": {
+      "type": "number"
+    },
+    "relevance": {
+      "type": "number"
+    },
+    "completeness": {
+      "type": "number"
+    }
+  },
+  "$id": "QualityScore"
+}

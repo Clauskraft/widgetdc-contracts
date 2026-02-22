@@ -1,0 +1,66 @@
+{
+  "$id": "DomainId",
+  "description": "Canonical consulting domain identifier",
+  "anyOf": [
+    {
+      "const": "strategy_corp",
+      "type": "string"
+    },
+    {
+      "const": "deals_ma",
+      "type": "string"
+    },
+    {
+      "const": "financial_advisory",
+      "type": "string"
+    },
+    {
+      "const": "operations_supply_chain",
+      "type": "string"
+    },
+    {
+      "const": "technology_digital",
+      "type": "string"
+    },
+    {
+      "const": "ai_analytics",
+      "type": "string"
+    },
+    {
+      "const": "cybersecurity",
+      "type": "string"
+    },
+    {
+      "const": "risk_compliance_controls",
+      "type": "string"
+    },
+    {
+      "const": "tax_legal_adjacent",
+      "type": "string"
+    },
+    {
+      "const": "esg_sustainability",
+      "type": "string"
+    },
+    {
+      "const": "customer_marketing_sales",
+      "type": "string"
+    },
+    {
+      "const": "people_organization",
+      "type": "string"
+    },
+    {
+      "const": "pmo_change",
+      "type": "string"
+    },
+    {
+      "const": "industry_solutions",
+      "type": "string"
+    },
+    {
+      "const": "managed_services_operate",
+      "type": "string"
+    }
+  ]
+}

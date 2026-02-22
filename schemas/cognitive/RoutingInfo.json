@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": [
+    "provider",
+    "model"
+  ],
+  "properties": {
+    "provider": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "latency_ms": {
+      "type": "number"
+    },
+    "cost": {
+      "type": "number"
+    }
+  },
+  "$id": "RoutingInfo"
+}

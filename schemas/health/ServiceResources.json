@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "memory_mb": {
+      "type": "number"
+    },
+    "cpu_percent": {
+      "type": "number"
+    },
+    "neo4j_connected": {
+      "type": "boolean"
+    },
+    "redis_connected": {
+      "type": "boolean"
+    },
+    "postgres_connected": {
+      "type": "boolean"
+    }
+  },
+  "$id": "ServiceResources"
+}

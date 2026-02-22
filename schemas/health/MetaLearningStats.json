@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "domains_tracked": {
+      "type": "integer"
+    },
+    "total_llm_calls": {
+      "type": "integer"
+    },
+    "avg_quality": {
+      "type": "number"
+    }
+  },
+  "$id": "MetaLearningStats"
+}

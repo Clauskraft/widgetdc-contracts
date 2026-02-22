@@ -1,0 +1,93 @@
+{
+  "$id": "CognitiveRequest",
+  "description": "Unified request schema for all /cognitive/* endpoints. Backend → RLM Engine.",
+  "type": "object",
+  "required": [
+    "task"
+  ],
+  "properties": {
+    "task": {
+      "minLength": 1,
+      "description": "The task or question to process",
+      "type": "string"
+    },
+    "context": {
+      "description": "Task context (domain data, history, constraints)",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "reasoning_mode": {
+      "default": "quick",
+      "anyOf": [
+        {
+          "const": "quick",
+          "type": "string"
+        },
+        {
+          "const": "deep",
+          "type": "string"
+        },
+        {
+          "const": "strategic",
+          "type": "string"
+        }
+      ]
+    },
+    "trace_id": {
+      "format": "uuid",
+      "description": "Cross-service trace ID",
+      "type": "string"
+    },
+    "source_service": {
+      "default": "backend",
+      "anyOf": [
+        {
+          "const": "frontend",
+          "type": "string"
+        },
+        {
+          "const": "backend",
+          "type": "string"
+        },
+        {
+          "const": "rlm-engine",
+          "type": "string"
+        }
+      ]
+    },
+    "domain_hint": {
+      "description": "Optional domain hint to skip inference",
+      "type": "string"
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_tokens": {
+          "minimum": 100,
+          "maximum": 32000,
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "minimum": 1000,
+          "type": "integer"
+        },
+        "fold_context": {
+          "default": true,
+          "type": "boolean"
+        },
+        "preferred_provider": {
+          "type": "string"
+        }
+      }
+    },
+    "recursion_depth": {
+      "minimum": 0,
+      "maximum": 5,
+      "default": 0,
+      "description": "Current recursion depth for cost-aware model selection",
+      "type": "integer"
+    }
+  }
+}

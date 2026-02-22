@@ -1,0 +1,21 @@
+{
+  "$id": "ServiceStatus",
+  "anyOf": [
+    {
+      "const": "healthy",
+      "type": "string"
+    },
+    {
+      "const": "degraded",
+      "type": "string"
+    },
+    {
+      "const": "unhealthy",
+      "type": "string"
+    },
+    {
+      "const": "starting",
+      "type": "string"
+    }
+  ]
+}

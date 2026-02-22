@@ -1,0 +1,122 @@
+{
+  "$id": "RelationshipType",
+  "description": "Canonical Neo4j relationship types",
+  "anyOf": [
+    {
+      "const": "BELONGS_TO_DOMAIN",
+      "type": "string"
+    },
+    {
+      "const": "HAS_SUBPROCESS",
+      "type": "string"
+    },
+    {
+      "const": "HAS_TASK",
+      "type": "string"
+    },
+    {
+      "const": "PARENT_PROCESS",
+      "type": "string"
+    },
+    {
+      "const": "USES_PROCESS",
+      "type": "string"
+    },
+    {
+      "const": "HAS_TRACK",
+      "type": "string"
+    },
+    {
+      "const": "ASSIGNED_TO",
+      "type": "string"
+    },
+    {
+      "const": "IMPLEMENTS",
+      "type": "string"
+    },
+    {
+      "const": "USES_METHODOLOGY",
+      "type": "string"
+    },
+    {
+      "const": "MEASURES",
+      "type": "string"
+    },
+    {
+      "const": "EVALUATES",
+      "type": "string"
+    },
+    {
+      "const": "HAS_CRITERION",
+      "type": "string"
+    },
+    {
+      "const": "HAS_CAPABILITY",
+      "type": "string"
+    },
+    {
+      "const": "USES_TOOL",
+      "type": "string"
+    },
+    {
+      "const": "USES_FRAMEWORK",
+      "type": "string"
+    },
+    {
+      "const": "CODE_FOR",
+      "type": "string"
+    },
+    {
+      "const": "CONTAINS_PATTERN",
+      "type": "string"
+    },
+    {
+      "const": "SUPPORTED_BY",
+      "type": "string"
+    },
+    {
+      "const": "CITES",
+      "type": "string"
+    },
+    {
+      "const": "IN_DOMAIN",
+      "type": "string"
+    },
+    {
+      "const": "RELATES_TO",
+      "type": "string"
+    },
+    {
+      "const": "IS_A",
+      "type": "string"
+    },
+    {
+      "const": "RUNS",
+      "type": "string"
+    },
+    {
+      "const": "MADE_DECISION",
+      "type": "string"
+    },
+    {
+      "const": "HAS_CONTENT",
+      "type": "string"
+    },
+    {
+      "const": "SIMILAR_TO",
+      "type": "string"
+    },
+    {
+      "const": "DUPLICATE_OF",
+      "type": "string"
+    },
+    {
+      "const": "HAS_EXPANSION_SIGNAL",
+      "type": "string"
+    },
+    {
+      "const": "DETECTED_AT",
+      "type": "string"
+    }
+  ]
+}

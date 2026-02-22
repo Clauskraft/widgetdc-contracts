@@ -1,0 +1,126 @@
+{
+  "$id": "HealthPulse",
+  "description": "Unified health status published by all services to Redis every 10 seconds.",
+  "type": "object",
+  "required": [
+    "service",
+    "status",
+    "uptime_seconds",
+    "timestamp"
+  ],
+  "properties": {
+    "service": {
+      "description": "Service identifier",
+      "anyOf": [
+        {
+          "const": "frontend",
+          "type": "string"
+        },
+        {
+          "const": "backend",
+          "type": "string"
+        },
+        {
+          "const": "rlm-engine",
+          "type": "string"
+        }
+      ]
+    },
+    "status": {
+      "anyOf": [
+        {
+          "const": "healthy",
+          "type": "string"
+        },
+        {
+          "const": "degraded",
+          "type": "string"
+        },
+        {
+          "const": "unhealthy",
+          "type": "string"
+        },
+        {
+          "const": "starting",
+          "type": "string"
+        }
+      ]
+    },
+    "uptime_seconds": {
+      "description": "Seconds since service started",
+      "type": "number"
+    },
+    "last_request_ms": {
+      "description": "Latency of last processed request",
+      "type": "number"
+    },
+    "active_sessions": {
+      "description": "Number of active sessions/connections",
+      "type": "integer"
+    },
+    "modules": {
+      "description": "Status of each module/subsystem",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "anyOf": [
+            {
+              "const": "active",
+              "type": "string"
+            },
+            {
+              "const": "degraded",
+              "type": "string"
+            },
+            {
+              "const": "inactive",
+              "type": "string"
+            },
+            {
+              "const": "error",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "memory_mb": {
+          "type": "number"
+        },
+        "cpu_percent": {
+          "type": "number"
+        },
+        "neo4j_connected": {
+          "type": "boolean"
+        },
+        "redis_connected": {
+          "type": "boolean"
+        },
+        "postgres_connected": {
+          "type": "boolean"
+        }
+      }
+    },
+    "last_error": {
+      "description": "Last error message, null if no recent errors",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

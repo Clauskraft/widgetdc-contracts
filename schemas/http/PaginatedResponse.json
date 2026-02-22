@@ -1,0 +1,33 @@
+{
+  "$id": "PaginatedResponse",
+  "description": "Paginated list response.",
+  "type": "object",
+  "required": [
+    "items",
+    "total",
+    "page",
+    "page_size",
+    "has_more"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {}
+    },
+    "total": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "page": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "page_size": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "has_more": {
+      "type": "boolean"
+    }
+  }
+}

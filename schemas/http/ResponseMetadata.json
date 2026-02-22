@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "duration_ms": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "correlation_id": {
+      "type": "string"
+    }
+  },
+  "$id": "ResponseMetadata"
+}

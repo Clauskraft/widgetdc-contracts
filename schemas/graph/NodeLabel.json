@@ -1,0 +1,134 @@
+{
+  "$id": "NodeLabel",
+  "description": "Canonical Neo4j node labels",
+  "anyOf": [
+    {
+      "const": "ConsultingDomain",
+      "type": "string"
+    },
+    {
+      "const": "L1ProcessFlow",
+      "type": "string"
+    },
+    {
+      "const": "L2SubProcess",
+      "type": "string"
+    },
+    {
+      "const": "Task",
+      "type": "string"
+    },
+    {
+      "const": "Engagement",
+      "type": "string"
+    },
+    {
+      "const": "Track",
+      "type": "string"
+    },
+    {
+      "const": "Insight",
+      "type": "string"
+    },
+    {
+      "const": "StrategicInsight",
+      "type": "string"
+    },
+    {
+      "const": "Evidence",
+      "type": "string"
+    },
+    {
+      "const": "Claim",
+      "type": "string"
+    },
+    {
+      "const": "KnowledgePack",
+      "type": "string"
+    },
+    {
+      "const": "KnowledgePattern",
+      "type": "string"
+    },
+    {
+      "const": "Knowledge",
+      "type": "string"
+    },
+    {
+      "const": "MCPTool",
+      "type": "string"
+    },
+    {
+      "const": "Tool",
+      "type": "string"
+    },
+    {
+      "const": "CodeImplementation",
+      "type": "string"
+    },
+    {
+      "const": "Agent",
+      "type": "string"
+    },
+    {
+      "const": "AgentProfile",
+      "type": "string"
+    },
+    {
+      "const": "Session",
+      "type": "string"
+    },
+    {
+      "const": "Decision",
+      "type": "string"
+    },
+    {
+      "const": "TDCDocument",
+      "type": "string"
+    },
+    {
+      "const": "SystemSnapshot",
+      "type": "string"
+    },
+    {
+      "const": "LocalFile",
+      "type": "string"
+    },
+    {
+      "const": "Entity",
+      "type": "string"
+    },
+    {
+      "const": "ExpansionSignal",
+      "type": "string"
+    },
+    {
+      "const": "CVE",
+      "type": "string"
+    },
+    {
+      "const": "CyberIntelligence",
+      "type": "string"
+    },
+    {
+      "const": "Directive",
+      "type": "string"
+    },
+    {
+      "const": "Methodology",
+      "type": "string"
+    },
+    {
+      "const": "KPI",
+      "type": "string"
+    },
+    {
+      "const": "AIPattern",
+      "type": "string"
+    },
+    {
+      "const": "Memory",
+      "type": "string"
+    }
+  ]
+}

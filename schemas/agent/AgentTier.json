@@ -1,0 +1,26 @@
+{
+  "$id": "AgentTier",
+  "description": "Consulting agent tier (ascending autonomy)",
+  "anyOf": [
+    {
+      "const": "ANALYST",
+      "type": "string"
+    },
+    {
+      "const": "ASSOCIATE",
+      "type": "string"
+    },
+    {
+      "const": "MANAGER",
+      "type": "string"
+    },
+    {
+      "const": "PARTNER",
+      "type": "string"
+    },
+    {
+      "const": "ARCHITECT",
+      "type": "string"
+    }
+  ]
+}

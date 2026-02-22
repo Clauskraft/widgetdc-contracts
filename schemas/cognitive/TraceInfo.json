@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "required": [
+    "trace_id"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string"
+    },
+    "total_spans": {
+      "type": "integer"
+    },
+    "total_duration_ms": {
+      "type": "number"
+    }
+  },
+  "$id": "TraceInfo"
+}
