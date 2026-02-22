@@ -5,6 +5,16 @@ All notable changes to `@widgetdc/contracts` will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-22
+
+### Added
+- `librechat` and `rag-api` to HealthPulse `ServiceIdentifier` (`e93111b`)
+- Cross-repo version alignment checker (`368feee`)
+- Version check script for consumer repos (`0322545`)
+
+### Changed
+- All three consumers (backend, RLM engine, frontend) now import from contracts v0.2.0
+
 ## [0.1.0] - 2026-02-22
 
 ### Added
