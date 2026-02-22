@@ -1,0 +1,9 @@
+import { Static } from '@sinclair/typebox';
+/** 15 consulting domains — canonical identifiers matching Neo4j ConsultingDomain nodes */
+export declare const DomainId: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"strategy_corp">, import("@sinclair/typebox").TLiteral<"deals_ma">, import("@sinclair/typebox").TLiteral<"financial_advisory">, import("@sinclair/typebox").TLiteral<"operations_supply_chain">, import("@sinclair/typebox").TLiteral<"technology_digital">, import("@sinclair/typebox").TLiteral<"ai_analytics">, import("@sinclair/typebox").TLiteral<"cybersecurity">, import("@sinclair/typebox").TLiteral<"risk_compliance_controls">, import("@sinclair/typebox").TLiteral<"tax_legal_adjacent">, import("@sinclair/typebox").TLiteral<"esg_sustainability">, import("@sinclair/typebox").TLiteral<"customer_marketing_sales">, import("@sinclair/typebox").TLiteral<"people_organization">, import("@sinclair/typebox").TLiteral<"pmo_change">, import("@sinclair/typebox").TLiteral<"industry_solutions">, import("@sinclair/typebox").TLiteral<"managed_services_operate">]>;
+export type DomainId = Static<typeof DomainId>;
+export declare const ProcessStatus: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"live">, import("@sinclair/typebox").TLiteral<"shell">, import("@sinclair/typebox").TLiteral<"new">]>;
+export type ProcessStatus = Static<typeof ProcessStatus>;
+/** Short IDs for each domain — used in canonicalId construction (e.g. STR-01) */
+export declare const DOMAIN_SHORT_IDS: Record<Static<typeof DomainId>, string>;
+//# sourceMappingURL=enums.d.ts.map

@@ -1,0 +1,12 @@
+import { Static } from '@sinclair/typebox';
+export declare const IntelligenceEventType: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"context_folded">, import("@sinclair/typebox").TLiteral<"routing_decision">, import("@sinclair/typebox").TLiteral<"recommendation_ready">, import("@sinclair/typebox").TLiteral<"learning_update">, import("@sinclair/typebox").TLiteral<"health_change">, import("@sinclair/typebox").TLiteral<"quality_scored">, import("@sinclair/typebox").TLiteral<"q_learning_updated">, import("@sinclair/typebox").TLiteral<"meta_learning_applied">, import("@sinclair/typebox").TLiteral<"agent_memory_persisted">, import("@sinclair/typebox").TLiteral<"attention_fold_complete">, import("@sinclair/typebox").TLiteral<"circuit_breaker_triggered">, import("@sinclair/typebox").TLiteral<"sse_bridge_connected">, import("@sinclair/typebox").TLiteral<"error">]>;
+export type IntelligenceEventType = Static<typeof IntelligenceEventType>;
+export declare const IntelligenceEvent: import("@sinclair/typebox").TObject<{
+    type: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"context_folded">, import("@sinclair/typebox").TLiteral<"routing_decision">, import("@sinclair/typebox").TLiteral<"recommendation_ready">, import("@sinclair/typebox").TLiteral<"learning_update">, import("@sinclair/typebox").TLiteral<"health_change">, import("@sinclair/typebox").TLiteral<"quality_scored">, import("@sinclair/typebox").TLiteral<"q_learning_updated">, import("@sinclair/typebox").TLiteral<"meta_learning_applied">, import("@sinclair/typebox").TLiteral<"agent_memory_persisted">, import("@sinclair/typebox").TLiteral<"attention_fold_complete">, import("@sinclair/typebox").TLiteral<"circuit_breaker_triggered">, import("@sinclair/typebox").TLiteral<"sse_bridge_connected">, import("@sinclair/typebox").TLiteral<"error">]>;
+    payload: import("@sinclair/typebox").TRecord<import("@sinclair/typebox").TString, import("@sinclair/typebox").TUnknown>;
+    trace_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TString, import("@sinclair/typebox").TNull]>>;
+    source: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"rlm-engine">, import("@sinclair/typebox").TLiteral<"backend">, import("@sinclair/typebox").TLiteral<"frontend">]>>;
+    timestamp: import("@sinclair/typebox").TString;
+}>;
+export type IntelligenceEvent = Static<typeof IntelligenceEvent>;
+//# sourceMappingURL=event.d.ts.map
