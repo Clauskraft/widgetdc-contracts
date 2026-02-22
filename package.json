@@ -50,12 +50,15 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-sync.ts",
-    "prepublishOnly": "npm run generate && npm run test"
+    "prepublishOnly": "npm run generate && npm run test",
+    "prepare": "husky"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.0"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
@@ -66,6 +69,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Clauskraft/widgetdc-contracts.git"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "tsc --noEmit --pretty"
+    ]
   },
   "license": "UNLICENSED"
 }
