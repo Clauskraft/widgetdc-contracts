@@ -72,7 +72,7 @@
   },
   "lint-staged": {
     "src/**/*.ts": [
-      "tsc --noEmit --pretty"
+      "bash -c 'tsc --noEmit --pretty'"
     ]
   },
   "license": "UNLICENSED"
