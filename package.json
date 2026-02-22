@@ -51,7 +51,7 @@
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-sync.ts",
     "prepublishOnly": "npm run generate && npm run test",
-    "prepare": "husky"
+    "prepare": "npm run build && husky"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.34.0"
