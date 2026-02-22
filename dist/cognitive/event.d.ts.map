@@ -1,0 +1,1 @@
+{"version":3,"file":"event.d.ts","sourceRoot":"","sources":["../../src/cognitive/event.ts"],"names":[],"mappings":"AAAA,OAAO,EAAQ,MAAM,EAAE,MAAM,mBAAmB,CAAA;AAEhD,eAAO,MAAM,qBAAqB,0yBAchC,CAAA;AAEF,MAAM,MAAM,qBAAqB,GAAG,MAAM,CAAC,OAAO,qBAAqB,CAAC,CAAA;AAExE,eAAO,MAAM,iBAAiB;;;;;;EAY0E,CAAA;AAExG,MAAM,MAAM,iBAAiB,GAAG,MAAM,CAAC,OAAO,iBAAiB,CAAC,CAAA"}
