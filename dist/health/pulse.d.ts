@@ -12,7 +12,7 @@ export declare const ServiceResources: import("@sinclair/typebox").TObject<{
 }>;
 export type ServiceResources = Static<typeof ServiceResources>;
 export declare const HealthPulse: import("@sinclair/typebox").TObject<{
-    service: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"frontend">, import("@sinclair/typebox").TLiteral<"backend">, import("@sinclair/typebox").TLiteral<"rlm-engine">]>;
+    service: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"frontend">, import("@sinclair/typebox").TLiteral<"backend">, import("@sinclair/typebox").TLiteral<"rlm-engine">, import("@sinclair/typebox").TLiteral<"librechat">, import("@sinclair/typebox").TLiteral<"rag-api">]>;
     status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"healthy">, import("@sinclair/typebox").TLiteral<"degraded">, import("@sinclair/typebox").TLiteral<"unhealthy">, import("@sinclair/typebox").TLiteral<"starting">]>;
     uptime_seconds: import("@sinclair/typebox").TNumber;
     last_request_ms: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TNumber>;

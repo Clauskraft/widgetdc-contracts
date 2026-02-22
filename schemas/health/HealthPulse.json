@@ -23,6 +23,14 @@
         {
           "const": "rlm-engine",
           "type": "string"
+        },
+        {
+          "const": "librechat",
+          "type": "string"
+        },
+        {
+          "const": "rag-api",
+          "type": "string"
         }
       ]
     },

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "widgetdc-contracts"
-version = "0.1.0"
+version = "0.2.0"
 description = "WidgeTDC platform shared type contracts (Python/Pydantic v2)"
 requires-python = ">=3.12"
 dependencies = [

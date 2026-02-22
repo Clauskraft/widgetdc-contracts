@@ -1,6 +1,6 @@
 {
   "name": "@widgetdc/contracts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared type contracts for the WidgeTDC platform — single source of truth across backend, RLM engine, and frontend",
   "type": "module",
   "main": "./dist/index.js",

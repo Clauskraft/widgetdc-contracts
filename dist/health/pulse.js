@@ -23,6 +23,8 @@ export const HealthPulse = Type.Object({
         Type.Literal('frontend'),
         Type.Literal('backend'),
         Type.Literal('rlm-engine'),
+        Type.Literal('librechat'),
+        Type.Literal('rag-api'),
     ], { description: 'Service identifier' }),
     status: Type.Union([
         Type.Literal('healthy'),

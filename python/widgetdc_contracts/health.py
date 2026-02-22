@@ -48,8 +48,8 @@ class Resources(BaseModel):
 
 
 class HealthPulse(BaseModel):
-    service: Literal['frontend', 'backend', 'rlm-engine'] = Field(
-        ..., description='Service identifier'
+    service: Literal['frontend', 'backend', 'rlm-engine', 'librechat', 'rag-api'] = (
+        Field(..., description='Service identifier')
     )
     status: Literal['healthy', 'degraded', 'unhealthy', 'starting']
     uptime_seconds: float = Field(..., description='Seconds since service started')
