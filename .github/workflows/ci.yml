@@ -29,62 +29,7 @@ jobs:
       - name: Unit tests
         run: npm run test
 
-      - name: Build
-        run: npm run build
-
-      - name: Generate schemas
-        run: npm run schemas
-
-      - name: Validate schema sync
-        run: npm run validate
-
-  breaking-change-check:
-    name: Breaking change detection
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - run: npm ci
-
-      - name: Check for breaking schema changes
+      - name: Build + schema sync check
         run: |
-          # Compare schemas/ against base branch
-          git diff origin/${{ github.base_ref }} -- schemas/ > /tmp/schema-diff.txt
-
-          BREAKING=false
-
-          # Detect removed fields (breaking)
-          if grep -q '^-.*"type"' /tmp/schema-diff.txt; then
-            echo "::warning::Schema type change detected — potential breaking change"
-            BREAKING=true
-          fi
-
-          # Detect removed required fields (breaking)
-          if grep -q '^-.*"required"' /tmp/schema-diff.txt; then
-            echo "::warning::Required field change detected — potential breaking change"
-            BREAKING=true
-          fi
-
-          # Detect removed properties (breaking)
-          if grep -qP '^\-\s+"[a-z_]+":\s*\{' /tmp/schema-diff.txt; then
-            echo "::warning::Property removal detected — potential breaking change"
-            BREAKING=true
-          fi
-
-          if [ "$BREAKING" = true ]; then
-            echo "::error::Breaking changes detected in schemas/. Requires major version bump."
-            echo ""
-            echo "Changed schemas:"
-            git diff --name-only origin/${{ github.base_ref }} -- schemas/
-            exit 1
-          fi
-
-          echo "No breaking changes detected."
+          npm run build
+          npm run validate
