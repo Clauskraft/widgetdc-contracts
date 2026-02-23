@@ -90,6 +90,87 @@ export interface CostForecast {
   dataPoints: { date: string; actual?: number; predicted?: number }[];
 }
 
+export interface HealthProbeResult {
+  serviceId: string;
+  timestamp: string;
+  url: string;
+  ok: boolean;
+  statusCode: number;
+  latencyMs: number;
+  version?: string;
+  uptime?: number;       // seconds
+  memoryMb?: number;     // self-reported memory
+  requestCount?: number; // from service's metrics
+  errorRate?: number;    // from service's error counter
+  extras?: Record<string, any>;
+}
+
+export interface Incident {
+  id: string;
+  title: string;
+  status: "active" | "investigating" | "resolved";
+  severity: "critical" | "high" | "medium" | "low";
+  startedAt: string;
+  resolvedAt: string | null;
+  alertIds: string[];
+  affectedServices: string[];
+  timeline: IncidentEvent[];
+  summary: string | null;
+}
+
+export interface IncidentEvent {
+  timestamp: string;
+  type: "alert_fired" | "alert_resolved" | "service_down" | "service_recovered" | "acknowledged" | "note";
+  message: string;
+  alertId?: string;
+  serviceId?: string;
+}
+
+export interface SLARecord {
+  serviceId: string;
+  period: "hour" | "day" | "week" | "month";
+  startDate: string;
+  endDate: string;
+  totalProbes: number;
+  successfulProbes: number;
+  uptimePercent: number;
+  avgLatencyMs: number;
+  p95LatencyMs: number;
+  p99LatencyMs: number;
+  maxLatencyMs: number;
+  outageMinutes: number;
+}
+
+export interface AuditEntry {
+  timestamp: string;
+  entityType: "rule" | "alert" | "compliance" | "incident";
+  entityId: string;
+  action: "created" | "updated" | "deleted" | "acknowledged" | "resolved";
+  oldValue?: any;
+  newValue?: any;
+  actor?: string;
+}
+
+export interface ServiceDetail {
+  service: RailwayService & { latencyMs?: number; healthProbeOk?: boolean };
+  metrics: {
+    current: { cpu: number; memory: number; latencyMs: number; healthProbeOk: boolean };
+    history24h: ServiceMetric[];
+    probes24h: HealthProbeResult[];
+  };
+  sla: Record<string, SLARecord>;
+  alerts: Alert[];
+  deployments: Deployment[];
+  relatedIncidents: Incident[];
+}
+
+export interface Deployment {
+  id: string;
+  status: string;
+  createdAt: string;
+  meta?: Record<string, any>;
+}
+
 export interface MonitoringState {
   services: RailwayService[];
   metricsHistory: Map<string, ServiceMetric[]>;
@@ -102,4 +183,7 @@ export interface MonitoringState {
   lastPoll: string | null;
   pollCount: number;
   errors: string[];
+  healthProbes: Map<string, HealthProbeResult[]>;
+  incidents: Incident[];
+  slaRecords: Map<string, SLARecord[]>;
 }

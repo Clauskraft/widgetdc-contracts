@@ -5,7 +5,7 @@
  * metrics, and usage data from two Railway projects.
  */
 
-import type { RailwayService, ServiceMetric, CostEntry } from "./types.js";
+import type { RailwayService, ServiceMetric, CostEntry, Deployment } from "./types.js";
 
 const RAILWAY_GQL = "https://backboard.railway.com/graphql/v2";
 
@@ -253,6 +253,52 @@ export async function fetchUsage(projectId: string): Promise<CostEntry[]> {
     }));
   } catch (err: any) {
     console.error(`[monitoring] Usage fetch for ${projectId}: ${err.message}`);
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fetch deployment history for a service (last N deployments)
+// ---------------------------------------------------------------------------
+export async function fetchDeployments(
+  serviceId: string,
+  limit: number = 5
+): Promise<Deployment[]> {
+  try {
+    const data = await gql<any>(
+      `query($serviceId: String!, $first: Int!) {
+        deployments(
+          input: { serviceId: $serviceId }
+          first: $first
+        ) {
+          edges {
+            node {
+              id
+              status
+              createdAt
+              meta {
+                repo
+                branch
+                commitMessage
+                commitAuthor
+                image
+              }
+            }
+          }
+        }
+      }`,
+      { serviceId, first: limit }
+    );
+
+    const edges = data.deployments?.edges ?? [];
+    return edges.map((e: any) => ({
+      id: e.node.id,
+      status: e.node.status,
+      createdAt: e.node.createdAt,
+      meta: e.node.meta ?? undefined,
+    }));
+  } catch (err: any) {
+    console.error(`[monitoring] Deployments for ${serviceId}: ${err.message}`);
     return [];
   }
 }

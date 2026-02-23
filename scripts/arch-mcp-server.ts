@@ -61,7 +61,15 @@ import {
   getComplianceRequirement,
   getRules,
   getErrors,
+  getServiceDetail,
+  getServiceProbes,
+  getServiceSLA,
+  getIncidents,
+  getIncident,
+  createOrUpdateRule,
+  removeRule,
 } from "./monitoring/index.js";
+import { sseHandler } from "./monitoring/sse.js";
 
 // --- GitHub Changelog ---
 interface ChangelogCommit {
@@ -1247,6 +1255,114 @@ app.get("/api/monitoring/rules", (_req, res) => {
   }
 });
 
+app.get("/api/monitoring/errors", (_req, res) => {
+  try {
+    res.json({ errors: getErrors() });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get errors", message: e.message });
+  }
+});
+
+// --- SSE real-time updates ---
+app.get("/api/monitoring/sse", sseHandler);
+
+// --- Service detail routes ---
+app.get("/api/monitoring/services/:id", async (req, res) => {
+  try {
+    const detail = await getServiceDetail(req.params.id);
+    if (!detail) {
+      res.status(404).json({ error: `Service "${req.params.id}" not found` });
+      return;
+    }
+    res.json(detail);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get service detail", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/services/:id/probes", (req, res) => {
+  try {
+    const hours = req.query.hours ? parseInt(req.query.hours as string, 10) : 24;
+    const probes = getServiceProbes(req.params.id, hours);
+    res.json({ probes });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get probes", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/services/:id/sla", (req, res) => {
+  try {
+    const sla = getServiceSLA(req.params.id);
+    if (!sla) {
+      res.status(404).json({ error: `Service "${req.params.id}" not found` });
+      return;
+    }
+    res.json({ sla });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get SLA", message: e.message });
+  }
+});
+
+// --- Incident routes ---
+app.get("/api/monitoring/incidents", (req, res) => {
+  try {
+    const status = req.query.status as string | undefined;
+    res.json({ incidents: getIncidents(status ? { status } : undefined) });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get incidents", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/incidents/:id", (req, res) => {
+  try {
+    const incident = getIncident(req.params.id);
+    if (!incident) {
+      res.status(404).json({ error: `Incident "${req.params.id}" not found` });
+      return;
+    }
+    res.json(incident);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get incident", message: e.message });
+  }
+});
+
+// --- Rule CRUD routes ---
+app.post("/api/monitoring/rules", async (req, res) => {
+  try {
+    const rule = req.body;
+    if (!rule || !rule.id || !rule.name || !rule.metric || !rule.condition) {
+      res.status(400).json({ error: "Invalid rule: requires id, name, metric, condition, threshold, severity" });
+      return;
+    }
+    const result = await createOrUpdateRule({
+      id: rule.id,
+      name: rule.name,
+      metric: rule.metric,
+      condition: rule.condition,
+      threshold: rule.threshold ?? 0,
+      durationMinutes: rule.durationMinutes ?? 0,
+      severity: rule.severity ?? "medium",
+      enabled: rule.enabled !== false,
+    });
+    res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to save rule", message: e.message });
+  }
+});
+
+app.delete("/api/monitoring/rules/:id", async (req, res) => {
+  try {
+    const deleted = await removeRule(req.params.id);
+    if (!deleted) {
+      res.status(404).json({ error: `Rule "${req.params.id}" not found` });
+      return;
+    }
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to delete rule", message: e.message });
+  }
+});
+
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
 
@@ -1316,8 +1432,8 @@ const PORT = parseInt(process.env.PORT || "3100", 10);
 loadGraph();
 try { loadDataSources(); } catch (e: any) { console.warn(`[datapulse] Failed to pre-load: ${e.message}`); }
 
-// Initialize infrastructure monitoring (polling loop)
-try { initMonitoring(); } catch (e: any) { console.warn(`[monitoring] Failed to init: ${e.message}`); }
+// Initialize infrastructure monitoring (polling loop + DB)
+initMonitoring().catch((e: any) => console.warn(`[monitoring] Failed to init: ${e.message}`));
 
 app.listen(PORT, () => {
   console.log(`[arch-mcp] HTTP server listening on port ${PORT}`);

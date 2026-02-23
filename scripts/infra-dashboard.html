@@ -17,6 +17,13 @@
   .board-btn.active { background: #1e293b; color: #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
   .board-btn:hover:not(.active) { color: #94a3b8; background: #141824; }
 
+  /* Live status bar */
+  #live-bar { display: flex; align-items: center; gap: 14px; font-size: 11px; color: #64748b; margin-left: 8px; flex-shrink: 0; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-dot 2s ease-in-out infinite; flex-shrink: 0; }
+  .live-dot.disconnected { background: #ef4444; animation: none; }
+  @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  #live-bar .sep { color: #1a1f2e; }
+
   /* Tabs */
   .tabs { display: flex; gap: 2px; margin-left: auto; background: #141824; border-radius: 6px; padding: 2px; flex-wrap: wrap; }
   .tab-btn { padding: 5px 14px; font-size: 11px; border-radius: 4px; border: none; background: transparent; color: #64748b; cursor: pointer; font-weight: 500; transition: all 0.15s; font-family: inherit; }
@@ -64,6 +71,7 @@
   .badge-compliant { background: rgba(34,197,94,0.15); color: #22c55e; }
   .badge-partial { background: rgba(245,158,11,0.15); color: #f59e0b; }
   .badge-non-compliant { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-investigating { background: rgba(245,158,11,0.15); color: #f59e0b; }
 
   /* Tables */
   .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -103,6 +111,8 @@
   .btn:hover { border-color: #06b6d4; color: #e2e8f0; }
   .btn-primary { background: #06b6d4; color: #fff; border-color: #06b6d4; }
   .btn-primary:hover { background: #0891b2; border-color: #0891b2; }
+  .btn-danger { background: transparent; color: #ef4444; border-color: #ef4444; }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
   .btn-sm { padding: 3px 8px; font-size: 10px; }
   .btn-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 16px; }
 
@@ -126,35 +136,51 @@
   .metric-val { font-size: 20px; font-weight: 700; color: #f1f5f9; }
   .metric-lbl { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
 
+  /* Incident cards */
+  .incident-card { border-left: 3px solid #ef4444; margin-bottom: 12px; }
+  .incident-card.resolved { border-left-color: #22c55e; opacity: 0.7; }
+  .incident-card.investigating { border-left-color: #f59e0b; }
+  .incident-timeline { margin-top: 12px; padding-left: 16px; border-left: 2px solid #1a1f2e; }
+  .timeline-event { position: relative; padding: 6px 0 6px 12px; font-size: 11px; color: #94a3b8; }
+  .timeline-event::before { content: ''; position: absolute; left: -7px; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #1a1f2e; border: 2px solid #475569; }
+  .timeline-event.alert_fired::before { border-color: #ef4444; }
+  .timeline-event.alert_resolved::before { border-color: #22c55e; }
+  .timeline-event.acknowledged::before { border-color: #f59e0b; }
+  .timeline-ts { font-size: 10px; color: #475569; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: #141824; border: 1px solid #1a1f2e; border-radius: 12px; width: 90%; max-width: 560px; max-height: 85vh; overflow-y: auto; padding: 24px; }
+  .modal h2 { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; }
+  .modal label { display: block; font-size: 11px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .modal input, .modal select { width: 100%; padding: 8px 10px; border: 1px solid #232940; border-radius: 5px; background: #0f1219; color: #e2e8f0; font-size: 12px; margin-bottom: 12px; outline: none; font-family: inherit; }
+  .modal input:focus, .modal select:focus { border-color: #06b6d4; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
   /* Loading */
   .loading { text-align: center; padding: 60px 20px; color: #64748b; }
   .loading .spinner { width: 32px; height: 32px; border: 3px solid #1a1f2e; border-top-color: #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Skeleton */
   .skeleton { background: linear-gradient(90deg, #141824 25%, #1a1f2e 50%, #141824 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  /* Error state */
   .error-state { text-align: center; padding: 60px 20px; }
   .error-state .icon { font-size: 32px; margin-bottom: 12px; }
   .error-state .msg { font-size: 14px; color: #ef4444; margin-bottom: 8px; }
   .error-state .sub { font-size: 12px; color: #64748b; margin-bottom: 16px; }
 
-  /* Empty state */
   .empty-state { text-align: center; padding: 40px 20px; color: #475569; font-size: 13px; }
 
-  /* Pulse animation for new alerts */
   @keyframes pulse-alert { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
   .pulse { animation: pulse-alert 2s ease-in-out infinite; }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1a1f2e; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #2a3650; }
 
-  /* Responsive */
   @media (max-width: 1200px) {
     .grid-4 { grid-template-columns: 1fr 1fr; }
     .grid-5 { grid-template-columns: 1fr 1fr 1fr; }
@@ -176,6 +202,14 @@
     <a href="/data" class="board-btn">&#128300; DataPulse</a>
     <a href="/infra" class="board-btn active">&#9881;&#65039; Infrastructure</a>
   </div>
+  <div id="live-bar">
+    <span class="live-dot" id="sse-dot"></span>
+    <span id="sse-label">Connecting...</span>
+    <span class="sep">|</span>
+    <span id="last-poll-label">--</span>
+    <span class="sep">|</span>
+    <span id="svc-count-label">--</span>
+  </div>
   <div class="tabs" role="tablist" aria-label="Infrastructure sections">
     <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true" tabindex="0">Overview</button>
     <button class="tab-btn" data-tab="services" role="tab" aria-selected="false" tabindex="-1">Services</button>
@@ -183,17 +217,12 @@
     <button class="tab-btn" data-tab="alerts" role="tab" aria-selected="false" tabindex="-1">Alerts</button>
     <button class="tab-btn" data-tab="anomalies" role="tab" aria-selected="false" tabindex="-1">Anomalies</button>
     <button class="tab-btn" data-tab="compliance" role="tab" aria-selected="false" tabindex="-1">Compliance</button>
+    <button class="tab-btn" data-tab="incidents" role="tab" aria-selected="false" tabindex="-1">Incidents</button>
   </div>
 </div>
 
 <div id="main" role="tabpanel">
-  <!-- Loading state -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <div>Loading infrastructure data...</div>
-  </div>
-
-  <!-- Error state -->
+  <div class="loading" id="loading"><div class="spinner"></div><div>Loading infrastructure data...</div></div>
   <div id="error-state" class="error-state" style="display:none">
     <div class="icon">&#9888;&#65039;</div>
     <div class="msg" id="error-msg">Failed to load infrastructure data</div>
@@ -205,53 +234,24 @@
   <div id="tab-overview" class="tab-content">
     <div class="grid grid-5" style="margin-bottom:16px" id="kpi-row"></div>
     <div class="grid grid-2" style="margin-bottom:16px">
-      <div class="card card-lg">
-        <div class="card-title">Health Score</div>
-        <div class="gauge-wrap">
-          <div class="gauge-ring"><canvas id="health-gauge" width="280" height="280"></canvas>
-            <div class="gauge-label"><div class="val" id="health-val">--</div><div class="lbl">Health</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="card card-lg">
-        <div class="card-title">Cost Trend (Last 14 Days)</div>
-        <div class="chart-wrap" style="height:200px"><canvas id="cost-trend-chart"></canvas></div>
-      </div>
+      <div class="card card-lg"><div class="card-title">Health Score</div><div class="gauge-wrap"><div class="gauge-ring"><canvas id="health-gauge" width="280" height="280"></canvas><div class="gauge-label"><div class="val" id="health-val">--</div><div class="lbl">Health</div></div></div></div></div>
+      <div class="card card-lg"><div class="card-title">Cost Trend (Last 14 Days)</div><div class="chart-wrap" style="height:200px"><canvas id="cost-trend-chart"></canvas></div></div>
     </div>
     <div class="grid grid-2">
-      <div class="card card-lg">
-        <div class="card-title">Recent Alerts</div>
-        <div id="recent-alerts-wrap"></div>
-      </div>
-      <div class="card card-lg">
-        <div class="card-title">Service Status</div>
-        <div id="svc-status-wrap"></div>
-      </div>
+      <div class="card card-lg"><div class="card-title">Recent Alerts</div><div id="recent-alerts-wrap"></div></div>
+      <div class="card card-lg"><div class="card-title">Service Status</div><div id="svc-status-wrap"></div></div>
     </div>
   </div>
 
   <!-- Tab 2: Services -->
   <div id="tab-services" class="tab-content">
     <div id="services-list-view">
-      <div class="filter-bar" id="svc-filters">
+      <div class="filter-bar">
         <select id="svc-project-filter"><option value="">All Projects</option></select>
-        <select id="svc-status-filter">
-          <option value="">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="deploying">Deploying</option>
-          <option value="crashed">Crashed</option>
-          <option value="unknown">Unknown</option>
-        </select>
+        <select id="svc-status-filter"><option value="">All Statuses</option><option value="active">Active</option><option value="deploying">Deploying</option><option value="crashed">Crashed</option><option value="unknown">Unknown</option></select>
         <input id="svc-search" type="search" placeholder="Search services..." aria-label="Search services">
       </div>
-      <div class="card card-lg">
-        <div style="overflow-x:auto">
-          <table class="tbl" id="svc-table">
-            <thead><tr><th>Service</th><th>Project</th><th>Status</th><th class="num">CPU%</th><th class="num">Mem%</th><th>Last Deploy</th><th class="num">Uptime</th></tr></thead>
-            <tbody id="svc-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="card card-lg"><div style="overflow-x:auto"><table class="tbl" id="svc-table"><thead><tr><th>Service</th><th>Project</th><th>Status</th><th class="num">Latency</th><th class="num">Uptime</th><th>Last Deploy</th></tr></thead><tbody id="svc-tbody"></tbody></table></div></div>
     </div>
     <div id="service-detail-view" style="display:none"></div>
   </div>
@@ -260,76 +260,68 @@
   <div id="tab-costs" class="tab-content">
     <div class="grid grid-3" style="margin-bottom:16px" id="cost-kpi-row"></div>
     <div class="grid grid-2" style="margin-bottom:16px">
-      <div class="card card-lg">
-        <div class="card-title">Daily Costs (Last 30 Days)</div>
-        <div class="chart-wrap" style="height:240px"><canvas id="daily-cost-chart"></canvas></div>
-      </div>
-      <div class="card card-lg">
-        <div class="card-title">Cost by Service</div>
-        <div class="chart-wrap" style="height:240px"><canvas id="service-cost-chart"></canvas></div>
-      </div>
+      <div class="card card-lg"><div class="card-title">Daily Costs (Last 30 Days)</div><div class="chart-wrap" style="height:240px"><canvas id="daily-cost-chart"></canvas></div></div>
+      <div class="card card-lg"><div class="card-title">Cost by Service</div><div class="chart-wrap" style="height:240px"><canvas id="service-cost-chart"></canvas></div></div>
     </div>
-    <div class="card card-lg">
-      <div class="card-title">Cost Forecast</div>
-      <div class="chart-wrap" style="height:260px"><canvas id="forecast-chart"></canvas></div>
-    </div>
+    <div class="card card-lg"><div class="card-title">Cost Forecast</div><div class="chart-wrap" style="height:260px"><canvas id="forecast-chart"></canvas></div></div>
   </div>
 
   <!-- Tab 4: Alerts -->
   <div id="tab-alerts" class="tab-content">
-    <div class="filter-bar" id="alert-filters">
-      <select id="alert-severity-filter">
-        <option value="">All Severities</option>
-        <option value="high">High</option>
-        <option value="medium">Medium</option>
-        <option value="low">Low</option>
-      </select>
-      <select id="alert-status-filter">
-        <option value="">All Statuses</option>
-        <option value="new">New</option>
-        <option value="acknowledged">Acknowledged</option>
-        <option value="resolved">Resolved</option>
-      </select>
+    <div class="filter-bar">
+      <select id="alert-severity-filter"><option value="">All Severities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+      <select id="alert-status-filter"><option value="">All Statuses</option><option value="new">New</option><option value="acknowledged">Acknowledged</option><option value="resolved">Resolved</option></select>
       <select id="alert-service-filter"><option value="">All Services</option></select>
+      <button class="btn" id="rules-btn" style="margin-left:auto">Rules</button>
     </div>
-    <div class="card card-lg">
-      <div style="overflow-x:auto">
-        <table class="tbl" id="alert-table">
-          <thead><tr><th>Time</th><th>Service</th><th>Severity</th><th>Rule</th><th>Message</th><th>Status</th><th>Action</th></tr></thead>
-          <tbody id="alert-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    <div class="card card-lg"><div style="overflow-x:auto"><table class="tbl" id="alert-table"><thead><tr><th>Time</th><th>Service</th><th>Severity</th><th>Rule</th><th>Message</th><th>Status</th><th>Action</th></tr></thead><tbody id="alert-tbody"></tbody></table></div></div>
   </div>
 
   <!-- Tab 5: Anomalies -->
   <div id="tab-anomalies" class="tab-content">
     <div class="grid grid-3" style="margin-bottom:16px" id="anomaly-stats-row"></div>
-    <div class="card card-lg">
-      <div class="card-title">Recent Anomalies</div>
-      <div style="overflow-x:auto">
-        <table class="tbl" id="anomaly-table">
-          <thead><tr><th>Time</th><th>Service</th><th>Metric</th><th class="num">Value</th><th class="num">Expected</th><th class="num">Deviation</th><th>Type</th></tr></thead>
-          <tbody id="anomaly-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    <div class="card card-lg"><div class="card-title">Recent Anomalies</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Time</th><th>Service</th><th>Metric</th><th class="num">Value</th><th class="num">Expected</th><th class="num">Deviation</th><th>Type</th></tr></thead><tbody id="anomaly-tbody"></tbody></table></div></div>
   </div>
 
   <!-- Tab 6: Compliance -->
   <div id="tab-compliance" class="tab-content">
     <div class="grid grid-2" style="margin-bottom:16px">
-      <div class="card card-lg">
-        <div class="card-title">Overall Compliance Score</div>
-        <div class="gauge-wrap">
-          <div class="gauge-ring"><canvas id="compliance-gauge" width="280" height="280"></canvas>
-            <div class="gauge-label"><div class="val" id="compliance-val">--</div><div class="lbl">Compliant</div></div>
-          </div>
-        </div>
-      </div>
+      <div class="card card-lg"><div class="card-title">Overall Compliance Score</div><div class="gauge-wrap"><div class="gauge-ring"><canvas id="compliance-gauge" width="280" height="280"></canvas><div class="gauge-label"><div class="val" id="compliance-val">--</div><div class="lbl">Compliant</div></div></div></div></div>
       <div class="card card-lg" id="compliance-summary"></div>
     </div>
     <div class="grid grid-2" id="compliance-grid"></div>
+  </div>
+
+  <!-- Tab 7: Incidents -->
+  <div id="tab-incidents" class="tab-content">
+    <div class="grid grid-3" style="margin-bottom:16px" id="incident-stats-row"></div>
+    <div id="incident-list"></div>
+  </div>
+</div>
+
+<!-- Rule Editor Modal -->
+<div class="modal-overlay" id="rule-modal">
+  <div class="modal">
+    <h2 id="rule-modal-title">Alert Rules</h2>
+    <div id="rule-list"></div>
+    <div id="rule-form" style="display:none;border-top:1px solid #1a1f2e;padding-top:16px;margin-top:16px">
+      <h2 id="rule-form-title">New Rule</h2>
+      <label>Rule ID</label><input id="rule-id" placeholder="rule-custom-1">
+      <label>Name</label><input id="rule-name" placeholder="My Custom Rule">
+      <label>Metric</label><select id="rule-metric"><option value="status">status</option><option value="cpu">cpu</option><option value="memory">memory</option><option value="anomaly">anomaly</option></select>
+      <label>Condition</label><select id="rule-condition"><option value="gt">Greater than</option><option value="lt">Less than</option><option value="eq">Equals</option></select>
+      <label>Threshold</label><input id="rule-threshold" type="number" value="0">
+      <label>Duration (minutes)</label><input id="rule-duration" type="number" value="0">
+      <label>Severity</label><select id="rule-severity"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+      <div class="modal-actions">
+        <button class="btn" onclick="hideRuleForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRule()">Save Rule</button>
+      </div>
+    </div>
+    <div class="modal-actions" id="rule-modal-actions">
+      <button class="btn btn-primary" onclick="showRuleForm()">+ New Rule</button>
+      <button class="btn" onclick="closeRuleModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -337,11 +329,12 @@
 (function() {
   'use strict';
 
-  /* ─── State ─── */
-  let STATE = { infra: null, alerts: null, anomalies: null, cost: null, forecast: null, compliance: null };
-  let refreshTimer = null;
+  /* --- State --- */
+  let STATE = { infra: null, alerts: null, anomalies: null, cost: null, forecast: null, compliance: null, incidents: null, rules: null };
+  let sseConnected = false;
+  let lastPollTime = null;
 
-  /* ─── Tab System ─── */
+  /* --- Tab System --- */
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabContents = document.querySelectorAll('.tab-content');
 
@@ -350,13 +343,9 @@
     tabContents.forEach(c => c.classList.toggle('active', c.id === 'tab-' + tabId));
     if (tabId === 'services') { document.getElementById('services-list-view').style.display = ''; document.getElementById('service-detail-view').style.display = 'none'; }
   }
-
   tabBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
-
-  // Keyboard nav
   document.querySelector('.tabs').addEventListener('keydown', e => {
-    const btns = [...tabBtns];
-    const idx = btns.indexOf(document.activeElement);
+    const btns = [...tabBtns]; const idx = btns.indexOf(document.activeElement);
     if (idx < 0) return;
     let next = -1;
     if (e.key === 'ArrowRight') next = (idx + 1) % btns.length;
@@ -366,382 +355,207 @@
     if (next >= 0) { e.preventDefault(); btns[next].focus(); btns[next].click(); }
   });
 
-  /* ─── Utilities ─── */
-  function relTime(ts) {
-    if (!ts) return '--';
-    const diff = Date.now() - new Date(ts).getTime();
-    if (diff < 0) return 'just now';
-    const s = Math.floor(diff / 1000);
-    if (s < 60) return s + 's ago';
-    const m = Math.floor(s / 60);
-    if (m < 60) return m + 'm ago';
-    const h = Math.floor(m / 60);
-    if (h < 24) return h + 'h ago';
-    const d = Math.floor(h / 24);
-    return d + 'd ago';
-  }
-
+  /* --- Utilities --- */
+  function relTime(ts) { if (!ts) return '--'; const diff = Date.now() - new Date(ts).getTime(); if (diff < 0) return 'just now'; const s = Math.floor(diff / 1000); if (s < 60) return s + 's ago'; const m = Math.floor(s / 60); if (m < 60) return m + 'm ago'; const h = Math.floor(m / 60); if (h < 24) return h + 'h ago'; return Math.floor(h / 24) + 'd ago'; }
   function fmt(n, d) { return typeof n === 'number' ? n.toFixed(d === undefined ? 0 : d) : '--'; }
   function fmtEur(n) { return typeof n === 'number' ? '\u20AC' + n.toFixed(2) : '--'; }
   function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-  function statusColor(s) {
-    const m = { active: '#22c55e', deploying: '#f59e0b', crashed: '#ef4444', unknown: '#64748b', healthy: '#22c55e' };
-    return m[(s || '').toLowerCase()] || '#64748b';
-  }
-
+  function statusColor(s) { return { active: '#22c55e', deploying: '#f59e0b', crashed: '#ef4444', unknown: '#64748b', healthy: '#22c55e' }[(s || '').toLowerCase()] || '#64748b'; }
   function severityClass(s) { return 'badge-' + (s || 'low').toLowerCase(); }
-  function statusBadgeClass(s) { return 'badge-' + (s || 'unknown').toLowerCase().replace(/[ -]/g, '-'); }
+  function gaugeColor(pct) { if (pct >= 80) return '#22c55e'; if (pct >= 60) return '#f59e0b'; return '#ef4444'; }
 
-  /* ─── Canvas Drawing Helpers ─── */
+  /* --- Canvas Drawing --- */
   function drawGauge(canvasId, pct, color) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
+    const canvas = document.getElementById(canvasId); if (!canvas) return;
+    const ctx = canvas.getContext('2d'); const w = canvas.width, h = canvas.height;
     const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 16;
-    const startAngle = 0.75 * Math.PI;
-    const endAngle = 2.25 * Math.PI;
-    const sweepAngle = endAngle - startAngle;
+    const sa = 0.75 * Math.PI, ea = 2.25 * Math.PI, sweep = ea - sa;
     ctx.clearRect(0, 0, w, h);
-
-    // Track
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, startAngle, endAngle);
-    ctx.strokeStyle = '#1a1f2e';
-    ctx.lineWidth = 12;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    // Fill
-    const fillAngle = startAngle + sweepAngle * clamp(pct / 100, 0, 1);
-    if (pct > 0) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, startAngle, fillAngle);
-      ctx.strokeStyle = color || '#06b6d4';
-      ctx.lineWidth = 12;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-    }
-  }
-
-  function gaugeColor(pct) {
-    if (pct >= 80) return '#22c55e';
-    if (pct >= 60) return '#f59e0b';
-    return '#ef4444';
+    ctx.beginPath(); ctx.arc(cx, cy, r, sa, ea); ctx.strokeStyle = '#1a1f2e'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+    if (pct > 0) { ctx.beginPath(); ctx.arc(cx, cy, r, sa, sa + sweep * clamp(pct / 100, 0, 1)); ctx.strokeStyle = color || '#06b6d4'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke(); }
   }
 
   function drawBarChart(canvas, data, opts) {
     if (!canvas || !data || !data.length) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
+    const ctx = canvas.getContext('2d'); const dpr = window.devicePixelRatio || 1;
     const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px'; canvas.style.height = rect.height + 'px';
     ctx.scale(dpr, dpr);
-
-    const W = rect.width, H = rect.height;
-    const pad = { top: 10, right: 10, bottom: 30, left: 50 };
-    const chartW = W - pad.left - pad.right;
-    const chartH = H - pad.top - pad.bottom;
-
+    const W = rect.width, H = rect.height, pad = { top: 10, right: 10, bottom: 30, left: 50 };
+    const chartW = W - pad.left - pad.right, chartH = H - pad.top - pad.bottom;
     const maxVal = Math.max(...data.map(d => d.value)) * 1.15 || 1;
     const barW = Math.max(2, (chartW / data.length) - 2);
-
     ctx.clearRect(0, 0, W, H);
-
-    // Grid lines
-    ctx.strokeStyle = '#1a1f2e';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + chartH - (chartH * i / 4);
-      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-      ctx.fillStyle = '#475569'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(fmt(maxVal * i / 4, opts.decimals || 0), pad.left - 6, y + 3);
-    }
-
-    // Bars
-    data.forEach((d, i) => {
-      const x = pad.left + (chartW / data.length) * i + 1;
-      const h = (d.value / maxVal) * chartH;
-      const y = pad.top + chartH - h;
-      ctx.fillStyle = d.color || opts.color || '#06b6d4';
-      ctx.beginPath();
-      const br = Math.min(3, barW / 2);
-      ctx.moveTo(x, y + br);
-      ctx.arcTo(x, y, x + barW, y, br);
-      ctx.arcTo(x + barW, y, x + barW, y + h, br);
-      ctx.lineTo(x + barW, pad.top + chartH);
-      ctx.lineTo(x, pad.top + chartH);
-      ctx.closePath();
-      ctx.fill();
-
-      // Labels
-      if (d.label && data.length <= 31) {
-        ctx.fillStyle = '#475569'; ctx.font = '8px Inter, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(d.label, x + barW / 2, H - pad.bottom + 14);
-      }
-    });
+    ctx.strokeStyle = '#1a1f2e'; ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) { const y = pad.top + chartH - (chartH * i / 4); ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke(); ctx.fillStyle = '#475569'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(fmt(maxVal * i / 4, opts.decimals || 0), pad.left - 6, y + 3); }
+    data.forEach((d, i) => { const x = pad.left + (chartW / data.length) * i + 1; const h = (d.value / maxVal) * chartH; const y = pad.top + chartH - h; ctx.fillStyle = d.color || opts.color || '#06b6d4'; ctx.fillRect(x, y, barW, h); if (d.label && data.length <= 31) { ctx.fillStyle = '#475569'; ctx.font = '8px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(d.label, x + barW / 2, H - pad.bottom + 14); } });
   }
 
   function drawHBarChart(canvas, data) {
     if (!canvas || !data || !data.length) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
+    const ctx = canvas.getContext('2d'); const dpr = window.devicePixelRatio || 1;
     const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px'; canvas.style.height = rect.height + 'px';
     ctx.scale(dpr, dpr);
-
-    const W = rect.width, H = rect.height;
-    const pad = { top: 10, right: 50, bottom: 10, left: 120 };
-    const chartW = W - pad.left - pad.right;
-    const chartH = H - pad.top - pad.bottom;
+    const W = rect.width, H = rect.height, pad = { top: 10, right: 50, bottom: 10, left: 120 };
+    const chartW = W - pad.left - pad.right, chartH = H - pad.top - pad.bottom;
     const barH = Math.min(24, (chartH / data.length) - 6);
     const maxVal = Math.max(...data.map(d => d.value)) * 1.1 || 1;
-
     ctx.clearRect(0, 0, W, H);
-
-    data.forEach((d, i) => {
-      const y = pad.top + (chartH / data.length) * i + (chartH / data.length - barH) / 2;
-      const w = (d.value / maxVal) * chartW;
-
-      // Label
-      ctx.fillStyle = '#94a3b8'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right';
-      const label = d.label.length > 16 ? d.label.slice(0, 14) + '..' : d.label;
-      ctx.fillText(label, pad.left - 8, y + barH / 2 + 4);
-
-      // Bar
-      ctx.fillStyle = d.color || '#06b6d4';
-      const br = Math.min(3, barH / 2);
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y + br);
-      ctx.arcTo(pad.left, y, pad.left + w, y, br);
-      ctx.arcTo(pad.left + w, y, pad.left + w, y + barH, br);
-      ctx.arcTo(pad.left + w, y + barH, pad.left, y + barH, br);
-      ctx.arcTo(pad.left, y + barH, pad.left, y, br);
-      ctx.closePath();
-      ctx.fill();
-
-      // Value
-      ctx.fillStyle = '#f1f5f9'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText(fmtEur(d.value), pad.left + w + 6, y + barH / 2 + 4);
-    });
+    const colors = ['#06b6d4', '#a78bfa', '#22c55e', '#f59e0b', '#ef4444', '#ec4899'];
+    data.forEach((d, i) => { const y = pad.top + (chartH / data.length) * i + (chartH / data.length - barH) / 2; const w = (d.value / maxVal) * chartW; ctx.fillStyle = '#94a3b8'; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText((d.label || '').slice(0, 16), pad.left - 8, y + barH / 2 + 4); ctx.fillStyle = d.color || colors[i % colors.length]; ctx.fillRect(pad.left, y, w, barH); ctx.fillStyle = '#f1f5f9'; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'left'; ctx.fillText(fmtEur(d.value), pad.left + w + 6, y + barH / 2 + 4); });
   }
 
   function drawLineChart(canvas, opts) {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
+    const ctx = canvas.getContext('2d'); const dpr = window.devicePixelRatio || 1;
     const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px'; canvas.style.height = rect.height + 'px';
     ctx.scale(dpr, dpr);
-
-    const W = rect.width, H = rect.height;
-    const pad = { top: 10, right: 10, bottom: 30, left: 50 };
-    const chartW = W - pad.left - pad.right;
-    const chartH = H - pad.top - pad.bottom;
-
-    const allVals = [];
-    (opts.lines || []).forEach(l => l.data.forEach(d => { allVals.push(d.value); if (d.upper !== undefined) allVals.push(d.upper); if (d.lower !== undefined) allVals.push(d.lower); }));
-    const maxVal = (Math.max(...allVals) || 1) * 1.1;
-    const minVal = Math.min(0, Math.min(...allVals));
-    const range = maxVal - minVal || 1;
-
+    const W = rect.width, H = rect.height, pad = { top: 10, right: 10, bottom: 30, left: 50 };
+    const chartW = W - pad.left - pad.right, chartH = H - pad.top - pad.bottom;
+    const allVals = []; (opts.lines || []).forEach(l => l.data.forEach(d => { allVals.push(d.value); if (d.upper !== undefined) allVals.push(d.upper); if (d.lower !== undefined) allVals.push(d.lower); }));
+    const maxVal = (Math.max(...allVals) || 1) * 1.1; const minVal = Math.min(0, Math.min(...allVals)); const range = maxVal - minVal || 1;
     ctx.clearRect(0, 0, W, H);
-
-    // Grid
     ctx.strokeStyle = '#1a1f2e'; ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.top + chartH - (chartH * i / 4);
-      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-      ctx.fillStyle = '#475569'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(fmt(minVal + range * i / 4, opts.decimals || 0), pad.left - 6, y + 3);
-    }
-
+    for (let i = 0; i <= 4; i++) { const y = pad.top + chartH - (chartH * i / 4); ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke(); ctx.fillStyle = '#475569'; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'right'; ctx.fillText(fmt(minVal + range * i / 4, opts.decimals || 0), pad.left - 6, y + 3); }
     function xPos(i, len) { return pad.left + (chartW * i / (len - 1 || 1)); }
     function yPos(v) { return pad.top + chartH - ((v - minVal) / range) * chartH; }
+    (opts.lines || []).forEach(line => { const pts = line.data; if (!pts.length) return; if (pts[0].upper !== undefined) { ctx.fillStyle = line.fillColor || 'rgba(6,182,212,0.08)'; ctx.beginPath(); ctx.moveTo(xPos(0, pts.length), yPos(pts[0].upper)); pts.forEach((p, i) => ctx.lineTo(xPos(i, pts.length), yPos(p.upper))); for (let i = pts.length - 1; i >= 0; i--) ctx.lineTo(xPos(i, pts.length), yPos(pts[i].lower)); ctx.closePath(); ctx.fill(); } ctx.beginPath(); ctx.moveTo(xPos(0, pts.length), yPos(pts[0].value)); pts.forEach((p, i) => { if (i > 0) ctx.lineTo(xPos(i, pts.length), yPos(p.value)); }); ctx.strokeStyle = line.color || '#06b6d4'; ctx.lineWidth = line.width || 2; if (line.dash) ctx.setLineDash(line.dash); else ctx.setLineDash([]); ctx.stroke(); ctx.setLineDash([]); if (pts.length < 40) { pts.forEach((p, i) => { ctx.beginPath(); ctx.arc(xPos(i, pts.length), yPos(p.value), 2.5, 0, Math.PI * 2); ctx.fillStyle = line.color || '#06b6d4'; ctx.fill(); }); } if (line.showLabels && pts.length <= 31) { ctx.fillStyle = '#475569'; ctx.font = '8px Inter, sans-serif'; ctx.textAlign = 'center'; const step = Math.ceil(pts.length / 10); pts.forEach((p, i) => { if (i % step === 0 && p.label) ctx.fillText(p.label, xPos(i, pts.length), H - pad.bottom + 14); }); } });
+  }
 
-    (opts.lines || []).forEach(line => {
-      const pts = line.data;
-      if (!pts.length) return;
+  /* --- SSE Connection --- */
+  let evtSource = null;
+  let sseReconnectDelay = 1000;
 
-      // Confidence interval shading
-      if (pts[0].upper !== undefined) {
-        ctx.fillStyle = line.fillColor || 'rgba(6,182,212,0.08)';
-        ctx.beginPath();
-        ctx.moveTo(xPos(0, pts.length), yPos(pts[0].upper));
-        pts.forEach((p, i) => ctx.lineTo(xPos(i, pts.length), yPos(p.upper)));
-        for (let i = pts.length - 1; i >= 0; i--) ctx.lineTo(xPos(i, pts.length), yPos(pts[i].lower));
-        ctx.closePath();
-        ctx.fill();
-      }
+  function connectSSE() {
+    if (evtSource) { try { evtSource.close(); } catch {} }
+    evtSource = new EventSource('/api/monitoring/sse');
 
-      // Line
-      ctx.beginPath();
-      ctx.moveTo(xPos(0, pts.length), yPos(pts[0].value));
-      pts.forEach((p, i) => { if (i > 0) ctx.lineTo(xPos(i, pts.length), yPos(p.value)); });
-      ctx.strokeStyle = line.color || '#06b6d4';
-      ctx.lineWidth = line.width || 2;
-      if (line.dash) ctx.setLineDash(line.dash);
-      else ctx.setLineDash([]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Dots
-      if (pts.length < 40) {
-        pts.forEach((p, i) => {
-          ctx.beginPath(); ctx.arc(xPos(i, pts.length), yPos(p.value), 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = line.color || '#06b6d4'; ctx.fill();
-        });
-      }
-
-      // Labels on x-axis
-      if (line.showLabels && pts.length <= 31) {
-        ctx.fillStyle = '#475569'; ctx.font = '8px Inter, sans-serif'; ctx.textAlign = 'center';
-        const step = Math.ceil(pts.length / 10);
-        pts.forEach((p, i) => { if (i % step === 0 && p.label) ctx.fillText(p.label, xPos(i, pts.length), H - pad.bottom + 14); });
-      }
+    evtSource.addEventListener('connected', () => {
+      sseConnected = true; sseReconnectDelay = 1000;
+      document.getElementById('sse-dot').classList.remove('disconnected');
+      document.getElementById('sse-label').textContent = 'Live';
     });
+
+    evtSource.addEventListener('infrastructure', (e) => {
+      try { STATE.infra = JSON.parse(e.data); renderOverview(); renderServices(); } catch {}
+    });
+
+    evtSource.addEventListener('alert', (e) => {
+      try {
+        // Refresh full alerts on next cycle
+        fetch('/api/monitoring/alerts').then(r => r.json()).then(d => { STATE.alerts = d; renderAlerts(); renderOverview(); });
+      } catch {}
+    });
+
+    evtSource.addEventListener('poll-complete', (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        lastPollTime = Date.now();
+        document.getElementById('last-poll-label').textContent = 'Poll #' + d.pollCount + ' (' + d.durationMs + 'ms)';
+        document.getElementById('svc-count-label').textContent = d.services + ' svc / ' + d.active + ' active';
+        // Refresh cost + anomalies + incidents after poll
+        Promise.all([
+          fetch('/api/monitoring/anomalies').then(r => r.json()),
+          fetch('/api/monitoring/cost').then(r => r.json()),
+          fetch('/api/monitoring/cost-forecast').then(r => r.json()),
+          fetch('/api/monitoring/incidents').then(r => r.json()),
+        ]).then(([anomalies, cost, forecast, incidents]) => {
+          STATE.anomalies = anomalies; STATE.cost = cost; STATE.forecast = forecast; STATE.incidents = incidents;
+          renderAnomalies(); renderCosts(); renderIncidents();
+        });
+      } catch {}
+    });
+
+    evtSource.onerror = () => {
+      sseConnected = false;
+      document.getElementById('sse-dot').classList.add('disconnected');
+      document.getElementById('sse-label').textContent = 'Reconnecting...';
+      evtSource.close();
+      setTimeout(connectSSE, Math.min(sseReconnectDelay, 16000));
+      sseReconnectDelay *= 2;
+    };
   }
 
-  /* ─── Data Loading ─── */
-  async function fetchJSON(url) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
-    return res.json();
-  }
+  /* --- Data Loading --- */
+  async function fetchJSON(url) { const res = await fetch(url); if (!res.ok) throw new Error(res.status + ' ' + res.statusText); return res.json(); }
 
   async function loadAllData() {
     document.getElementById('loading').style.display = '';
     document.getElementById('error-state').style.display = 'none';
     tabContents.forEach(c => c.classList.remove('active'));
-
     try {
-      const [infraRes, alertsRes, anomalyRes, costRes, forecastRes, complianceRes] = await Promise.all([
+      const [infra, alerts, anomalies, cost, forecast, compliance, incidents, rules] = await Promise.all([
         fetchJSON('/api/monitoring/infrastructure'),
         fetchJSON('/api/monitoring/alerts'),
         fetchJSON('/api/monitoring/anomalies'),
         fetchJSON('/api/monitoring/cost'),
         fetchJSON('/api/monitoring/cost-forecast'),
         fetchJSON('/api/monitoring/compliance'),
+        fetchJSON('/api/monitoring/incidents'),
+        fetchJSON('/api/monitoring/rules'),
       ]);
-
-      STATE.infra = infraRes;
-      STATE.alerts = alertsRes;
-      STATE.anomalies = anomalyRes;
-      STATE.cost = costRes;
-      STATE.forecast = forecastRes;
-      STATE.compliance = complianceRes;
-
+      STATE.infra = infra; STATE.alerts = alerts; STATE.anomalies = anomalies;
+      STATE.cost = cost; STATE.forecast = forecast; STATE.compliance = compliance;
+      STATE.incidents = incidents; STATE.rules = rules;
       document.getElementById('loading').style.display = 'none';
-      renderAll();
-      switchTab('overview');
+      renderAll(); switchTab('overview');
     } catch (err) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error-state').style.display = '';
       document.getElementById('error-msg').textContent = 'Failed to load infrastructure data';
-      document.getElementById('error-sub').textContent = err.message || 'API endpoints may be unreachable';
+      document.getElementById('error-sub').textContent = err.message || 'API may be unreachable';
     }
   }
 
-  /* ─── Render: Overview ─── */
+  /* --- Render: Overview --- */
   function renderOverview() {
-    const infra = STATE.infra || {};
-    const services = infra.services || [];
-    const alerts = (STATE.alerts || {}).alerts || STATE.alerts || [];
+    const infra = STATE.infra || {}; const services = infra.services || [];
+    const alerts = (Array.isArray(STATE.alerts) ? STATE.alerts : STATE.alerts?.alerts || []);
     const cost = STATE.cost || {};
-
-    const total = services.length;
-    const healthy = services.filter(s => (s.status || '').toLowerCase() === 'active').length;
-    const monthlyCost = cost.total_monthly || cost.monthly_total || (cost.daily || []).reduce((a, d) => a + (d.total || d.value || 0), 0);
-    const activeAlerts = (Array.isArray(alerts) ? alerts : []).filter(a => (a.status || '').toLowerCase() !== 'resolved').length;
-    const avgUptime = services.length ? services.reduce((a, s) => a + (s.uptime_percent || s.uptime || 0), 0) / services.length : 0;
-
+    const total = services.length; const healthy = services.filter(s => s.status === 'active').length;
+    const monthlyCost = (cost.daily || []).reduce((a, d) => a + (d.amount || 0), 0);
+    const activeAlerts = alerts.filter(a => a.status !== 'resolved').length;
+    const avgUptime = services.length ? services.reduce((a, s) => a + (s.uptime || 0), 0) / services.length : 0;
     const kpis = [
       { label: 'Total Services', value: total, color: '#06b6d4' },
-      { label: 'Healthy Services', value: healthy, color: '#22c55e' },
-      { label: 'Monthly Cost (EUR)', value: fmtEur(monthlyCost), color: '#a78bfa' },
+      { label: 'Healthy', value: healthy, color: '#22c55e' },
+      { label: 'Monthly Cost', value: fmtEur(monthlyCost), color: '#a78bfa' },
       { label: 'Active Alerts', value: activeAlerts, color: activeAlerts > 0 ? '#ef4444' : '#22c55e' },
-      { label: 'Avg Uptime %', value: fmt(avgUptime, 1) + '%', color: gaugeColor(avgUptime) },
+      { label: 'Avg Uptime', value: fmt(avgUptime, 1) + '%', color: gaugeColor(avgUptime) },
     ];
-
-    document.getElementById('kpi-row').innerHTML = kpis.map(k => `
-      <div class="card">
-        <div class="kpi-lbl">${esc(k.label)}</div>
-        <div class="kpi-val" style="color:${k.color}">${k.value}</div>
-      </div>
-    `).join('');
-
-    // Health gauge
+    document.getElementById('kpi-row').innerHTML = kpis.map(k => `<div class="card"><div class="kpi-lbl">${esc(k.label)}</div><div class="kpi-val" style="color:${k.color}">${k.value}</div></div>`).join('');
     const healthPct = total ? (healthy / total * 100) : 0;
     document.getElementById('health-val').textContent = fmt(healthPct, 0) + '%';
     drawGauge('health-gauge', healthPct, gaugeColor(healthPct));
-
-    // Cost trend mini chart
-    const daily = cost.daily || cost.cost_history || [];
-    const last14 = daily.slice(-14);
-    if (last14.length) {
-      drawLineChart(document.getElementById('cost-trend-chart'), {
-        decimals: 1,
-        lines: [{
-          data: last14.map(d => ({ value: d.total || d.value || 0, label: (d.date || '').slice(5) })),
-          color: '#a78bfa', width: 2, showLabels: true
-        }]
-      });
-    }
-
-    // Recent alerts
-    const recentAlerts = (Array.isArray(alerts) ? alerts : []).slice(0, 5);
+    const last14 = (cost.daily || []).slice(-14);
+    if (last14.length) drawLineChart(document.getElementById('cost-trend-chart'), { decimals: 1, lines: [{ data: last14.map(d => ({ value: d.amount || 0, label: (d.date || '').slice(5) })), color: '#a78bfa', width: 2, showLabels: true }] });
+    const recentAlerts = alerts.slice(0, 5);
     const alertsWrap = document.getElementById('recent-alerts-wrap');
-    if (!recentAlerts.length) {
-      alertsWrap.innerHTML = '<div class="empty-state">No recent alerts</div>';
-    } else {
-      alertsWrap.innerHTML = `<table class="tbl"><thead><tr><th>Time</th><th>Service</th><th>Severity</th><th>Message</th></tr></thead><tbody>${recentAlerts.map(a => `
-        <tr class="${(a.status || '').toLowerCase() === 'new' ? 'pulse' : ''}">
-          <td>${relTime(a.timestamp || a.created_at)}</td>
-          <td>${esc(a.service || a.service_name || '--')}</td>
-          <td><span class="badge ${severityClass(a.severity)}">${esc(a.severity || '--')}</span></td>
-          <td>${esc((a.message || '').slice(0, 60))}</td>
-        </tr>
-      `).join('')}</tbody></table>`;
-    }
-
-    // Service status pills
+    if (!recentAlerts.length) { alertsWrap.innerHTML = '<div class="empty-state">No recent alerts</div>'; }
+    else { alertsWrap.innerHTML = `<table class="tbl"><thead><tr><th>Time</th><th>Service</th><th>Severity</th><th>Message</th></tr></thead><tbody>${recentAlerts.map(a => `<tr class="${a.status === 'new' ? 'pulse' : ''}"><td>${relTime(a.timestamp)}</td><td>${esc(a.serviceName || '--')}</td><td><span class="badge ${severityClass(a.severity)}">${esc(a.severity)}</span></td><td>${esc((a.message || '').slice(0, 60))}</td></tr>`).join('')}</tbody></table>`; }
     const statusWrap = document.getElementById('svc-status-wrap');
-    if (!services.length) {
-      statusWrap.innerHTML = '<div class="empty-state">No services found</div>';
-    } else {
-      statusWrap.innerHTML = '<div class="svc-pills">' + services.map(s => `
-        <div class="svc-pill"><span class="dot" style="background:${statusColor(s.status)}"></span>${esc(s.name || s.service_name || '--')}</div>
-      `).join('') + '</div>';
-    }
+    if (!services.length) { statusWrap.innerHTML = '<div class="empty-state">No services</div>'; }
+    else { statusWrap.innerHTML = '<div class="svc-pills">' + services.map(s => `<div class="svc-pill"><span class="dot" style="background:${statusColor(s.status)}"></span>${esc(s.name)}</div>`).join('') + '</div>'; }
   }
 
-  /* ─── Render: Services ─── */
+  /* --- Render: Services --- */
   function renderServices() {
     const services = (STATE.infra || {}).services || [];
-    const projects = [...new Set(services.map(s => s.project || s.project_name || 'unknown'))].sort();
-
-    const projectFilter = document.getElementById('svc-project-filter');
-    const currentVal = projectFilter.value;
-    projectFilter.innerHTML = '<option value="">All Projects</option>' + projects.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
-    projectFilter.value = currentVal;
-
-    // Also populate alert service filter
-    const alertSvcFilter = document.getElementById('alert-service-filter');
-    const alertVal = alertSvcFilter.value;
-    alertSvcFilter.innerHTML = '<option value="">All Services</option>' + services.map(s => `<option value="${esc(s.name || s.service_name)}">${esc(s.name || s.service_name)}</option>`).join('');
-    alertSvcFilter.value = alertVal;
-
+    const projects = [...new Set(services.map(s => s.projectName || 'unknown'))].sort();
+    const pf = document.getElementById('svc-project-filter');
+    const pv = pf.value;
+    pf.innerHTML = '<option value="">All Projects</option>' + projects.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    pf.value = pv;
+    const asf = document.getElementById('alert-service-filter');
+    const av = asf.value;
+    asf.innerHTML = '<option value="">All Services</option>' + services.map(s => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+    asf.value = av;
     filterServices();
   }
 
@@ -750,336 +564,282 @@
     const project = document.getElementById('svc-project-filter').value.toLowerCase();
     const status = document.getElementById('svc-status-filter').value.toLowerCase();
     const search = document.getElementById('svc-search').value.toLowerCase();
-
     const filtered = services.filter(s => {
-      const sName = (s.name || s.service_name || '').toLowerCase();
-      const sProject = (s.project || s.project_name || '').toLowerCase();
-      const sStatus = (s.status || '').toLowerCase();
-      if (project && sProject !== project) return false;
-      if (status && sStatus !== status) return false;
-      if (search && !sName.includes(search) && !sProject.includes(search)) return false;
+      if (project && (s.projectName || '').toLowerCase() !== project) return false;
+      if (status && (s.status || '').toLowerCase() !== status) return false;
+      if (search && !(s.name || '').toLowerCase().includes(search)) return false;
       return true;
     });
-
     const tbody = document.getElementById('svc-tbody');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No services match the current filters</td></tr>';
-      return;
-    }
-
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No services match filters</td></tr>'; return; }
     tbody.innerHTML = filtered.map(s => {
-      const name = s.name || s.service_name || '--';
-      const proj = s.project || s.project_name || '--';
       const st = (s.status || 'unknown').toLowerCase();
-      return `<tr class="clickable" data-svc="${esc(name)}">
-        <td class="svc-link">${esc(name)}</td>
-        <td>${esc(proj)}</td>
-        <td><span class="badge badge-${st}">${esc(st)}</span></td>
-        <td class="num">${fmt(s.cpu_percent || s.cpu, 1)}</td>
-        <td class="num">${fmt(s.memory_percent || s.memory, 1)}</td>
-        <td>${relTime(s.last_deploy || s.last_deployed_at)}</td>
-        <td class="num">${fmt(s.uptime_percent || s.uptime, 1)}%</td>
-      </tr>`;
+      const latency = s.latencyMs != null ? s.latencyMs + 'ms' : '--';
+      const sla = s.sla ? fmt(s.sla.uptimePercent, 1) + '%' : fmt(s.uptime, 1) + '%';
+      return `<tr class="clickable" data-svc-id="${esc(s.id)}" data-svc-name="${esc(s.name)}"><td class="svc-link">${esc(s.name)}</td><td>${esc(s.projectName)}</td><td><span class="badge badge-${st}">${esc(st)}</span></td><td class="num">${latency}</td><td class="num">${sla}</td><td>${relTime(s.lastDeployAt)}</td></tr>`;
     }).join('');
-
-    // Row click handlers
-    tbody.querySelectorAll('.clickable').forEach(row => {
-      row.addEventListener('click', () => showServiceDetail(row.dataset.svc));
-    });
+    tbody.querySelectorAll('.clickable').forEach(row => row.addEventListener('click', () => showServiceDetail(row.dataset.svcId)));
   }
 
-  function showServiceDetail(svcName) {
-    const services = (STATE.infra || {}).services || [];
-    const svc = services.find(s => (s.name || s.service_name) === svcName);
-    if (!svc) return;
-
+  async function showServiceDetail(svcId) {
     document.getElementById('services-list-view').style.display = 'none';
-    const detailView = document.getElementById('service-detail-view');
-    detailView.style.display = '';
+    const dv = document.getElementById('service-detail-view');
+    dv.style.display = '';
+    dv.innerHTML = '<div class="loading"><div class="spinner"></div><div>Loading service detail...</div></div>';
+    try {
+      const detail = await fetchJSON('/api/monitoring/services/' + encodeURIComponent(svcId));
+      const svc = detail.service; const sla = detail.sla || {};
+      const probes = (detail.metrics && detail.metrics.probes24h) || [];
+      const latencies = probes.filter(p => p.ok).map(p => p.latencyMs).sort((a, b) => a - b);
+      const avgLat = latencies.length ? Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length) : 0;
+      const p95Lat = sla.day ? sla.day.p95LatencyMs : (latencies.length ? latencies[Math.floor(latencies.length * 0.95)] : 0);
+      const uptimePct = sla.day ? sla.day.uptimePercent : (svc.uptime || 0);
+      const st = (svc.status || 'unknown').toLowerCase();
 
-    const st = (svc.status || 'unknown').toLowerCase();
-    detailView.innerHTML = `
-      <button class="btn btn-back" id="svc-back-btn">&larr; Back to Services</button>
-      <div class="detail-header">
-        <div class="detail-title">${esc(svc.name || svc.service_name)}</div>
-        <span class="badge badge-${st}">${esc(st)}</span>
-        <div class="detail-meta">${esc(svc.project || svc.project_name || '--')}</div>
-      </div>
-      <div class="metric-grid">
-        <div class="metric-card"><div class="metric-val">${fmt(svc.cpu_percent || svc.cpu, 1)}%</div><div class="metric-lbl">CPU</div></div>
-        <div class="metric-card"><div class="metric-val">${fmt(svc.memory_percent || svc.memory, 1)}%</div><div class="metric-lbl">Memory</div></div>
-        <div class="metric-card"><div class="metric-val">${fmt(svc.uptime_percent || svc.uptime, 1)}%</div><div class="metric-lbl">Uptime</div></div>
-        <div class="metric-card"><div class="metric-val">${relTime(svc.last_deploy || svc.last_deployed_at)}</div><div class="metric-lbl">Last Deploy</div></div>
-        <div class="metric-card"><div class="metric-val">${svc.replicas || svc.replica_count || '--'}</div><div class="metric-lbl">Replicas</div></div>
-        <div class="metric-card"><div class="metric-val">${svc.region || '--'}</div><div class="metric-lbl">Region</div></div>
-      </div>
-      ${svc.environment_variables ? `<div class="card card-lg" style="margin-top:16px"><div class="card-title">Environment</div><div style="font-size:11px;color:#94a3b8">${Object.entries(svc.environment_variables || {}).map(([k, v]) => `<div><span style="color:#64748b">${esc(k)}:</span> ${esc(v)}</div>`).join('')}</div></div>` : ''}
-    `;
-
-    document.getElementById('svc-back-btn').addEventListener('click', () => {
-      detailView.style.display = 'none';
-      document.getElementById('services-list-view').style.display = '';
-    });
+      dv.innerHTML = `
+        <button class="btn btn-back" id="svc-back-btn">&larr; Back to Services</button>
+        <div class="detail-header">
+          <div class="detail-title">${esc(svc.name)}</div>
+          <span class="badge badge-${st}">${esc(st)}</span>
+          <div class="detail-meta">${esc(svc.projectName)} ${svc.url ? '&middot; <a href="' + esc(svc.url) + '" target="_blank" style="color:#06b6d4">' + esc(svc.url) + '</a>' : ''}</div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric-card"><div class="metric-val">${avgLat}ms</div><div class="metric-lbl">Avg Latency (24h)</div></div>
+          <div class="metric-card"><div class="metric-val">${fmt(uptimePct, 1)}%</div><div class="metric-lbl">Uptime (24h)</div></div>
+          <div class="metric-card"><div class="metric-val">${probes.filter(p => p.ok).length}/${probes.length}</div><div class="metric-lbl">Probes OK</div></div>
+          <div class="metric-card"><div class="metric-val">${p95Lat || '--'}ms</div><div class="metric-lbl">p95 Latency</div></div>
+          <div class="metric-card"><div class="metric-val">${svc.version || svc.healthProbeOk ? (probes[probes.length-1]?.version || '--') : '--'}</div><div class="metric-lbl">Version</div></div>
+          <div class="metric-card"><div class="metric-val">${relTime(svc.lastDeployAt)}</div><div class="metric-lbl">Last Deploy</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-bottom:16px">
+          <div class="card card-lg"><div class="card-title">Latency (24h)</div><div class="chart-wrap" style="height:180px"><canvas id="detail-latency-chart"></canvas></div></div>
+          <div class="card card-lg"><div class="card-title">SLA Breakdown</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+              ${['hour','day','week','month'].map(p => { const r = sla[p]; return `<div class="metric-card"><div class="metric-val" style="font-size:16px;color:${r ? gaugeColor(r.uptimePercent) : '#64748b'}">${r ? fmt(r.uptimePercent, 2) + '%' : '--'}</div><div class="metric-lbl">${p}</div></div>`; }).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="card card-lg"><div class="card-title">Recent Alerts</div>${detail.alerts.length ? `<table class="tbl"><tbody>${detail.alerts.slice(0, 5).map(a => `<tr><td>${relTime(a.timestamp)}</td><td><span class="badge ${severityClass(a.severity)}">${esc(a.severity)}</span></td><td>${esc(a.message.slice(0, 60))}</td><td><span class="badge badge-${a.status}">${esc(a.status)}</span></td></tr>`).join('')}</tbody></table>` : '<div class="empty-state">No alerts</div>'}</div>
+          <div class="card card-lg"><div class="card-title">Related Incidents</div>${detail.relatedIncidents.length ? detail.relatedIncidents.slice(0, 3).map(i => `<div style="padding:6px 0;border-bottom:1px solid #1a1f2e;font-size:11px"><span class="badge badge-${i.severity}">${esc(i.severity)}</span> ${esc(i.title)} <span style="color:#475569">${relTime(i.startedAt)}</span></div>`).join('') : '<div class="empty-state">No incidents</div>'}</div>
+        </div>
+      `;
+      document.getElementById('svc-back-btn').addEventListener('click', () => { dv.style.display = 'none'; document.getElementById('services-list-view').style.display = ''; });
+      // Draw latency chart
+      if (probes.length > 1) {
+        const step = Math.max(1, Math.floor(probes.length / 60));
+        const chartData = probes.filter((_, i) => i % step === 0).map(p => ({ value: p.ok ? p.latencyMs : 0, label: new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
+        setTimeout(() => drawLineChart(document.getElementById('detail-latency-chart'), { decimals: 0, lines: [{ data: chartData, color: '#06b6d4', width: 1.5, showLabels: true }] }), 50);
+      }
+    } catch (err) { dv.innerHTML = `<button class="btn btn-back" onclick="document.getElementById('service-detail-view').style.display='none';document.getElementById('services-list-view').style.display=''">&larr; Back</button><div class="error-state"><div class="msg">Failed to load service detail</div><div class="sub">${esc(err.message)}</div></div>`; }
   }
 
   ['svc-project-filter', 'svc-status-filter'].forEach(id => document.getElementById(id).addEventListener('change', filterServices));
   document.getElementById('svc-search').addEventListener('input', filterServices);
 
-  /* ─── Render: Costs ─── */
+  /* --- Render: Costs --- */
   function renderCosts() {
-    const cost = STATE.cost || {};
-    const forecast = STATE.forecast || {};
-    const daily = cost.daily || cost.cost_history || [];
-
-    const totalMonthly = cost.total_monthly || cost.monthly_total || daily.reduce((a, d) => a + (d.total || d.value || 0), 0);
-    const projected = forecast.projected_month_end || forecast.projected_total || totalMonthly * 1.1;
-    const dailyAvg = daily.length ? totalMonthly / daily.length : 0;
-
+    const cost = STATE.cost || {}; const forecast = STATE.forecast || {}; const daily = cost.daily || [];
+    const total = daily.reduce((a, d) => a + (d.amount || 0), 0);
+    const f7 = forecast.predicted7d || 0; const f30 = forecast.predicted30d || 0;
     document.getElementById('cost-kpi-row').innerHTML = [
-      { label: 'Total Monthly Cost', value: fmtEur(totalMonthly), color: '#a78bfa' },
-      { label: 'Projected Month-End', value: fmtEur(projected), color: '#06b6d4' },
-      { label: 'Daily Average', value: fmtEur(dailyAvg), color: '#f1f5f9' },
+      { label: 'Current Daily', value: fmtEur(forecast.currentDaily || (daily.length ? daily[daily.length - 1].amount : 0)), color: '#a78bfa' },
+      { label: '7-Day Forecast', value: fmtEur(f7), color: '#06b6d4' },
+      { label: '30-Day Forecast', value: fmtEur(f30), color: '#f1f5f9' },
     ].map(k => `<div class="card"><div class="kpi-lbl">${esc(k.label)}</div><div class="kpi-val" style="color:${k.color}">${k.value}</div></div>`).join('');
-
-    // Project color map
-    const projectColors = ['#06b6d4', '#a78bfa', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#818cf8', '#14b8a6'];
-    const projects = [...new Set(daily.flatMap(d => Object.keys(d).filter(k => k !== 'date' && k !== 'total' && k !== 'value')))];
-    const projColorMap = {};
-    projects.forEach((p, i) => projColorMap[p] = projectColors[i % projectColors.length]);
-
-    // Daily cost bar chart
     const last30 = daily.slice(-30);
-    if (last30.length) {
-      const barData = last30.map(d => ({
-        value: d.total || d.value || 0,
-        label: (d.date || '').slice(8),
-        color: '#06b6d4'
-      }));
-      drawBarChart(document.getElementById('daily-cost-chart'), barData, { decimals: 1 });
-    }
-
-    // Service cost breakdown
-    const serviceCosts = cost.by_service || cost.service_breakdown || [];
-    if (serviceCosts.length) {
-      const hbarData = serviceCosts.slice(0, 12).map((s, i) => ({
-        label: s.service || s.name || s.service_name || 'unknown',
-        value: s.cost || s.total || s.value || 0,
-        color: projectColors[i % projectColors.length]
-      }));
-      drawHBarChart(document.getElementById('service-cost-chart'), hbarData);
-    }
-
-    // Forecast line chart
-    const actual = (forecast.actual || forecast.history || daily.slice(-14)).map(d => ({
-      value: d.total || d.value || 0,
-      label: (d.date || '').slice(5)
-    }));
-    const predicted = (forecast.predicted || forecast.forecast || []).map(d => ({
-      value: d.total || d.value || d.predicted || 0,
-      upper: d.upper || d.upper_bound || (d.total || d.value || d.predicted || 0) * 1.15,
-      lower: d.lower || d.lower_bound || (d.total || d.value || d.predicted || 0) * 0.85,
-      label: (d.date || '').slice(5)
-    }));
-
-    if (actual.length || predicted.length) {
-      drawLineChart(document.getElementById('forecast-chart'), {
-        decimals: 1,
-        lines: [
-          { data: actual, color: '#f1f5f9', width: 2, showLabels: true },
-          { data: predicted, color: '#06b6d4', width: 2, dash: [6, 4], fillColor: 'rgba(6,182,212,0.08)', showLabels: true }
-        ]
-      });
-    }
+    if (last30.length) drawBarChart(document.getElementById('daily-cost-chart'), last30.map(d => ({ value: d.amount || 0, label: (d.date || '').slice(8) })), { decimals: 1 });
+    const byService = cost.byService || [];
+    if (byService.length) drawHBarChart(document.getElementById('service-cost-chart'), byService.slice(0, 12).map(s => ({ label: s.name, value: s.total || 0 })));
+    const dp = forecast.dataPoints || [];
+    const actuals = dp.filter(d => d.actual != null).map(d => ({ value: d.actual, label: (d.date || '').slice(5) }));
+    const preds = dp.filter(d => d.predicted != null).map(d => ({ value: d.predicted, upper: d.predicted * 1.15, lower: d.predicted * 0.85, label: (d.date || '').slice(5) }));
+    if (actuals.length || preds.length) drawLineChart(document.getElementById('forecast-chart'), { decimals: 1, lines: [{ data: actuals, color: '#f1f5f9', width: 2, showLabels: true }, { data: preds, color: '#06b6d4', width: 2, dash: [6, 4], fillColor: 'rgba(6,182,212,0.08)', showLabels: true }] });
   }
 
-  /* ─── Render: Alerts ─── */
-  function renderAlerts() {
-    filterAlerts();
-  }
-
+  /* --- Render: Alerts --- */
+  function renderAlerts() { filterAlerts(); }
   function filterAlerts() {
-    const allAlerts = (STATE.alerts || {}).alerts || (Array.isArray(STATE.alerts) ? STATE.alerts : []);
+    const allAlerts = Array.isArray(STATE.alerts) ? STATE.alerts : (STATE.alerts?.alerts || []);
     const severity = document.getElementById('alert-severity-filter').value.toLowerCase();
     const status = document.getElementById('alert-status-filter').value.toLowerCase();
     const service = document.getElementById('alert-service-filter').value.toLowerCase();
-
     const filtered = allAlerts.filter(a => {
       if (severity && (a.severity || '').toLowerCase() !== severity) return false;
       if (status && (a.status || '').toLowerCase() !== status) return false;
-      if (service && (a.service || a.service_name || '').toLowerCase() !== service) return false;
+      if (service && (a.serviceName || '').toLowerCase() !== service) return false;
       return true;
     });
-
     const tbody = document.getElementById('alert-tbody');
-    if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No alerts match the current filters</td></tr>';
-      return;
-    }
-
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No alerts match filters</td></tr>'; return; }
     tbody.innerHTML = filtered.map(a => {
-      const sev = (a.severity || 'low').toLowerCase();
       const st = (a.status || 'new').toLowerCase();
       const isNew = st === 'new';
-      return `<tr class="${isNew ? 'pulse' : ''}">
-        <td>${relTime(a.timestamp || a.created_at)}</td>
-        <td>${esc(a.service || a.service_name || '--')}</td>
-        <td><span class="badge badge-${sev}">${esc(sev)}</span></td>
-        <td>${esc(a.rule || a.rule_name || '--')}</td>
-        <td>${esc((a.message || '').slice(0, 80))}</td>
-        <td><span class="badge badge-${st}">${esc(st)}</span></td>
-        <td>${isNew ? `<button class="btn btn-sm" onclick="acknowledgeAlert('${esc(a.id || '')}', this)">Ack</button>` : ''}</td>
-      </tr>`;
+      const ackInfo = st === 'acknowledged' && a.acknowledgedAt ? `<span style="font-size:10px;color:#64748b">Acked ${relTime(a.acknowledgedAt)}</span>` : '';
+      return `<tr class="${isNew ? 'pulse' : ''}"><td>${relTime(a.timestamp)}</td><td>${esc(a.serviceName || '--')}</td><td><span class="badge badge-${a.severity}">${esc(a.severity)}</span></td><td>${esc(a.rule || '--')}</td><td>${esc((a.message || '').slice(0, 80))}</td><td><span class="badge badge-${st}">${esc(st)}</span></td><td>${isNew ? `<button class="btn btn-sm" onclick="acknowledgeAlert('${esc(a.id)}', this)">Ack</button>` : ackInfo}</td></tr>`;
     }).join('');
   }
-
   ['alert-severity-filter', 'alert-status-filter', 'alert-service-filter'].forEach(id => document.getElementById(id).addEventListener('change', filterAlerts));
 
-  // Acknowledge alert (global function for inline onclick)
   window.acknowledgeAlert = async function(alertId, btnEl) {
-    if (!alertId) return;
-    btnEl.disabled = true;
-    btnEl.textContent = '...';
+    if (!alertId) return; btnEl.disabled = true; btnEl.textContent = '...';
     try {
       const res = await fetch('/api/monitoring/alerts/' + alertId + '/acknowledge', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error('Failed');
-      // Update local state
-      const allAlerts = (STATE.alerts || {}).alerts || (Array.isArray(STATE.alerts) ? STATE.alerts : []);
-      const alert = allAlerts.find(a => a.id === alertId);
-      if (alert) alert.status = 'acknowledged';
-      filterAlerts();
-      renderOverview();
-    } catch (err) {
-      btnEl.disabled = false;
-      btnEl.textContent = 'Ack';
-      btnEl.style.borderColor = '#ef4444';
-    }
+      const allAlerts = Array.isArray(STATE.alerts) ? STATE.alerts : (STATE.alerts?.alerts || []);
+      const a = allAlerts.find(x => x.id === alertId);
+      if (a) { a.status = 'acknowledged'; a.acknowledgedAt = new Date().toISOString(); }
+      filterAlerts(); renderOverview();
+    } catch { btnEl.disabled = false; btnEl.textContent = 'Ack'; btnEl.style.borderColor = '#ef4444'; }
   };
 
-  /* ─── Render: Anomalies ─── */
+  /* --- Render: Anomalies --- */
   function renderAnomalies() {
-    const anomalies = (STATE.anomalies || {}).anomalies || (Array.isArray(STATE.anomalies) ? STATE.anomalies : []);
-
-    // Stats
+    const anomalies = Array.isArray(STATE.anomalies) ? STATE.anomalies : (STATE.anomalies?.anomalies || []);
     const types = { statistical: 0, trend: 0, cost: 0 };
-    anomalies.forEach(a => {
-      const t = (a.type || a.anomaly_type || 'statistical').toLowerCase();
-      if (t.includes('stat')) types.statistical++;
-      else if (t.includes('trend')) types.trend++;
-      else if (t.includes('cost')) types.cost++;
-      else types.statistical++;
-    });
-
+    anomalies.forEach(a => { const t = (a.type || 'statistical').toLowerCase(); if (t.includes('stat')) types.statistical++; else if (t.includes('trend')) types.trend++; else if (t.includes('cost')) types.cost++; });
     document.getElementById('anomaly-stats-row').innerHTML = [
       { label: 'Statistical', value: types.statistical, color: '#06b6d4' },
       { label: 'Trend', value: types.trend, color: '#a78bfa' },
       { label: 'Cost', value: types.cost, color: '#f59e0b' },
     ].map(k => `<div class="card"><div class="kpi-lbl">${esc(k.label)} Anomalies</div><div class="kpi-val" style="color:${k.color}">${k.value}</div></div>`).join('');
-
-    // Table
     const tbody = document.getElementById('anomaly-tbody');
-    if (!anomalies.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No anomalies detected</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = anomalies.map(a => {
-      const dev = Math.abs(a.deviation || a.deviation_percent || 0);
-      const devColor = dev > 50 ? '#ef4444' : dev > 20 ? '#f59e0b' : '#06b6d4';
-      const type = a.type || a.anomaly_type || 'statistical';
-      return `<tr>
-        <td>${relTime(a.timestamp || a.detected_at)}</td>
-        <td>${esc(a.service || a.service_name || '--')}</td>
-        <td>${esc(a.metric || a.metric_name || '--')}</td>
-        <td class="num">${fmt(a.value || a.actual_value, 2)}</td>
-        <td class="num">${fmt(a.expected || a.expected_value, 2)}</td>
-        <td class="num" style="color:${devColor}">${fmt(dev, 1)}%</td>
-        <td><span class="badge badge-info">${esc(type)}</span></td>
-      </tr>`;
-    }).join('');
+    if (!anomalies.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No anomalies detected</td></tr>'; return; }
+    tbody.innerHTML = anomalies.map(a => { const dev = Math.abs(a.deviation || 0); const devColor = dev > 50 ? '#ef4444' : dev > 20 ? '#f59e0b' : '#06b6d4'; return `<tr><td>${relTime(a.timestamp)}</td><td>${esc(a.serviceName || '--')}</td><td>${esc(a.metric || '--')}</td><td class="num">${fmt(a.value, 2)}</td><td class="num">${fmt(a.expected, 2)}</td><td class="num" style="color:${devColor}">${fmt(dev, 1)}%</td><td><span class="badge badge-info">${esc(a.type)}</span></td></tr>`; }).join('');
   }
 
-  /* ─── Render: Compliance ─── */
+  /* --- Render: Compliance --- */
   function renderCompliance() {
-    const compliance = STATE.compliance || {};
-    const requirements = compliance.requirements || compliance.items || compliance.nis2 || [];
-    const score = compliance.overall_score || compliance.score || 0;
-
-    // Gauge
+    const compliance = STATE.compliance || {}; const requirements = compliance.requirements || [];
+    const summary = compliance.summary || {};
+    const score = summary.score || 0;
     document.getElementById('compliance-val').textContent = fmt(score, 0) + '%';
     drawGauge('compliance-gauge', score, gaugeColor(score));
-
-    // Summary
-    const counts = { compliant: 0, partial: 0, 'non-compliant': 0 };
-    requirements.forEach(r => {
-      const st = (r.status || '').toLowerCase().replace(/[ _]/g, '-');
-      if (counts[st] !== undefined) counts[st]++;
-    });
-
-    document.getElementById('compliance-summary').innerHTML = `
-      <div class="card-title">NIS2 Compliance Summary</div>
-      <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:#94a3b8">Compliant</span><span class="badge badge-compliant">${counts.compliant}</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:#94a3b8">Partial</span><span class="badge badge-partial">${counts.partial}</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:#94a3b8">Non-Compliant</span><span class="badge badge-non-compliant">${counts['non-compliant']}</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1a1f2e;padding-top:8px"><span style="font-size:12px;color:#94a3b8">Total Requirements</span><span style="font-size:14px;font-weight:700;color:#f1f5f9">${requirements.length}</span></div>
-      </div>
-    `;
-
-    // Requirement cards
+    document.getElementById('compliance-summary').innerHTML = `<div class="card-title">NIS2 Compliance Summary</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:8px"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:#94a3b8">Compliant</span><span class="badge badge-compliant">${summary.compliant || 0}</span></div><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:#94a3b8">Partial</span><span class="badge badge-partial">${summary.partial || 0}</span></div><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:#94a3b8">Non-Compliant</span><span class="badge badge-non-compliant">${summary.nonCompliant || 0}</span></div><div style="display:flex;justify-content:space-between;border-top:1px solid #1a1f2e;padding-top:8px"><span style="font-size:12px;color:#94a3b8">Total</span><span style="font-size:14px;font-weight:700;color:#f1f5f9">${requirements.length}</span></div></div>`;
     const grid = document.getElementById('compliance-grid');
-    if (!requirements.length) {
-      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No compliance data available</div>';
-      return;
-    }
+    if (!requirements.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No compliance data</div>'; return; }
+    grid.innerHTML = requirements.map(r => { const st = (r.status || '').toLowerCase().replace(/[ _]/g, '-'); return `<div class="card card-lg compliance-card ${st}"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><div style="font-size:10px;color:#475569;font-weight:600">${esc(r.article)}</div><span class="badge badge-${st}">${esc(st.replace(/-/g, ' '))}</span></div><div class="compliance-title">${esc(r.title)}</div><div class="compliance-desc">${esc(r.description)}</div>${r.mappedServices?.length ? `<div class="compliance-meta">${r.mappedServices.map(s => `<span class="compliance-tag">${esc(s)}</span>`).join('')}</div>` : ''}${r.evidence?.length ? `<div style="margin-top:8px">${r.evidence.map(e => `<div class="evidence-item">${esc(typeof e === 'string' ? e : e.name || '')}</div>`).join('')}</div>` : ''}</div>`; }).join('');
+  }
 
-    grid.innerHTML = requirements.map(r => {
-      const st = (r.status || '').toLowerCase().replace(/[ _]/g, '-');
-      const services = r.services || r.mapped_services || [];
-      const evidence = r.evidence || r.evidence_items || [];
-      return `<div class="card card-lg compliance-card ${st}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-          <div style="font-size:10px;color:#475569;font-weight:600">${esc(r.article || r.article_number || '--')}</div>
-          <span class="badge badge-${st}">${esc(st.replace(/-/g, ' '))}</span>
+  /* --- Render: Incidents --- */
+  function renderIncidents() {
+    const data = STATE.incidents || {};
+    const incidents = data.incidents || (Array.isArray(data) ? data : []);
+    const active = incidents.filter(i => i.status !== 'resolved');
+    const resolved = incidents.filter(i => i.status === 'resolved');
+    document.getElementById('incident-stats-row').innerHTML = [
+      { label: 'Active Incidents', value: active.length, color: active.length > 0 ? '#ef4444' : '#22c55e' },
+      { label: 'Investigating', value: incidents.filter(i => i.status === 'investigating').length, color: '#f59e0b' },
+      { label: 'Resolved (recent)', value: resolved.length, color: '#22c55e' },
+    ].map(k => `<div class="card"><div class="kpi-lbl">${esc(k.label)}</div><div class="kpi-val" style="color:${k.color}">${k.value}</div></div>`).join('');
+
+    const list = document.getElementById('incident-list');
+    if (!incidents.length) { list.innerHTML = '<div class="empty-state">No incidents recorded yet. Incidents are created automatically when related alerts fire.</div>'; return; }
+
+    list.innerHTML = [...active, ...resolved].map(inc => {
+      const st = (inc.status || 'active').toLowerCase();
+      const duration = inc.resolvedAt
+        ? Math.round((new Date(inc.resolvedAt).getTime() - new Date(inc.startedAt).getTime()) / 60000) + 'min'
+        : relTime(inc.startedAt);
+      return `<div class="card card-lg incident-card ${st}" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <span class="badge badge-${inc.severity}">${esc(inc.severity)}</span>
+            <span class="badge badge-${st}" style="margin-left:4px">${esc(st)}</span>
+          </div>
+          <span style="font-size:11px;color:#64748b">${st === 'resolved' ? 'Duration: ' + duration : 'Started ' + duration}</span>
         </div>
-        <div class="compliance-title">${esc(r.title || r.name || '--')}</div>
-        <div class="compliance-desc">${esc(r.description || '')}</div>
-        ${services.length ? `<div class="compliance-meta">${services.map(s => `<span class="compliance-tag">${esc(s)}</span>`).join('')}</div>` : ''}
-        ${evidence.length ? `<div style="margin-top:8px">${evidence.map(e => `<div class="evidence-item">${esc(typeof e === 'string' ? e : e.name || e.title || '')}</div>`).join('')}</div>` : ''}
-        ${r.last_audit ? `<div style="font-size:10px;color:#475569;margin-top:8px">Last audit: ${relTime(r.last_audit)}</div>` : ''}
+        <div style="font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:4px">${esc(inc.title)}</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:8px">${inc.affectedServices.length} service(s) &middot; ${inc.alertIds.length} alert(s)</div>
+        ${inc.summary ? `<div style="font-size:11px;color:#94a3b8;margin-bottom:8px">${esc(inc.summary)}</div>` : ''}
+        ${inc.timeline && inc.timeline.length ? `<div class="incident-timeline">${inc.timeline.map(e => `<div class="timeline-event ${e.type}"><div class="timeline-ts">${relTime(e.timestamp)}</div><div>${esc(e.message)}</div></div>`).join('')}</div>` : ''}
       </div>`;
     }).join('');
   }
 
-  /* ─── Render All ─── */
-  function renderAll() {
-    renderOverview();
-    renderServices();
-    renderCosts();
-    renderAlerts();
-    renderAnomalies();
-    renderCompliance();
+  /* --- Rule Editor --- */
+  document.getElementById('rules-btn').addEventListener('click', openRuleModal);
+
+  function openRuleModal() {
+    document.getElementById('rule-modal').classList.add('active');
+    renderRuleList();
+  }
+  window.closeRuleModal = function() { document.getElementById('rule-modal').classList.remove('active'); };
+  window.showRuleForm = function(rule) {
+    document.getElementById('rule-form').style.display = '';
+    document.getElementById('rule-modal-actions').style.display = 'none';
+    if (rule) {
+      document.getElementById('rule-form-title').textContent = 'Edit Rule';
+      document.getElementById('rule-id').value = rule.id; document.getElementById('rule-id').disabled = true;
+      document.getElementById('rule-name').value = rule.name;
+      document.getElementById('rule-metric').value = rule.metric;
+      document.getElementById('rule-condition').value = rule.condition;
+      document.getElementById('rule-threshold').value = rule.threshold;
+      document.getElementById('rule-duration').value = rule.durationMinutes;
+      document.getElementById('rule-severity').value = rule.severity;
+    } else {
+      document.getElementById('rule-form-title').textContent = 'New Rule';
+      document.getElementById('rule-id').value = 'rule-custom-' + Date.now(); document.getElementById('rule-id').disabled = false;
+      document.getElementById('rule-name').value = '';
+      document.getElementById('rule-threshold').value = '0'; document.getElementById('rule-duration').value = '0';
+    }
+  };
+  window.hideRuleForm = function() { document.getElementById('rule-form').style.display = 'none'; document.getElementById('rule-modal-actions').style.display = ''; };
+
+  function renderRuleList() {
+    const rules = STATE.rules || [];
+    const list = document.getElementById('rule-list');
+    if (!rules.length) { list.innerHTML = '<div class="empty-state">No rules configured</div>'; return; }
+    list.innerHTML = rules.map(r => `<div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#f1f5f9">${esc(r.name)}</div>
+        <div style="font-size:10px;color:#64748b">${esc(r.metric)} ${esc(r.condition)} ${r.threshold} &middot; ${r.durationMinutes}min &middot; <span class="badge ${severityClass(r.severity)}">${esc(r.severity)}</span> &middot; ${r.enabled ? '<span style="color:#22c55e">enabled</span>' : '<span style="color:#ef4444">disabled</span>'}</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-sm" onclick='showRuleForm(${JSON.stringify(r).replace(/'/g, "&#39;")})'>Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRuleById('${esc(r.id)}')">Del</button>
+      </div>
+    </div>`).join('');
   }
 
-  /* ─── Auto Refresh ─── */
-  function startAutoRefresh() {
-    if (refreshTimer) clearInterval(refreshTimer);
-    refreshTimer = setInterval(() => {
-      loadAllData();
-    }, 60000);
-  }
+  window.saveRule = async function() {
+    const rule = {
+      id: document.getElementById('rule-id').value.trim(),
+      name: document.getElementById('rule-name').value.trim(),
+      metric: document.getElementById('rule-metric').value,
+      condition: document.getElementById('rule-condition').value,
+      threshold: parseFloat(document.getElementById('rule-threshold').value) || 0,
+      durationMinutes: parseInt(document.getElementById('rule-duration').value) || 0,
+      severity: document.getElementById('rule-severity').value,
+      enabled: true,
+    };
+    if (!rule.id || !rule.name) return alert('ID and Name are required');
+    try {
+      await fetch('/api/monitoring/rules', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rule) });
+      STATE.rules = await fetchJSON('/api/monitoring/rules');
+      hideRuleForm(); renderRuleList();
+    } catch (e) { alert('Failed to save rule: ' + e.message); }
+  };
 
-  /* ─── Resize handler ─── */
+  window.deleteRuleById = async function(ruleId) {
+    if (!confirm('Delete rule "' + ruleId + '"?')) return;
+    try {
+      await fetch('/api/monitoring/rules/' + ruleId, { method: 'DELETE' });
+      STATE.rules = await fetchJSON('/api/monitoring/rules');
+      renderRuleList();
+    } catch (e) { alert('Failed to delete: ' + e.message); }
+  };
+
+  /* --- Render All --- */
+  function renderAll() { renderOverview(); renderServices(); renderCosts(); renderAlerts(); renderAnomalies(); renderCompliance(); renderIncidents(); }
+
+  /* --- Resize --- */
   let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      if (STATE.infra) renderAll();
-    }, 250);
-  });
+  window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(() => { if (STATE.infra) renderAll(); }, 250); });
 
-  /* ─── Init ─── */
+  /* --- Init --- */
   loadAllData();
-  startAutoRefresh();
+  connectSSE();
 
 })();
 </script>

@@ -62,11 +62,13 @@
     "@sinclair/typebox": "^0.34.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "pg": "^8.13.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/pg": "^8.11.11",
     "dependency-cruiser": "^16.10.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
