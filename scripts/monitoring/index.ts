@@ -74,13 +74,15 @@ async function poll(): Promise<void> {
     const services = await fetchServices();
     state.services = services;
 
-    // 2. Health-probe services with URLs
+    // 2. Health-probe services with URLs (enrichment only — never override Railway status)
     for (const svc of services) {
-      if (svc.url) {
-        const probe = await probeServiceHealth(svc.url);
-        if (!probe.ok && svc.status === "active") {
-          svc.status = "crashed";
-        }
+      if (svc.url && svc.status === "active") {
+        const fullUrl = svc.url.startsWith("http") ? svc.url : `https://${svc.url}`;
+        const probe = await probeServiceHealth(fullUrl);
+        // Store latency for dashboard but do NOT override status.
+        // Railway's deployment status is the source of truth.
+        (svc as any).latencyMs = probe.latencyMs;
+        (svc as any).healthProbeOk = probe.ok;
       }
     }
 

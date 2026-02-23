@@ -147,10 +147,10 @@ export async function fetchServices(): Promise<RailwayService[]> {
           projectName: project.name,
           status: dep ? mapStatus(dep.status) : "unknown",
           lastDeployAt: dep?.createdAt || null,
-          url: dep?.staticUrl || null,
+          url: dep?.staticUrl ? (dep.staticUrl.startsWith("http") ? dep.staticUrl : `https://${dep.staticUrl}`) : null,
           cpu: 0,
           memory: 0,
-          uptime: dep?.status === "SUCCESS" ? 100 : 0,
+          uptime: dep?.status === "SUCCESS" || dep?.status === "ACTIVE" ? 100 : 0,
         });
       }
     } catch (err: any) {
