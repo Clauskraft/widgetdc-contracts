@@ -44,8 +44,10 @@
   <h1>WidgeTDC Architecture</h1>
 
   <div class="fg" style="flex-direction:row;gap:2px;background:#141824;border-radius:6px;padding:2px">
-    <a href="arch-viewer.html" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#e2e8f0;background:#1e2740;font-weight:500">Graph</a>
-    <a href="arch-viewer-overview.html" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Overview</a>
+    <a href="/dashboard" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Dashboard</a>
+    <a href="/graph" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#e2e8f0;background:#1e2740;font-weight:500">Graph</a>
+    <a href="/overview" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Overview</a>
+    <a href="/changelog" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Changelog</a>
   </div>
 
   <div class="fg">
@@ -68,6 +70,14 @@
     <label>Layer</label>
     <select id="layerFilter">
       <option value="all">All layers</option>
+    </select>
+  </div>
+
+  <div class="fg">
+    <label>Color by</label>
+    <select id="colorBy">
+      <option value="repo">Repository</option>
+      <option value="health">Health score</option>
     </select>
   </div>
 
@@ -114,6 +124,10 @@
   <div class="dt" id="sbRepo"></div>
   <div class="dt" id="sbLayer"></div>
   <div class="dt" id="sbFanIn"></div>
+  <div class="dt" id="sbHealth"></div>
+  <div class="dt" id="sbInstability"></div>
+  <div class="dt" id="sbBlastRadius"></div>
+  <div id="sbDashLink" style="margin:8px 0;display:none"><a id="sbDashLinkA" href="#" style="font-size:11px;color:#818cf8;text-decoration:none">View in Dashboard →</a></div>
   <div class="sh">Dependencies</div>
   <ul class="dl" id="sbDeps"></ul>
   <div class="sh">Dependents</div>
@@ -131,6 +145,9 @@ const CLUSTER_CENTERS = { backend: { x: -300, y: 0 }, frontend: { x: 300, y: -20
 let allData = null, visNodes = [], visEdges = [], simulation = null;
 let hoveredNode = null, selectedNode = null, transform = d3.zoomIdentity;
 let fanIn = {};
+let healthData = {}; // moduleId → { healthScore, risk, instability, blastRadius, inCycle }
+let cycleEdges = new Set(); // "source|target" pairs that are part of cycles
+let godModules = new Set(); // module IDs that are god modules
 
 // --- Load ---
 async function loadGraph() {
@@ -139,6 +156,50 @@ async function loadGraph() {
   }
   document.getElementById("stats").textContent = "Error: platform-graph.json not found";
   return null;
+}
+
+// --- Load health analysis data ---
+async function loadHealthData() {
+  try {
+    const r = await fetch("/api/analysis");
+    if (!r.ok) return;
+    const analysis = await r.json();
+    for (const m of analysis.modules) {
+      healthData[m.id] = { healthScore: m.healthScore, risk: m.risk, instability: m.instability, blastRadius: m.blastRadius, inCycle: m.inCycle };
+    }
+    // Build cycle edge set
+    for (const cycle of analysis.cycles) {
+      for (let i = 0; i < cycle.nodes.length; i++) {
+        for (let j = i + 1; j < cycle.nodes.length; j++) {
+          cycleEdges.add(cycle.nodes[i] + "|" + cycle.nodes[j]);
+          cycleEdges.add(cycle.nodes[j] + "|" + cycle.nodes[i]);
+        }
+      }
+    }
+    // Build god module set
+    for (const ap of analysis.antiPatterns) {
+      if (ap.type === "god_module" || ap.type === "hub_module") godModules.add(ap.moduleId);
+    }
+    console.log(`[viewer] Loaded health data: ${analysis.modules.length} modules`);
+  } catch(e) { console.warn("[viewer] Could not load health data:", e); }
+}
+
+const HEALTH_COLORS = { critical: "#ef4444", warning: "#f59e0b", healthy: "#22c55e" };
+
+function getNodeColor(node) {
+  const colorBy = document.getElementById("colorBy").value;
+  if (colorBy === "health") {
+    const h = healthData[node.id];
+    if (h) return HEALTH_COLORS[h.risk] || "#64748b";
+    return "#334155";
+  }
+  return COLORS[node.repo] || "#6b7280";
+}
+
+function getNodeDimColor(node) {
+  const colorBy = document.getElementById("colorBy").value;
+  if (colorBy === "health") return "#1e293b";
+  return COLORS_DIM[node.repo] || "#1e293b";
 }
 
 // --- Canvas renderer (much faster than SVG for 1400+ nodes) ---
@@ -178,10 +239,21 @@ function draw() {
         alpha = sm ? 0.5 : 0.02;
       }
       if (selectedNode && ((e.source.id || e.source) === selectedNode.id || (e.target.id || e.target) === selectedNode.id)) alpha = 0.8;
-      ctx.strokeStyle = EDGE_COLORS[e.type] || "#1e293b";
+
+      // Cycle edge highlighting
+      const srcId = e.source.id || e.source, tgtId = e.target.id || e.target;
+      const isCycleEdge = cycleEdges.has(srcId + "|" + tgtId);
+      if (isCycleEdge) {
+        ctx.strokeStyle = "#ef4444";
+        alpha = Math.max(alpha, 0.4);
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([]);
+      } else {
+        ctx.strokeStyle = EDGE_COLORS[e.type] || "#1e293b";
+        ctx.lineWidth = e.type === "contract" ? 1.5 : e.type === "http" ? 1 : 0.4;
+        if (e.type === "http") ctx.setLineDash([4, 3]); else ctx.setLineDash([]);
+      }
       ctx.globalAlpha = alpha;
-      ctx.lineWidth = e.type === "contract" ? 1.5 : e.type === "http" ? 1 : 0.4;
-      if (e.type === "http") ctx.setLineDash([4, 3]); else ctx.setLineDash([]);
       ctx.stroke();
     }
   }
@@ -192,14 +264,27 @@ function draw() {
   for (const n of visNodes) {
     if (n.x === undefined) continue;
     const fi = fanIn[n.id] || 0;
-    const r = Math.max(2.5, Math.min(10, 2.5 + fi * 0.4));
+    const isGod = godModules.has(n.id);
+    let r = Math.max(2.5, Math.min(10, 2.5 + fi * 0.4));
+    if (isGod) r = Math.max(r, 7); // God modules are larger
     const match = search ? n.id.toLowerCase().includes(search) : true;
     const isSel = selectedNode && selectedNode.id === n.id;
     const isHov = hoveredNode && hoveredNode.id === n.id;
 
+    // God module glow
+    if (isGod && match) {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 2.2, 0, Math.PI * 2);
+      const h = healthData[n.id];
+      const glowColor = h ? HEALTH_COLORS[h.risk] || "#ef4444" : "#ef4444";
+      ctx.fillStyle = glowColor;
+      ctx.globalAlpha = 0.08;
+      ctx.fill();
+    }
+
     ctx.beginPath();
     ctx.arc(n.x, n.y, isSel ? r * 1.8 : isHov ? r * 1.4 : r, 0, Math.PI * 2);
-    ctx.fillStyle = match ? (COLORS[n.repo] || "#6b7280") : (COLORS_DIM[n.repo] || "#1e293b");
+    ctx.fillStyle = match ? getNodeColor(n) : getNodeDimColor(n);
     ctx.globalAlpha = match ? 1 : 0.25;
     ctx.fill();
 
@@ -299,6 +384,22 @@ function showSidebar(node) {
   document.getElementById("sbRepo").innerHTML = `<b>Repo:</b> ${node.repo}`;
   document.getElementById("sbLayer").innerHTML = `<b>Layer:</b> ${node.layer}`;
   document.getElementById("sbFanIn").innerHTML = `<b>Fan-in:</b> ${fanIn[node.id] || 0}`;
+
+  const h = healthData[node.id];
+  if (h) {
+    const hcolor = h.risk === "critical" ? "#ef4444" : h.risk === "warning" ? "#f59e0b" : "#22c55e";
+    document.getElementById("sbHealth").innerHTML = `<b>Health:</b> <span style="color:${hcolor};font-weight:600">${h.healthScore}</span> (${h.risk})`;
+    document.getElementById("sbInstability").innerHTML = `<b>Instability:</b> ${h.instability}`;
+    document.getElementById("sbBlastRadius").innerHTML = `<b>Blast radius:</b> ${h.blastRadius}`;
+    document.getElementById("sbDashLink").style.display = "block";
+    document.getElementById("sbDashLinkA").href = `/dashboard`;
+    document.getElementById("sbDashLinkA").onclick = () => { window.location.href = `/dashboard`; };
+  } else {
+    document.getElementById("sbHealth").innerHTML = "";
+    document.getElementById("sbInstability").innerHTML = "";
+    document.getElementById("sbBlastRadius").innerHTML = "";
+    document.getElementById("sbDashLink").style.display = "none";
+  }
 
   const deps = visEdges.filter(e => (e.source.id || e.source) === node.id).map(e => e.target.id || e.target);
   const depnts = visEdges.filter(e => (e.target.id || e.target) === node.id).map(e => e.source.id || e.source);
@@ -408,8 +509,12 @@ loadGraph().then(data => {
 
   // Event listeners
   ["repoFilter", "layerFilter", "edgeFilter"].forEach(id => document.getElementById(id).addEventListener("change", applyFilters));
+  document.getElementById("colorBy").addEventListener("change", () => { /* redraw picks up new colors */ });
   document.getElementById("clusterRepos").addEventListener("change", () => buildSim());
   window.addEventListener("resize", () => { resizeCanvas(); });
+
+  // Load health data for health coloring mode
+  loadHealthData();
 });
 </script>
 </body>

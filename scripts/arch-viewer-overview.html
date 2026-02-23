@@ -71,8 +71,10 @@
 <div id="topbar">
   <h1>WidgeTDC Architecture</h1>
   <div class="view-toggle">
-    <a href="arch-viewer.html">Graph</a>
-    <a href="arch-viewer-overview.html" class="active">Overview</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview" class="active">Overview</a>
+    <a href="/changelog">Changelog</a>
   </div>
   <div id="breadcrumb"><span class="current">System</span></div>
 </div>
@@ -117,6 +119,7 @@
       <select id="colorBy">
         <option value="repo">Repository</option>
         <option value="layer">Layer type</option>
+        <option value="health">Health score</option>
       </select>
     </div>
 
@@ -214,7 +217,22 @@ let crossEdges = [];
 let searchTerm = "";
 let fanInMap = {};         // global fan-in map
 let depCountMap = {};      // dependency count per module
+let healthMap = {};        // moduleId → { healthScore, risk }
 let transform = { x: 0, y: 0, k: 1 }; // pan/zoom state
+
+const HEALTH_COLORS = { critical: "#ef4444", warning: "#f59e0b", healthy: "#22c55e" };
+
+async function loadHealthData() {
+  try {
+    const r = await fetch("/api/analysis");
+    if (!r.ok) return;
+    const analysis = await r.json();
+    for (const m of analysis.modules) {
+      healthMap[m.id] = { healthScore: m.healthScore, risk: m.risk };
+    }
+    console.log(`[overview] Loaded health data: ${analysis.modules.length} modules`);
+  } catch(e) { console.warn("[overview] Could not load health data:", e); }
+}
 
 // ============================================================
 // Canvas
@@ -381,6 +399,32 @@ function computeCrossEdges() {
 // ============================================================
 function getNodeColor(d) {
   const colorBy = document.getElementById("colorBy").value;
+
+  // Health mode
+  if (colorBy === "health") {
+    if (d.data.nodeType === "module") {
+      const h = healthMap[d.data.moduleId];
+      if (h) {
+        const c = HEALTH_COLORS[h.risk] || "#64748b";
+        return { bg: hexToRgba(c, 0.15), fg: c, text: lighten(c) };
+      }
+      return { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+    }
+    // For groups, compute average health
+    if (d.children || d.leaves) {
+      const leaves = d.leaves ? d.leaves() : [];
+      let totalHealth = 0, count = 0;
+      for (const leaf of leaves) {
+        const h = healthMap[leaf.data.moduleId];
+        if (h) { totalHealth += h.healthScore; count++; }
+      }
+      const avg = count > 0 ? totalHealth / count : 50;
+      const c = avg >= 70 ? HEALTH_COLORS.healthy : avg >= 40 ? HEALTH_COLORS.warning : HEALTH_COLORS.critical;
+      const intensity = d.data.nodeType === "repo" ? 0.2 : 0.15;
+      return { bg: hexToRgba(c, intensity), fg: c, text: lighten(c) };
+    }
+    return { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+  }
 
   if (colorBy === "layer" && d.data.nodeType === "layer") {
     const c = LAYER_COLORS[d.data.layer] || "#64748b";
@@ -772,7 +816,9 @@ function showTooltip(cell, mx, my) {
   if (cell.data.nodeType === "module") {
     const fi = fanInMap[cell.data.moduleId] || 0;
     const dc = depCountMap[cell.data.moduleId] || 0;
-    subEl.textContent = `${cell.data.moduleId} · fan-in: ${fi}, deps: ${dc}`;
+    const h = healthMap[cell.data.moduleId];
+    const healthStr = h ? ` · health: ${h.healthScore} (${h.risk})` : "";
+    subEl.textContent = `${cell.data.moduleId} · fan-in: ${fi}, deps: ${dc}${healthStr}`;
   } else if (cell.data.nodeType === "layer") {
     subEl.textContent = `${cell.data.repo} · ${leafCount} modules`;
   } else if (cell.data.nodeType === "repo") {
@@ -912,10 +958,14 @@ function populateLayerFilter() {
 // ============================================================
 // Init
 // ============================================================
-loadGraph().then(data => {
+loadGraph().then(async data => {
   if (!data) { document.getElementById("stats").textContent = "Error loading data"; return; }
   allData = data;
   computeMetrics(data);
+
+  // Load health data before building hierarchy
+  await loadHealthData();
+
   hierarchy = buildHierarchy(data);
   currentNode = hierarchy;
 

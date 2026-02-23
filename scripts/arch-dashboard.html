@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WidgeTDC Architecture Intelligence</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-left: auto; background: #141824; border-radius: 6px; padding: 2px; }
+  .tab-btn { padding: 5px 14px; font-size: 11px; border-radius: 4px; border: none; background: transparent; color: #64748b; cursor: pointer; font-weight: 500; transition: all 0.15s; font-family: inherit; }
+  .tab-btn.active { background: #6366f1; color: #fff; }
+  .tab-btn:hover:not(.active) { color: #94a3b8; background: #1a1f2e; }
+
+  /* Main content */
+  #main { flex: 1; overflow-y: auto; padding: 20px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .card { background: #0f1219; border: 1px solid #1a1f2e; border-radius: 10px; padding: 20px; }
+  .card-sm { padding: 14px; }
+  .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .card-value.sm { font-size: 22px; }
+  .card-sub { font-size: 11px; color: #475569; margin-top: 4px; }
+
+  /* Health gauge */
+  .gauge-wrap { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+  .gauge-ring { position: relative; width: 140px; height: 140px; }
+  .gauge-ring canvas { width: 100%; height: 100%; }
+  .gauge-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .gauge-label .val { font-size: 36px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .gauge-label .lbl { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Risk badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-healthy { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .badge-info { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+  /* Repo cards */
+  .repo-card { display: flex; flex-direction: column; gap: 8px; }
+  .repo-header { display: flex; align-items: center; gap: 8px; }
+  .repo-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .repo-name { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+  .repo-bar { height: 6px; border-radius: 3px; background: #141824; overflow: hidden; }
+  .repo-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .repo-stats { display: flex; gap: 12px; font-size: 10px; color: #64748b; }
+  .repo-stats span { display: flex; align-items: center; gap: 3px; }
+  .repo-stats .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Tables */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; font-weight: 600; padding: 8px 10px; border-bottom: 1px solid #1a1f2e; }
+  .tbl td { font-size: 12px; padding: 8px 10px; border-bottom: 1px solid #0f1219; color: #94a3b8; }
+  .tbl tr:hover td { background: #141824; }
+  .tbl .module-link { color: #818cf8; cursor: pointer; }
+  .tbl .module-link:hover { text-decoration: underline; }
+  .tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Anti-pattern section */
+  .ap-group { margin-bottom: 16px; }
+  .ap-group-header { display: flex; align-items: center; gap: 8px; padding: 10px 0; cursor: pointer; user-select: none; }
+  .ap-group-header:hover { opacity: 0.85; }
+  .ap-group-title { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .ap-group-count { font-size: 11px; color: #475569; }
+  .ap-group-chevron { font-size: 12px; color: #475569; transition: transform 0.2s; }
+  .ap-group-chevron.open { transform: rotate(90deg); }
+  .ap-list { display: none; }
+  .ap-list.open { display: block; }
+  .ap-item { padding: 10px 14px; margin: 4px 0; background: #141824; border-radius: 6px; border-left: 3px solid transparent; }
+  .ap-item.critical { border-left-color: #ef4444; }
+  .ap-item.warning { border-left-color: #f59e0b; }
+  .ap-item.info { border-left-color: #818cf8; }
+  .ap-module { font-size: 12px; color: #818cf8; cursor: pointer; font-weight: 500; }
+  .ap-module:hover { text-decoration: underline; }
+  .ap-desc { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .ap-rec { font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-bar select, .filter-bar input { padding: 6px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; font-family: inherit; }
+  .filter-bar select:focus, .filter-bar input:focus { border-color: #6366f1; }
+  .filter-bar label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; }
+
+  /* Module detail */
+  .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .detail-title { font-size: 20px; font-weight: 700; color: #f1f5f9; }
+  .detail-meta { font-size: 12px; color: #64748b; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .metric-card { background: #141824; border-radius: 6px; padding: 12px; }
+  .metric-val { font-size: 20px; font-weight: 700; color: #f1f5f9; }
+  .metric-lbl { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Impact explorer */
+  .impact-search { display: flex; gap: 10px; margin-bottom: 16px; }
+  .impact-search input { flex: 1; padding: 10px 14px; border: 1px solid #232940; border-radius: 6px; background: #141824; color: #e2e8f0; font-size: 13px; outline: none; font-family: inherit; }
+  .impact-search input:focus { border-color: #6366f1; }
+  .impact-search button { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .impact-search button:hover { background: #5558e6; }
+
+  /* Scatter plot */
+  .scatter-wrap { position: relative; width: 100%; height: 280px; }
+  .scatter-wrap canvas { width: 100%; height: 100%; }
+
+  /* Mini graph */
+  .mini-graph { position: relative; width: 100%; height: 300px; background: #0b0e14; border-radius: 8px; border: 1px solid #1a1f2e; }
+  .mini-graph canvas { width: 100%; height: 100%; }
+
+  /* Loading skeleton */
+  .skeleton { background: linear-gradient(90deg, #141824 25%, #1a1f2e 50%, #141824 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Responsive */
+  @media (max-width: 1200px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0e14; }
+  ::-webkit-scrollbar-thumb { background: #1a1f2e; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #232940; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Architecture Intelligence</h1>
+  <div class="view-toggle">
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/changelog">Changelog</a>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview" aria-selected="true" role="tab">Overview</button>
+    <button class="tab-btn" data-tab="antipatterns" aria-selected="false" role="tab">Anti-Patterns</button>
+    <button class="tab-btn" data-tab="detail" aria-selected="false" role="tab">Module Detail</button>
+    <button class="tab-btn" data-tab="impact" aria-selected="false" role="tab">Impact Explorer</button>
+  </div>
+</div>
+
+<div id="main" role="tabpanel">
+  <!-- TAB 1: Overview -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="grid grid-4" style="margin-bottom:16px" id="summary-cards">
+      <div class="card card-sm skeleton" style="height:100px"></div>
+      <div class="card card-sm skeleton" style="height:100px"></div>
+      <div class="card card-sm skeleton" style="height:100px"></div>
+      <div class="card card-sm skeleton" style="height:100px"></div>
+    </div>
+    <div class="grid grid-2" style="margin-bottom:16px">
+      <div class="card" id="health-gauge-card">
+        <div class="card-title">System Health Score</div>
+        <div class="gauge-wrap">
+          <div class="gauge-ring"><canvas id="gauge-canvas"></canvas><div class="gauge-label"><div class="val" id="gauge-val">--</div><div class="lbl">Health</div></div></div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:20px;margin-top:12px" id="risk-counts"></div>
+      </div>
+      <div class="card" id="scatter-card">
+        <div class="card-title">Instability vs Fan-in</div>
+        <div class="scatter-wrap"><canvas id="scatter-canvas"></canvas></div>
+      </div>
+    </div>
+    <div class="card-title" style="padding:0 0 8px">Repository Health</div>
+    <div class="grid grid-4" style="margin-bottom:16px" id="repo-cards"></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Top Issues</div>
+      <table class="tbl" id="top-issues-table">
+        <thead><tr><th>Module</th><th>Type</th><th>Severity</th><th>Description</th></tr></thead>
+        <tbody id="top-issues-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: Anti-Patterns -->
+  <div id="tab-antipatterns" class="tab-content">
+    <div class="filter-bar">
+      <div><label>Type</label><br><select id="ap-type-filter"><option value="all">All types</option></select></div>
+      <div><label>Severity</label><br><select id="ap-sev-filter"><option value="all">All</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="info">Info</option></select></div>
+      <div><label>Repo</label><br><select id="ap-repo-filter"><option value="all">All repos</option></select></div>
+      <div><label>Search</label><br><input id="ap-search" type="text" placeholder="Search modules..."></div>
+    </div>
+    <div id="ap-content"></div>
+  </div>
+
+  <!-- TAB 3: Module Detail -->
+  <div id="tab-detail" class="tab-content">
+    <div class="impact-search" style="margin-bottom:16px">
+      <input id="detail-search" type="text" placeholder="Search for a module (e.g. backend.utils.logger)..." list="module-list">
+      <datalist id="module-list"></datalist>
+    </div>
+    <div id="detail-content">
+      <div class="card" style="text-align:center;padding:40px;color:#475569">Click a module in any table or search above to view details</div>
+    </div>
+  </div>
+
+  <!-- TAB 4: Impact Explorer -->
+  <div id="tab-impact" class="tab-content">
+    <div class="impact-search">
+      <input id="impact-module" type="text" placeholder="Enter module ID (e.g. backend.utils.logger)..." list="module-list-impact">
+      <datalist id="module-list-impact"></datalist>
+      <button id="impact-btn" aria-label="Analyze impact">Analyze Impact</button>
+    </div>
+    <div id="impact-content">
+      <div class="card" style="text-align:center;padding:40px;color:#475569">Enter a module ID and click Analyze to see its blast radius</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Config
+// ============================================================
+const REPO_COLORS = { backend: "#3b82f6", frontend: "#22c55e", rlm: "#f97316", contracts: "#a855f7" };
+const HEALTH_COLORS = { critical: "#ef4444", warning: "#f59e0b", healthy: "#22c55e" };
+const AP_LABELS = {
+  god_module: "God Module", circular_dependency: "Circular Dependency", layer_violation: "Layer Violation",
+  shotgun_surgery: "Shotgun Surgery", feature_envy: "Feature Envy", orphan_module: "Orphan Module", hub_module: "Hub Module"
+};
+
+let analysisData = null;
+let moduleIndex = {};
+
+// ============================================================
+// Data loading
+// ============================================================
+async function loadAnalysis() {
+  try {
+    const r = await fetch("/api/analysis");
+    if (!r.ok) throw new Error("Failed to load analysis");
+    analysisData = await r.json();
+    // Build index
+    moduleIndex = {};
+    for (const m of analysisData.modules) moduleIndex[m.id] = m;
+    renderOverview();
+    populateFilters();
+    populateModuleLists();
+  } catch(e) {
+    document.getElementById("summary-cards").innerHTML = `<div class="card" style="grid-column:1/-1;color:#ef4444;text-align:center;padding:20px">Failed to load analysis data: ${e.message}</div>`;
+  }
+}
+
+// ============================================================
+// Tab switching
+// ============================================================
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+// Keyboard nav for tabs
+document.querySelector(".tabs").addEventListener("keydown", e => {
+  const btns = [...document.querySelectorAll(".tab-btn")];
+  const idx = btns.indexOf(document.activeElement);
+  if (e.key === "ArrowRight" && idx < btns.length - 1) { btns[idx + 1].focus(); btns[idx + 1].click(); }
+  if (e.key === "ArrowLeft" && idx > 0) { btns[idx - 1].focus(); btns[idx - 1].click(); }
+});
+
+function switchToTab(tab) {
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).click();
+}
+
+function showModuleDetail(moduleId) {
+  switchToTab("detail");
+  document.getElementById("detail-search").value = moduleId;
+  renderModuleDetail(moduleId);
+}
+
+// ============================================================
+// Overview tab
+// ============================================================
+function renderOverview() {
+  const s = analysisData.summary;
+
+  // Summary cards
+  document.getElementById("summary-cards").innerHTML = `
+    <div class="card card-sm"><div class="card-title">Total Modules</div><div class="card-value">${s.totalModules}</div><div class="card-sub">${s.totalEdges} edges</div></div>
+    <div class="card card-sm"><div class="card-title">Anti-Patterns</div><div class="card-value" style="color:${s.antiPatternCount > 50 ? '#ef4444' : '#f59e0b'}">${s.antiPatternCount}</div><div class="card-sub">${analysisData.cycles.length} cycles detected</div></div>
+    <div class="card card-sm"><div class="card-title">Critical Modules</div><div class="card-value" style="color:#ef4444">${s.criticalCount}</div><div class="card-sub">${s.warningCount} warnings</div></div>
+    <div class="card card-sm"><div class="card-title">Orphan Modules</div><div class="card-value" style="color:#818cf8">${s.orphanCount}</div><div class="card-sub">Potential dead code</div></div>
+  `;
+
+  // Health gauge
+  drawGauge(s.avgHealth);
+  document.getElementById("risk-counts").innerHTML = `
+    <span style="color:#ef4444;font-size:12px"><b>${s.criticalCount}</b> critical</span>
+    <span style="color:#f59e0b;font-size:12px"><b>${s.warningCount}</b> warning</span>
+    <span style="color:#22c55e;font-size:12px"><b>${s.healthyCount}</b> healthy</span>
+  `;
+
+  // Scatter plot
+  drawScatter();
+
+  // Repo cards
+  renderRepoCards();
+
+  // Top issues
+  renderTopIssues();
+}
+
+function drawGauge(score) {
+  const canvas = document.getElementById("gauge-canvas");
+  const size = 140;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr; canvas.height = size * dpr;
+  canvas.style.width = size + "px"; canvas.style.height = size + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const cx = size / 2, cy = size / 2, r = 56, lw = 10;
+  const startAngle = 0.75 * Math.PI, endAngle = 2.25 * Math.PI;
+  const scoreAngle = startAngle + (endAngle - startAngle) * (score / 100);
+  const color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.strokeStyle = "#1a1f2e";
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Score arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, scoreAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  document.getElementById("gauge-val").textContent = score;
+  document.getElementById("gauge-val").style.color = color;
+}
+
+function drawScatter() {
+  const canvas = document.getElementById("scatter-canvas");
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 20, bottom: 30, left: 40 };
+  const pw = W - pad.left - pad.right, ph = H - pad.top - pad.bottom;
+
+  // Axes
+  ctx.strokeStyle = "#1a1f2e";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ph); ctx.lineTo(pad.left + pw, pad.top + ph);
+  ctx.stroke();
+
+  ctx.font = "9px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#475569";
+  ctx.textAlign = "center";
+  ctx.fillText("Instability →", pad.left + pw / 2, H - 4);
+  ctx.save(); ctx.translate(10, pad.top + ph / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Fan-in →", 0, 0); ctx.restore();
+
+  // Tick labels
+  for (let i = 0; i <= 10; i += 2) {
+    const x = pad.left + (i / 10) * pw;
+    ctx.fillText((i / 10).toFixed(1), x, pad.top + ph + 14);
+  }
+  const maxFanIn = Math.max(10, ...analysisData.modules.map(m => m.fanIn));
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + ph - (i / 4) * ph;
+    const val = Math.round((i / 4) * maxFanIn);
+    ctx.textAlign = "right";
+    ctx.fillText(val, pad.left - 6, y + 3);
+  }
+
+  // Plot modules
+  for (const m of analysisData.modules) {
+    if (m.fanIn === 0 && m.fanOut === 0) continue; // skip orphans
+    const x = pad.left + m.instability * pw;
+    const y = pad.top + ph - (m.fanIn / maxFanIn) * ph;
+    const radius = Math.max(2, Math.min(6, 2 + m.blastRadius * 0.02));
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = REPO_COLORS[m.repo] || "#64748b";
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function renderRepoCards() {
+  const container = document.getElementById("repo-cards");
+  container.innerHTML = analysisData.repoMetrics.map(r => {
+    const color = REPO_COLORS[r.repo] || "#64748b";
+    const pct = r.avgHealth;
+    return `<div class="card card-sm repo-card">
+      <div class="repo-header"><div class="repo-dot" style="background:${color}"></div><div class="repo-name">${r.repo}</div><span class="badge badge-${pct >= 70 ? 'healthy' : pct >= 40 ? 'warning' : 'critical'}">${pct}</span></div>
+      <div class="repo-bar"><div class="repo-bar-fill" style="width:${pct}%;background:${pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444'}"></div></div>
+      <div class="repo-stats">
+        <span><div class="dot" style="background:#ef4444"></div>${r.criticalCount} critical</span>
+        <span><div class="dot" style="background:#f59e0b"></div>${r.warningCount} warn</span>
+        <span><div class="dot" style="background:#22c55e"></div>${r.healthyCount} ok</span>
+      </div>
+      <div class="card-sub">${r.moduleCount} modules · ${r.antiPatternCount} anti-patterns</div>
+    </div>`;
+  }).join("");
+}
+
+function renderTopIssues() {
+  const tbody = document.getElementById("top-issues-body");
+  const sevOrder = { critical: 0, warning: 1, info: 2 };
+  const issues = analysisData.antiPatterns
+    .filter(ap => ap.severity !== "info")
+    .sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity])
+    .slice(0, 20);
+
+  tbody.innerHTML = issues.map(ap => `<tr>
+    <td><span class="module-link" onclick="showModuleDetail('${ap.moduleId}')">${ap.moduleId}</span></td>
+    <td>${AP_LABELS[ap.type] || ap.type}</td>
+    <td><span class="badge badge-${ap.severity}">${ap.severity}</span></td>
+    <td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(ap.description)}">${escHtml(ap.description)}</td>
+  </tr>`).join("");
+}
+
+// ============================================================
+// Anti-pattern tab
+// ============================================================
+function populateFilters() {
+  const typeSelect = document.getElementById("ap-type-filter");
+  const types = [...new Set(analysisData.antiPatterns.map(ap => ap.type))].sort();
+  types.forEach(t => { const o = document.createElement("option"); o.value = t; o.textContent = AP_LABELS[t] || t; typeSelect.appendChild(o); });
+
+  const repoSelect = document.getElementById("ap-repo-filter");
+  analysisData.repoMetrics.forEach(r => { const o = document.createElement("option"); o.value = r.repo; o.textContent = r.repo; repoSelect.appendChild(o); });
+}
+
+function renderAntiPatterns() {
+  const typeFilter = document.getElementById("ap-type-filter").value;
+  const sevFilter = document.getElementById("ap-sev-filter").value;
+  const repoFilter = document.getElementById("ap-repo-filter").value;
+  const search = document.getElementById("ap-search").value.toLowerCase();
+
+  let patterns = analysisData.antiPatterns;
+  if (typeFilter !== "all") patterns = patterns.filter(p => p.type === typeFilter);
+  if (sevFilter !== "all") patterns = patterns.filter(p => p.severity === sevFilter);
+  if (repoFilter !== "all") {
+    const repoModules = new Set(analysisData.modules.filter(m => m.repo === repoFilter).map(m => m.id));
+    patterns = patterns.filter(p => repoModules.has(p.moduleId));
+  }
+  if (search) patterns = patterns.filter(p => p.moduleId.toLowerCase().includes(search) || p.description.toLowerCase().includes(search));
+
+  // Group by type
+  const grouped = {};
+  for (const p of patterns) {
+    if (!grouped[p.type]) grouped[p.type] = [];
+    grouped[p.type].push(p);
+  }
+
+  const container = document.getElementById("ap-content");
+  if (patterns.length === 0) {
+    container.innerHTML = '<div class="card" style="text-align:center;padding:20px;color:#475569">No anti-patterns match your filters</div>';
+    return;
+  }
+
+  container.innerHTML = Object.entries(grouped).map(([type, items]) => {
+    const sevCounts = {};
+    items.forEach(i => sevCounts[i.severity] = (sevCounts[i.severity] || 0) + 1);
+    const sevBadges = Object.entries(sevCounts).map(([s, c]) => `<span class="badge badge-${s}">${c} ${s}</span>`).join(" ");
+
+    return `<div class="ap-group">
+      <div class="ap-group-header" onclick="this.querySelector('.ap-group-chevron').classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        <span class="ap-group-chevron">&#9654;</span>
+        <span class="ap-group-title">${AP_LABELS[type] || type}</span>
+        <span class="ap-group-count">(${items.length})</span>
+        ${sevBadges}
+      </div>
+      <div class="ap-list">
+        ${items.slice(0, 50).map(ap => `<div class="ap-item ${ap.severity}">
+          <span class="ap-module" onclick="showModuleDetail('${ap.moduleId}')">${ap.moduleId}</span>
+          <span class="badge badge-${ap.severity}" style="margin-left:8px">${ap.severity}</span>
+          <div class="ap-desc">${escHtml(ap.description)}</div>
+          <div class="ap-rec">${escHtml(ap.recommendation)}</div>
+        </div>`).join("")}
+        ${items.length > 50 ? `<div style="padding:10px;color:#475569;font-size:11px">...and ${items.length - 50} more</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+["ap-type-filter", "ap-sev-filter", "ap-repo-filter"].forEach(id => {
+  document.getElementById(id).addEventListener("change", renderAntiPatterns);
+});
+document.getElementById("ap-search").addEventListener("input", renderAntiPatterns);
+
+// ============================================================
+// Module detail tab
+// ============================================================
+function populateModuleLists() {
+  const ids = analysisData.modules.map(m => m.id).sort();
+  ["module-list", "module-list-impact"].forEach(listId => {
+    const dl = document.getElementById(listId);
+    dl.innerHTML = ids.map(id => `<option value="${id}">`).join("");
+  });
+}
+
+document.getElementById("detail-search").addEventListener("change", e => {
+  if (moduleIndex[e.target.value]) renderModuleDetail(e.target.value);
+});
+document.getElementById("detail-search").addEventListener("keydown", e => {
+  if (e.key === "Enter" && moduleIndex[e.target.value]) renderModuleDetail(e.target.value);
+});
+
+function renderModuleDetail(moduleId) {
+  const m = moduleIndex[moduleId];
+  if (!m) {
+    document.getElementById("detail-content").innerHTML = `<div class="card" style="color:#ef4444;padding:20px">Module "${escHtml(moduleId)}" not found</div>`;
+    return;
+  }
+
+  const aps = analysisData.antiPatterns.filter(ap => ap.moduleId === moduleId);
+  const healthColor = m.risk === "critical" ? "#ef4444" : m.risk === "warning" ? "#f59e0b" : "#22c55e";
+
+  document.getElementById("detail-content").innerHTML = `
+    <div class="detail-header">
+      <div class="detail-title">${m.label}</div>
+      <span class="badge badge-${m.risk}">${m.risk}</span>
+      <div class="detail-meta">${m.id} · ${m.repo} / ${m.layer}</div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-val" style="color:${healthColor}">${m.healthScore}</div><div class="metric-lbl">Health Score</div></div>
+      <div class="metric-card"><div class="metric-val">${m.fanIn}</div><div class="metric-lbl">Fan-in (Ca)</div></div>
+      <div class="metric-card"><div class="metric-val">${m.fanOut}</div><div class="metric-lbl">Fan-out (Ce)</div></div>
+      <div class="metric-card"><div class="metric-val">${m.instability}</div><div class="metric-lbl">Instability</div></div>
+      <div class="metric-card"><div class="metric-val">${m.blastRadius}</div><div class="metric-lbl">Blast Radius</div></div>
+      <div class="metric-card"><div class="metric-val">${m.inCycle ? "Yes" : "No"}</div><div class="metric-lbl">In Cycle</div></div>
+    </div>
+
+    ${aps.length > 0 ? `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Anti-Patterns (${aps.length})</div>
+      ${aps.map(ap => `<div class="ap-item ${ap.severity}" style="margin:6px 0">
+        <span class="badge badge-${ap.severity}">${AP_LABELS[ap.type] || ap.type}</span>
+        <div class="ap-desc">${escHtml(ap.description)}</div>
+        <div class="ap-rec">${escHtml(ap.recommendation)}</div>
+      </div>`).join("")}
+    </div>` : ""}
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Neighborhood Graph</div>
+        <div class="mini-graph"><canvas id="mini-graph-canvas"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Impact Analysis</div>
+        <div id="detail-impact">Loading impact...</div>
+      </div>
+    </div>
+  `;
+
+  // Draw mini neighborhood graph
+  drawMiniGraph(moduleId);
+
+  // Load impact
+  fetch("/api/impact/" + encodeURIComponent(moduleId))
+    .then(r => r.json())
+    .then(impact => renderDetailImpact(impact))
+    .catch(() => { document.getElementById("detail-impact").innerHTML = '<div style="color:#ef4444">Failed to load impact</div>'; });
+}
+
+function renderDetailImpact(impact) {
+  const el = document.getElementById("detail-impact");
+  if (!el) return;
+
+  const crossRepoHtml = Object.entries(impact.crossRepoImpact)
+    .sort((a, b) => b[1] - a[1])
+    .map(([repo, count]) => `<span style="color:${REPO_COLORS[repo] || '#64748b'}">${repo}: ${count}</span>`)
+    .join(" · ");
+
+  el.innerHTML = `
+    <div class="metric-grid" style="margin-bottom:12px">
+      <div class="metric-card"><div class="metric-val">${impact.directDependents.length}</div><div class="metric-lbl">Direct</div></div>
+      <div class="metric-card"><div class="metric-val">${impact.transitiveDependents.length}</div><div class="metric-lbl">Transitive</div></div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:8px"><b>Cross-repo:</b> ${crossRepoHtml || "none"}</div>
+    ${impact.criticalPath.length > 1 ? `<div style="font-size:11px;color:#94a3b8;margin-bottom:8px"><b>Critical path (${impact.criticalPath.length}):</b><br>${impact.criticalPath.map(id => `<span class="module-link" onclick="showModuleDetail('${id}')" style="font-size:10px">${id}</span>`).join(" → ")}</div>` : ""}
+    <div style="font-size:11px;color:#475569;max-height:200px;overflow-y:auto">
+      ${impact.directDependents.slice(0, 30).map(d => `<div style="padding:2px 0"><span class="module-link" onclick="showModuleDetail('${d}')">${d}</span></div>`).join("")}
+      ${impact.directDependents.length > 30 ? `<div style="color:#334155;padding:4px 0">...and ${impact.directDependents.length - 30} more</div>` : ""}
+    </div>
+  `;
+}
+
+function drawMiniGraph(centerModuleId) {
+  const canvas = document.getElementById("mini-graph-canvas");
+  if (!canvas) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  // Get 1-hop neighborhood
+  const neighbors = new Set();
+  neighbors.add(centerModuleId);
+  const edges = [];
+  for (const ap of analysisData.antiPatterns) { /* not needed */ }
+
+  // Build from raw analysis
+  const centerM = moduleIndex[centerModuleId];
+  if (!centerM) return;
+
+  // We need edge data - fetch from graph
+  fetch("/platform-graph.json")
+    .then(r => r.json())
+    .then(graph => {
+      const neighborEdges = graph.edges.filter(e => e.source === centerModuleId || e.target === centerModuleId);
+      const neighborIds = new Set([centerModuleId]);
+      neighborEdges.forEach(e => { neighborIds.add(e.source); neighborIds.add(e.target); });
+
+      // Limit neighbors for visual clarity
+      const maxNeighbors = 30;
+      const allNeighbors = [...neighborIds];
+      const displayIds = allNeighbors.length > maxNeighbors
+        ? [centerModuleId, ...allNeighbors.filter(id => id !== centerModuleId).slice(0, maxNeighbors - 1)]
+        : allNeighbors;
+      const displaySet = new Set(displayIds);
+
+      // Layout: center module in middle, neighbors in circle
+      const nodes = displayIds.map((id, i) => {
+        if (id === centerModuleId) return { id, x: W / 2, y: H / 2 };
+        const angle = (2 * Math.PI * (i - 1)) / (displayIds.length - 1);
+        const r = Math.min(W, H) * 0.35;
+        return { id, x: W / 2 + r * Math.cos(angle), y: H / 2 + r * Math.sin(angle) };
+      });
+      const nodePos = {};
+      nodes.forEach(n => nodePos[n.id] = n);
+
+      // Draw edges
+      const displayEdges = neighborEdges.filter(e => displaySet.has(e.source) && displaySet.has(e.target));
+      ctx.lineWidth = 0.5;
+      for (const e of displayEdges) {
+        const s = nodePos[e.source], t = nodePos[e.target];
+        if (!s || !t) continue;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y);
+        ctx.strokeStyle = e.source === centerModuleId ? "#6366f1" : e.target === centerModuleId ? "#818cf8" : "#1a1f2e";
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // Draw nodes
+      for (const n of nodes) {
+        const m = moduleIndex[n.id];
+        const isCenter = n.id === centerModuleId;
+        const radius = isCenter ? 8 : 4;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = m ? (REPO_COLORS[m.repo] || "#64748b") : "#475569";
+        ctx.fill();
+        if (isCenter) { ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 2; ctx.stroke(); }
+
+        // Labels for center + high fan-in
+        if (isCenter || (m && m.fanIn > 10)) {
+          ctx.font = `${isCenter ? "11" : "9"}px Inter, system-ui, sans-serif`;
+          ctx.fillStyle = isCenter ? "#f1f5f9" : "#64748b";
+          ctx.textAlign = "center";
+          ctx.fillText(m ? m.label : n.id.split(".").pop(), n.x, n.y + radius + 12);
+        }
+      }
+
+      // Count info
+      if (allNeighbors.length > maxNeighbors) {
+        ctx.font = "10px Inter, system-ui, sans-serif";
+        ctx.fillStyle = "#475569";
+        ctx.textAlign = "left";
+        ctx.fillText(`Showing ${displayIds.length} of ${allNeighbors.length} connected modules`, 8, H - 8);
+      }
+    });
+}
+
+// ============================================================
+// Impact explorer tab
+// ============================================================
+document.getElementById("impact-btn").addEventListener("click", () => {
+  const moduleId = document.getElementById("impact-module").value.trim();
+  if (!moduleId) return;
+  runImpactAnalysis(moduleId);
+});
+document.getElementById("impact-module").addEventListener("keydown", e => {
+  if (e.key === "Enter") { document.getElementById("impact-btn").click(); }
+});
+
+async function runImpactAnalysis(moduleId) {
+  const container = document.getElementById("impact-content");
+  container.innerHTML = '<div class="card skeleton" style="height:200px"></div>';
+
+  try {
+    const r = await fetch("/api/impact/" + encodeURIComponent(moduleId));
+    const impact = await r.json();
+
+    if (impact.directDependents.length === 0 && impact.transitiveDependents.length === 0) {
+      container.innerHTML = `<div class="card" style="padding:20px;color:#475569">Module "${escHtml(moduleId)}" has no dependents (blast radius: 0)</div>`;
+      return;
+    }
+
+    const crossRepoHtml = Object.entries(impact.crossRepoImpact)
+      .sort((a, b) => b[1] - a[1])
+      .map(([repo, count]) => `<div style="display:flex;align-items:center;gap:6px;padding:4px 0"><div style="width:8px;height:8px;border-radius:50%;background:${REPO_COLORS[repo] || '#64748b'}"></div><span style="color:#e2e8f0">${repo}</span><span style="color:#475569;margin-left:auto">${count} modules</span></div>`)
+      .join("");
+
+    container.innerHTML = `
+      <div class="grid grid-3" style="margin-bottom:16px">
+        <div class="card card-sm"><div class="card-title">Direct Dependents</div><div class="card-value sm">${impact.directDependents.length}</div></div>
+        <div class="card card-sm"><div class="card-title">Transitive Dependents</div><div class="card-value sm">${impact.transitiveDependents.length}</div></div>
+        <div class="card card-sm"><div class="card-title">Blast Radius</div><div class="card-value sm" style="color:${impact.blastRadius > 50 ? '#ef4444' : impact.blastRadius > 20 ? '#f59e0b' : '#22c55e'}">${impact.blastRadius}</div></div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-title">Cross-Repo Impact</div>
+          ${crossRepoHtml || '<div style="color:#475569;font-size:12px">No cross-repo impact</div>'}
+        </div>
+        <div class="card">
+          <div class="card-title">Critical Path (${impact.criticalPath.length} steps)</div>
+          <div style="font-size:11px;max-height:200px;overflow-y:auto">
+            ${impact.criticalPath.map((id, i) => `<div style="padding:3px 0;display:flex;align-items:center;gap:4px">
+              <span style="color:#475569;font-size:9px;min-width:16px">${i + 1}.</span>
+              <span class="module-link" onclick="showModuleDetail('${id}')">${id}</span>
+            </div>`).join("")}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Blast Radius Visualization</div>
+        <div style="position:relative;height:300px"><canvas id="blast-canvas"></canvas></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">All Dependents (${impact.transitiveDependents.length})</div>
+        <table class="tbl">
+          <thead><tr><th>Module</th><th>Repo</th><th class="num">Health</th></tr></thead>
+          <tbody>
+            ${impact.transitiveDependents.slice(0, 50).map(id => {
+              const m = moduleIndex[id];
+              return `<tr>
+                <td><span class="module-link" onclick="showModuleDetail('${id}')">${id}</span></td>
+                <td>${m ? m.repo : "?"}</td>
+                <td class="num">${m ? `<span style="color:${HEALTH_COLORS[m.risk]}">${m.healthScore}</span>` : "?"}</td>
+              </tr>`;
+            }).join("")}
+            ${impact.transitiveDependents.length > 50 ? `<tr><td colspan="3" style="color:#475569">...and ${impact.transitiveDependents.length - 50} more</td></tr>` : ""}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    drawBlastRadius(impact);
+  } catch(e) {
+    container.innerHTML = `<div class="card" style="color:#ef4444;padding:20px">Failed: ${e.message}</div>`;
+  }
+}
+
+function drawBlastRadius(impact) {
+  const canvas = document.getElementById("blast-canvas");
+  if (!canvas) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width, H = rect.height;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const cx = W / 2, cy = H / 2;
+  const maxR = Math.min(W, H) * 0.42;
+
+  // Draw concentric rings
+  const rings = 4;
+  for (let i = rings; i >= 1; i--) {
+    const r = (i / rings) * maxR;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(99,102,241,${0.03 * i})`;
+    ctx.fill();
+    ctx.strokeStyle = "#1a1f2e";
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
+
+  // Group dependents by repo
+  const byRepo = {};
+  for (const id of impact.transitiveDependents) {
+    const m = moduleIndex[id];
+    const repo = m ? m.repo : "unknown";
+    if (!byRepo[repo]) byRepo[repo] = [];
+    byRepo[repo].push(id);
+  }
+
+  // Place dots in rings based on repo
+  const repos = Object.keys(byRepo).sort();
+  const repoAngleStart = {};
+  const sliceAngle = (2 * Math.PI) / Math.max(1, repos.length);
+  repos.forEach((repo, i) => repoAngleStart[repo] = i * sliceAngle);
+
+  for (const [repo, ids] of Object.entries(byRepo)) {
+    const startAngle = repoAngleStart[repo];
+    const color = REPO_COLORS[repo] || "#64748b";
+    const count = ids.length;
+    const maxDots = Math.min(count, 60);
+
+    for (let i = 0; i < maxDots; i++) {
+      const angle = startAngle + (i / maxDots) * sliceAngle * 0.8 + sliceAngle * 0.1;
+      const dist = 0.2 + Math.random() * 0.75;
+      const r = dist * maxR;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.5;
+      ctx.fill();
+    }
+
+    // Repo label
+    const labelAngle = repoAngleStart[repo] + sliceAngle * 0.45;
+    const labelR = maxR + 16;
+    ctx.globalAlpha = 1;
+    ctx.font = "10px Inter, system-ui, sans-serif";
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.fillText(`${repo} (${count})`, cx + labelR * Math.cos(labelAngle), cy + labelR * Math.sin(labelAngle));
+  }
+
+  // Center module
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#6366f1";
+  ctx.fill();
+  ctx.strokeStyle = "#f1f5f9";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.font = "bold 10px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#f1f5f9";
+  ctx.textAlign = "center";
+  const label = impact.moduleId.split(".").pop();
+  ctx.fillText(label, cx, cy + 22);
+}
+
+// ============================================================
+// Utility
+// ============================================================
+function escHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadAnalysis().then(() => {
+  // Auto-render anti-patterns when switching tabs
+  document.querySelector('.tab-btn[data-tab="antipatterns"]').addEventListener("click", renderAntiPatterns);
+});
+
+// Resize scatter on window resize
+window.addEventListener("resize", () => { if (analysisData) drawScatter(); });
+</script>
+</body>
+</html>

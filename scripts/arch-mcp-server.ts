@@ -3,7 +3,8 @@
  *
  * Exposes the WidgeTDC platform architecture graph via MCP tools.
  * Reads platform-graph.json and provides search, stats, dependency
- * queries, and cross-repo edge analysis.
+ * queries, cross-repo edge analysis, health scoring, anti-pattern
+ * detection, impact analysis, and an intelligence dashboard.
  *
  * Deployed on Railway. Supports both:
  *   - Streamable HTTP transport (2025-11-25) on /mcp
@@ -30,6 +31,105 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 import cors from "cors";
 
+import {
+  analyzeGraph,
+  computeImpact,
+  validateProposedEdge,
+  generateRecommendations,
+  type PlatformGraph,
+  type GraphNode,
+  type GraphEdge,
+  type AnalysisResult,
+} from "./arch-analysis.js";
+
+// --- GitHub Changelog ---
+interface ChangelogCommit {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: string;
+  date: string;
+  repo: string;
+  repoLabel: string;
+  url: string;
+}
+
+const GITHUB_REPOS = [
+  { owner: "Clauskraft", repo: "WidgeTDC", label: "backend" },
+  { owner: "Clauskraft", repo: "widgetdc-consulting-frontend", label: "frontend" },
+  { owner: "Clauskraft", repo: "widgetdc-rlm-engine", label: "rlm" },
+  { owner: "Clauskraft", repo: "widgetdc-contracts", label: "contracts" },
+];
+
+let changelogCache: { data: ChangelogCommit[]; ts: number; since?: string } | null = null;
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+async function fetchRepoCommits(
+  owner: string,
+  repo: string,
+  label: string,
+  perPage = 30,
+  since?: string
+): Promise<ChangelogCommit[]> {
+  const params = new URLSearchParams({ per_page: String(perPage) });
+  if (since) params.set("since", since);
+
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "WidgeTDC-Arch-Server",
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const url = `https://api.github.com/repos/${owner}/${repo}/commits?${params}`;
+  const res = await fetch(url, { headers });
+
+  if (!res.ok) {
+    console.warn(`[changelog] GitHub ${res.status} for ${owner}/${repo}: ${res.statusText}`);
+    return [];
+  }
+
+  const data = await res.json() as any[];
+  return data.map((c: any) => ({
+    sha: c.sha,
+    shortSha: c.sha.slice(0, 7),
+    message: c.commit?.message?.split("\n")[0] || "",
+    author: c.commit?.author?.name || c.author?.login || "unknown",
+    date: c.commit?.author?.date || "",
+    repo: label,
+    repoLabel: label,
+    url: c.html_url || `https://github.com/${owner}/${repo}/commit/${c.sha}`,
+  }));
+}
+
+async function fetchAllChangelog(since?: string, limit = 100): Promise<{ commits: ChangelogCommit[]; fromCache: boolean; warning?: string }> {
+  const cacheKey = since || "__all__";
+  if (changelogCache && changelogCache.since === cacheKey && Date.now() - changelogCache.ts < CACHE_TTL) {
+    return { commits: changelogCache.data.slice(0, limit), fromCache: true };
+  }
+
+  let warning: string | undefined;
+  const perPage = Math.min(limit, 100);
+  const results = await Promise.allSettled(
+    GITHUB_REPOS.map((r) => fetchRepoCommits(r.owner, r.repo, r.label, perPage, since))
+  );
+
+  const commits: ChangelogCommit[] = [];
+  for (const r of results) {
+    if (r.status === "fulfilled") {
+      commits.push(...r.value);
+    } else {
+      warning = "Some repos failed to fetch. Partial results shown.";
+      console.warn("[changelog] Fetch error:", r.reason);
+    }
+  }
+
+  commits.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  changelogCache = { data: commits, ts: Date.now(), since: cacheKey };
+  return { commits: commits.slice(0, limit), fromCache: false, warning };
+}
+
 // --- Resolve graph path ---
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GRAPH_PATHS = [
@@ -37,30 +137,11 @@ const GRAPH_PATHS = [
   resolve(__dirname, "../../arch/platform-graph.json"),
 ];
 
-interface GraphNode {
-  id: string;
-  repo: string;
-  layer: string;
-  path: string;
-  label: string;
-}
-
-interface GraphEdge {
-  source: string;
-  target: string;
-  type: "import" | "http" | "contract";
-}
-
-interface PlatformGraph {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
-  meta: { generated: string; repos: number; nodes: number; edges: number };
-}
-
 // --- Load graph ---
 let graph: PlatformGraph | null = null;
 let fanIn: Record<string, number> = {};
 let depCount: Record<string, number> = {};
+let analysisResult: AnalysisResult | null = null;
 
 function loadGraph(): PlatformGraph {
   if (graph) return graph;
@@ -91,11 +172,20 @@ function loadGraph(): PlatformGraph {
     if (depCount[e.source] !== undefined) depCount[e.source]++;
   });
 
+  // Run full analysis
+  console.log(`[arch-mcp] Running architecture analysis...`);
+  analysisResult = analyzeGraph(graph);
+  console.log(`[arch-mcp] Analysis complete: ${analysisResult.summary.totalModules} modules, ${analysisResult.summary.antiPatternCount} anti-patterns, ${analysisResult.summary.cycleCount} cycles`);
+
   return graph;
 }
 
 // --- Register MCP tools on a server instance ---
 function registerTools(server: McpServer): void {
+  // =====================================================
+  // EXISTING TOOLS (7)
+  // =====================================================
+
   // arch_stats
   server.tool(
     "arch_stats",
@@ -300,11 +390,207 @@ function registerTools(server: McpServer): void {
       };
     }
   );
+
+  // =====================================================
+  // NEW TOOLS (7) — Architecture Intelligence
+  // =====================================================
+
+  // arch_health
+  server.tool(
+    "arch_health",
+    "Get health scores for modules, repos, or layers. Scores 0-100 based on fan-out, instability, cycles, blast radius. Risk: critical (<40), warning (40-69), healthy (>=70).",
+    {
+      scope: z.enum(["module", "repo", "layer"]).describe("What to get health for"),
+      id: z.string().optional().describe("Module ID, repo name, or layer name (omit for all)"),
+      risk: z.enum(["critical", "warning", "healthy"]).optional().describe("Filter by risk level"),
+      limit: z.number().int().optional().describe("Max results (default 20)"),
+    },
+    async ({ scope, id, risk, limit }) => {
+      loadGraph();
+      const a = analysisResult!;
+      const max = limit || 20;
+
+      if (scope === "module") {
+        let modules = a.modules;
+        if (id) modules = modules.filter(m => m.id.toLowerCase().includes(id.toLowerCase()));
+        if (risk) modules = modules.filter(m => m.risk === risk);
+        modules = modules.sort((a, b) => a.healthScore - b.healthScore).slice(0, max);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "module", count: modules.length, modules }, null, 2) }] };
+      }
+
+      if (scope === "repo") {
+        let repos = a.repoMetrics;
+        if (id) repos = repos.filter(r => r.repo === id);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "repo", repos }, null, 2) }] };
+      }
+
+      // layer
+      let layers = a.layerMetrics;
+      if (id) layers = layers.filter(l => l.layer === id);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "layer", layers }, null, 2) }] };
+    }
+  );
+
+  // arch_antipatterns
+  server.tool(
+    "arch_antipatterns",
+    "Get all detected anti-patterns: god_module, circular_dependency, layer_violation, shotgun_surgery, feature_envy, orphan_module, hub_module.",
+    {
+      type: z.enum(["god_module", "circular_dependency", "layer_violation", "shotgun_surgery", "feature_envy", "orphan_module", "hub_module"]).optional().describe("Filter by anti-pattern type"),
+      severity: z.enum(["critical", "warning", "info"]).optional().describe("Filter by severity"),
+      repo: z.string().optional().describe("Filter by repo"),
+      limit: z.number().int().optional().describe("Max results (default 50)"),
+    },
+    async ({ type, severity, repo, limit }) => {
+      loadGraph();
+      const a = analysisResult!;
+      const max = limit || 50;
+
+      let patterns = a.antiPatterns;
+      if (type) patterns = patterns.filter(p => p.type === type);
+      if (severity) patterns = patterns.filter(p => p.severity === severity);
+      if (repo) {
+        const repoModules = new Set(a.modules.filter(m => m.repo === repo).map(m => m.id));
+        patterns = patterns.filter(p => repoModules.has(p.moduleId));
+      }
+
+      const grouped: Record<string, number> = {};
+      patterns.forEach(p => grouped[p.type] = (grouped[p.type] || 0) + 1);
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        total: patterns.length,
+        byType: grouped,
+        patterns: patterns.slice(0, max),
+      }, null, 2) }] };
+    }
+  );
+
+  // arch_dead_code
+  server.tool(
+    "arch_dead_code",
+    "Find orphan modules (zero connectivity), duplicate module names, and bloat indicators.",
+    {
+      repo: z.string().optional().describe("Filter by repo"),
+    },
+    async ({ repo }) => {
+      loadGraph();
+      const a = analysisResult!;
+
+      // Orphans
+      let orphans = a.antiPatterns.filter(p => p.type === "orphan_module");
+      if (repo) {
+        const repoModules = new Set(a.modules.filter(m => m.repo === repo).map(m => m.id));
+        orphans = orphans.filter(o => repoModules.has(o.moduleId));
+      }
+
+      // Duplicate names (same label in different locations)
+      const labelCounts: Record<string, string[]> = {};
+      for (const m of a.modules) {
+        if (repo && m.repo !== repo) continue;
+        if (!labelCounts[m.label]) labelCounts[m.label] = [];
+        labelCounts[m.label].push(m.id);
+      }
+      const duplicates = Object.entries(labelCounts)
+        .filter(([_, ids]) => ids.length > 1)
+        .map(([label, ids]) => ({ label, count: ids.length, modules: ids }))
+        .sort((a, b) => b.count - a.count);
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        orphans: { count: orphans.length, modules: orphans.map(o => o.moduleId) },
+        duplicateNames: { count: duplicates.length, duplicates: duplicates.slice(0, 20) },
+      }, null, 2) }] };
+    }
+  );
+
+  // arch_impact
+  server.tool(
+    "arch_impact",
+    "What breaks if module X changes? Shows direct dependents, transitive dependents, blast radius, cross-repo impact, and critical path.",
+    {
+      moduleId: z.string().describe("Module ID to analyze impact for"),
+      maxDepth: z.number().int().optional().describe("Max traversal depth (default: unlimited)"),
+    },
+    async ({ moduleId, maxDepth }) => {
+      const g = loadGraph();
+      const result = computeImpact(g, moduleId, maxDepth);
+      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // arch_metrics
+  server.tool(
+    "arch_metrics",
+    "Raw instability, fan-in, fan-out, blast radius metrics for modules, repos, or layers.",
+    {
+      scope: z.enum(["module", "repo", "layer"]).describe("Scope of metrics"),
+      id: z.string().optional().describe("Specific module/repo/layer ID"),
+      sortBy: z.enum(["health", "instability", "fanIn", "fanOut", "blastRadius"]).optional().describe("Sort field (default: health)"),
+      limit: z.number().int().optional().describe("Max results (default 20)"),
+    },
+    async ({ scope, id, sortBy, limit }) => {
+      loadGraph();
+      const a = analysisResult!;
+      const max = limit || 20;
+      const sort = sortBy || "health";
+
+      if (scope === "module") {
+        let modules = a.modules;
+        if (id) modules = modules.filter(m => m.id.toLowerCase().includes(id.toLowerCase()));
+
+        const sortFns: Record<string, (a: any, b: any) => number> = {
+          health: (a, b) => a.healthScore - b.healthScore,
+          instability: (a, b) => b.instability - a.instability,
+          fanIn: (a, b) => b.fanIn - a.fanIn,
+          fanOut: (a, b) => b.fanOut - a.fanOut,
+          blastRadius: (a, b) => b.blastRadius - a.blastRadius,
+        };
+        modules = modules.sort(sortFns[sort] || sortFns.health).slice(0, max);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "module", sortBy: sort, count: modules.length, modules }, null, 2) }] };
+      }
+
+      if (scope === "repo") {
+        return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "repo", repos: a.repoMetrics }, null, 2) }] };
+      }
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({ scope: "layer", layers: a.layerMetrics }, null, 2) }] };
+    }
+  );
+
+  // arch_recommendations
+  server.tool(
+    "arch_recommendations",
+    "Get prioritized, actionable recommendations for improving architecture health.",
+    {
+      focus: z.enum(["stability", "architecture", "cleanup"]).optional().describe("Focus area"),
+      repo: z.string().optional().describe("Filter by repo"),
+    },
+    async ({ focus, repo }) => {
+      loadGraph();
+      const a = analysisResult!;
+      const recs = generateRecommendations(a.modules, a.antiPatterns, a.cycles, focus, repo);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ count: recs.length, recommendations: recs }, null, 2) }] };
+    }
+  );
+
+  // arch_validate
+  server.tool(
+    "arch_validate",
+    "Validate a proposed dependency: check for new cycles, layer violations, and blast radius impact.",
+    {
+      source: z.string().describe("Source module ID"),
+      target: z.string().describe("Target module ID"),
+    },
+    async ({ source, target }) => {
+      const g = loadGraph();
+      const result = validateProposedEdge(g, source, target);
+      return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    }
+  );
 }
 
 // --- Create MCP server factory (one per session) ---
 function createMcpServer(): McpServer {
-  const server = new McpServer({ name: "widgetdc-architecture", version: "1.0.0" });
+  const server = new McpServer({ name: "widgetdc-architecture", version: "2.0.0" });
   registerTools(server);
   return server;
 }
@@ -317,14 +603,74 @@ app.use(express.json());
 // Health check (Railway requirement)
 app.get("/health", (_req, res) => {
   const g = loadGraph();
+  const a = analysisResult;
   res.json({
     status: "ok",
     service: "arch-mcp-server",
+    version: "2.0.0",
     graph: { nodes: g.meta.nodes, edges: g.meta.edges, generated: g.meta.generated },
+    analysis: a ? {
+      avgHealth: a.summary.avgHealth,
+      criticalCount: a.summary.criticalCount,
+      antiPatternCount: a.summary.antiPatternCount,
+      cycleCount: a.summary.cycleCount,
+    } : null,
   });
 });
 
-// --- Architecture Viewer (static) ---
+// --- REST API endpoints for dashboard ---
+app.get("/api/analysis", (_req, res) => {
+  loadGraph();
+  if (!analysisResult) {
+    res.status(500).json({ error: "Analysis not ready" });
+    return;
+  }
+  res.json(analysisResult);
+});
+
+app.get("/api/impact/:moduleId", (req, res) => {
+  const g = loadGraph();
+  const moduleId = req.params.moduleId;
+  const maxDepth = req.query.maxDepth ? parseInt(req.query.maxDepth as string, 10) : undefined;
+  const result = computeImpact(g, moduleId, maxDepth);
+  res.json(result);
+});
+
+// --- Changelog API ---
+app.get("/api/changelog", async (_req, res) => {
+  try {
+    const since = _req.query.since as string | undefined;
+    const limit = _req.query.limit ? parseInt(_req.query.limit as string, 10) : 100;
+    const repo = _req.query.repo as string | undefined;
+
+    let result = await fetchAllChangelog(since, Math.min(limit, 500));
+    let commits = result.commits;
+    if (repo) commits = commits.filter((c) => c.repo === repo);
+
+    res.json({
+      commits,
+      meta: {
+        total: commits.length,
+        fromCache: result.fromCache,
+        warning: result.warning,
+        repos: GITHUB_REPOS.map((r) => r.label),
+      },
+    });
+  } catch (e: any) {
+    console.error("[changelog] Error:", e);
+    // Return cached data if available
+    if (changelogCache) {
+      res.json({
+        commits: changelogCache.data,
+        meta: { total: changelogCache.data.length, fromCache: true, warning: "Error fetching fresh data, showing cached results." },
+      });
+    } else {
+      res.status(500).json({ error: "Failed to fetch changelog", message: e.message });
+    }
+  }
+});
+
+// --- Architecture Viewers & Dashboard (static) ---
 const SCRIPTS_DIR = resolve(__dirname);
 const ARCH_DIR = resolve(__dirname, "../arch");
 
@@ -332,13 +678,17 @@ const ARCH_DIR = resolve(__dirname, "../arch");
 app.get("/platform-graph.json", (_req, res) => res.sendFile(resolve(ARCH_DIR, "platform-graph.json")));
 app.get("/arch/platform-graph.json", (_req, res) => res.sendFile(resolve(ARCH_DIR, "platform-graph.json")));
 
-// Viewer routes
-app.get("/", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
+// Viewer routes — Dashboard is now the root
+app.get("/", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-dashboard.html")));
+app.get("/dashboard", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-dashboard.html")));
 app.get("/graph", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
 app.get("/overview", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
+app.get("/changelog", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
 // Support original filenames as links (used in view toggle buttons)
 app.get("/arch-viewer.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
 app.get("/arch-viewer-overview.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
+app.get("/arch-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-dashboard.html")));
+app.get("/arch-changelog.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
 
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
@@ -410,9 +760,14 @@ loadGraph();
 
 app.listen(PORT, () => {
   console.log(`[arch-mcp] HTTP server listening on port ${PORT}`);
-  console.log(`[arch-mcp] Health: http://localhost:${PORT}/health`);
-  console.log(`[arch-mcp] SSE:    http://localhost:${PORT}/sse`);
-  console.log(`[arch-mcp] MCP:    http://localhost:${PORT}/mcp`);
+  console.log(`[arch-mcp] Dashboard: http://localhost:${PORT}/`);
+  console.log(`[arch-mcp] Graph:     http://localhost:${PORT}/graph`);
+  console.log(`[arch-mcp] Overview:  http://localhost:${PORT}/overview`);
+  console.log(`[arch-mcp] Changelog: http://localhost:${PORT}/changelog`);
+  console.log(`[arch-mcp] API:       http://localhost:${PORT}/api/analysis`);
+  console.log(`[arch-mcp] Health:    http://localhost:${PORT}/health`);
+  console.log(`[arch-mcp] SSE:       http://localhost:${PORT}/sse`);
+  console.log(`[arch-mcp] MCP:       http://localhost:${PORT}/mcp`);
 });
 
 process.on("SIGINT", async () => {
