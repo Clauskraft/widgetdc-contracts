@@ -48,6 +48,21 @@ import {
   type DataAnalysisResult,
 } from "./data-analysis.js";
 
+import {
+  initMonitoring,
+  stopMonitoring,
+  getInfrastructure,
+  getAlerts,
+  ackAlert,
+  getAnomalies,
+  getCost,
+  getCostForecast,
+  getCompliance,
+  getComplianceRequirement,
+  getRules,
+  getErrors,
+} from "./monitoring/index.js";
+
 // --- GitHub Changelog ---
 interface ChangelogCommit {
   sha: string;
@@ -1139,6 +1154,99 @@ app.get("/data/lineage", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-
 app.get("/data-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-dashboard.html")));
 app.get("/data-lineage.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-lineage.html")));
 
+// Infrastructure views
+app.get("/infra", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "infra-dashboard.html")));
+app.get("/infra-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "infra-dashboard.html")));
+
+// --- Monitoring REST API ---
+app.get("/api/monitoring/infrastructure", (_req, res) => {
+  try {
+    res.json(getInfrastructure());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get infrastructure", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/alerts", (req, res) => {
+  try {
+    const filters = {
+      severity: req.query.severity as string | undefined,
+      status: req.query.status as string | undefined,
+      serviceId: req.query.serviceId as string | undefined,
+      projectId: req.query.projectId as string | undefined,
+    };
+    res.json(getAlerts(filters));
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get alerts", message: e.message });
+  }
+});
+
+app.post("/api/monitoring/alerts/:id/acknowledge", (req, res) => {
+  try {
+    const result = ackAlert(req.params.id);
+    if (!result) {
+      res.status(404).json({ error: "Alert not found or already resolved" });
+      return;
+    }
+    res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to acknowledge alert", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/anomalies", (_req, res) => {
+  try {
+    res.json(getAnomalies());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get anomalies", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/cost", (_req, res) => {
+  try {
+    res.json(getCost());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get cost data", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/cost-forecast", (_req, res) => {
+  try {
+    res.json(getCostForecast());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get forecast", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/compliance", (_req, res) => {
+  try {
+    res.json(getCompliance());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get compliance", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/compliance/:id", (req, res) => {
+  try {
+    const result = getComplianceRequirement(req.params.id);
+    if (!result) {
+      res.status(404).json({ error: `Requirement "${req.params.id}" not found` });
+      return;
+    }
+    res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get requirement", message: e.message });
+  }
+});
+
+app.get("/api/monitoring/rules", (_req, res) => {
+  try {
+    res.json(getRules());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to get rules", message: e.message });
+  }
+});
+
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
 
@@ -1208,6 +1316,9 @@ const PORT = parseInt(process.env.PORT || "3100", 10);
 loadGraph();
 try { loadDataSources(); } catch (e: any) { console.warn(`[datapulse] Failed to pre-load: ${e.message}`); }
 
+// Initialize infrastructure monitoring (polling loop)
+try { initMonitoring(); } catch (e: any) { console.warn(`[monitoring] Failed to init: ${e.message}`); }
+
 app.listen(PORT, () => {
   console.log(`[arch-mcp] HTTP server listening on port ${PORT}`);
   console.log(`[arch-mcp] Dashboard:  http://localhost:${PORT}/`);
@@ -1215,17 +1326,20 @@ app.listen(PORT, () => {
   console.log(`[arch-mcp] Overview:   http://localhost:${PORT}/overview`);
   console.log(`[arch-mcp] DataPulse:  http://localhost:${PORT}/data`);
   console.log(`[arch-mcp] Lineage:    http://localhost:${PORT}/data/lineage`);
+  console.log(`[arch-mcp] Infra:      http://localhost:${PORT}/infra`);
   console.log(`[arch-mcp] Changelog:  http://localhost:${PORT}/changelog`);
   console.log(`[arch-mcp] Branches:   http://localhost:${PORT}/branches`);
   console.log(`[arch-mcp] Analysis:   http://localhost:${PORT}/analysis-report`);
   console.log(`[arch-mcp] API Arch:   http://localhost:${PORT}/api/analysis`);
   console.log(`[arch-mcp] API Data:   http://localhost:${PORT}/api/data/analysis`);
+  console.log(`[arch-mcp] API Infra:  http://localhost:${PORT}/api/monitoring/infrastructure`);
   console.log(`[arch-mcp] Health:     http://localhost:${PORT}/health`);
   console.log(`[arch-mcp] SSE:        http://localhost:${PORT}/sse`);
   console.log(`[arch-mcp] MCP:        http://localhost:${PORT}/mcp`);
 });
 
 process.on("SIGINT", async () => {
+  stopMonitoring();
   for (const sid in transports) {
     try { await transports[sid].close(); } catch {}
     delete transports[sid];
