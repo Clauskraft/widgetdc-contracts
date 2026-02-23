@@ -54,14 +54,19 @@
     "arch:scan": "mkdir -p arch && depcruise --config .dependency-cruiser.cjs --output-type json src > arch/contracts-graph.json",
     "arch:aggregate": "tsx scripts/arch-aggregate.ts",
     "arch:view": "npx serve .",
+    "start": "npx tsx scripts/arch-mcp-server.ts",
     "prepare": "husky"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@sinclair/typebox": "^0.34.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "dependency-cruiser": "^16.10.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

@@ -1,7 +1,9 @@
 node_modules/
 
 # Architecture graph outputs (generated, ephemeral)
+# Exception: platform-graph.json is committed for Railway MCP server
 arch/*.json
+!arch/platform-graph.json
 
 # dist/ is committed — required for git+https: consumers (npm strips source via `files` field)
 # Regenerate: npm run build
