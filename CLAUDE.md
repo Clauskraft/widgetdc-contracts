@@ -211,3 +211,26 @@ Production graph: 137K+ nodes, 1.1M+ relationships (Neo4j 5.27 AuraDB Enterprise
 ```
 
 Top graph labels: `Insight` (54K), `Directive` (13K), `MCPTool` (10K), `StrategicInsight` (9K), `Tool` (8K), `TDCDocument` (6K), `SystemSnapshot` (5K), `LocalFile` (4K), `CVE` (4K), `Entity` (3K), `Evidence` (2K).
+
+---
+
+## Session Log
+
+### 2026-02-23 — PR5: Standardize API Error Responses via @widgetdc/contracts
+Deployed `2ca262c1` to production. Added `ApiHttpError` class + Express error middleware that serializes to contracts `ApiResponse` shape. Migrated 4 core routes (mcpRouter, mcpSecurityMiddleware, computeRoutes, neuralBridgeRoutes). Remaining 134 routes adopt incrementally.
+
+**Production test results (2026-02-23T19:22 UTC):**
+
+| Scenario | HTTP | Contracts format? | Verdict |
+|----------|------|-------------------|---------|
+| Neural Bridge — invalid batch body (ZodError) | 400 | `VALIDATION_ERROR` + correlation_id + metadata | PR5 working |
+| Neural Bridge — invalid function call body | 400 | `VALIDATION_ERROR` + correlation_id + metadata | PR5 working |
+| Neural Bridge — invalid MCP protocol method | 400 | `VALIDATION_ERROR` + correlation_id + metadata | PR5 working |
+| MCP route — missing `tool` field (early return) | 400 | Legacy format (unmigrated early-return path) | Expected |
+| MCP route — bad Cypher syntax | 200 | Tool handles own error internally | Expected |
+| Compute proxy — sandbox reachable | 200 | No error path hit | Expected |
+
+All migrated error paths return `{ success: false, error: { code, message, status_code, correlation_id }, metadata: { correlation_id, timestamp, duration_ms } }`. Unmigrated paths retain legacy format per incremental migration plan.
+
+### 2026-02-23 — Agent access guide added to CLAUDE.md
+Appended full MCP/REST/SSE access documentation (335 tools, 3 transports, discovery endpoints, rate limits, error format, Neo4j graph access).
