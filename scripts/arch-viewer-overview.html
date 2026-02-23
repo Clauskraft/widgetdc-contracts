@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WidgeTDC Architecture — System Overview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+  #breadcrumb { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #64748b; flex: 1; min-width: 0; overflow-x: auto; }
+  #breadcrumb span { cursor: pointer; padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+  #breadcrumb span:hover { background: #1e2740; color: #e2e8f0; }
+  #breadcrumb span.current { color: #e2e8f0; font-weight: 500; cursor: default; }
+  #breadcrumb span.current:hover { background: transparent; }
+  .sep { color: #334155; user-select: none; }
+
+  #main { flex: 1; display: flex; overflow: hidden; }
+
+  /* Left controls panel */
+  #controls { width: 240px; border-right: 1px solid #1a1f2e; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-shrink: 0; background: #0f1219; }
+  #controls input[type="text"], #controls select { width: 100%; padding: 7px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; }
+  #controls input:focus, #controls select:focus { border-color: #6366f1; }
+  .fg { display: flex; flex-direction: column; gap: 3px; }
+  .fg label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; cursor: pointer; user-select: none; }
+  .toggle input { accent-color: #6366f1; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px; }
+  .li { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #94a3b8; cursor: pointer; padding: 2px 6px; border-radius: 4px; user-select: none; }
+  .li:hover { background: #1a1f2e; }
+  .li.active { background: #1e2740; color: #e2e8f0; }
+  .dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .stats { font-size: 10px; color: #475569; padding: 6px 0; border-top: 1px solid #1a1f2e; line-height: 1.6; }
+  .edge-legend { display: flex; gap: 10px; font-size: 10px; color: #475569; flex-wrap: wrap; }
+  .edge-legend span { display: flex; align-items: center; gap: 3px; }
+  .ctrl-sep { border-top: 1px solid #1a1f2e; margin: 2px 0; }
+
+  /* Graph area */
+  #graph-area { flex: 1; position: relative; }
+  canvas { width: 100%; height: 100%; display: block; }
+
+  /* Right sidebar */
+  #sidebar { width: 280px; border-left: 1px solid #1a1f2e; padding: 14px; overflow-y: auto; display: none; flex-shrink: 0; background: #0f1219; }
+  #sidebar h2 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #f1f5f9; }
+  .s-row { font-size: 11px; color: #94a3b8; margin-bottom: 4px; word-break: break-all; }
+  .s-row b { color: #64748b; font-weight: 500; }
+  .s-heading { font-size: 10px; color: #475569; margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .s-list { list-style: none; font-size: 11px; max-height: 160px; overflow-y: auto; }
+  .s-list li { padding: 2px 0; color: #818cf8; cursor: pointer; }
+  .s-list li:hover { text-decoration: underline; }
+  .s-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .s-stat { background: #141824; border-radius: 6px; padding: 8px; }
+  .s-stat .val { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+  .s-stat .lbl { font-size: 9px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  #tooltip { position: absolute; display: none; pointer-events: none; background: #1e2740; border: 1px solid #334155; border-radius: 6px; padding: 8px 12px; font-size: 11px; color: #e2e8f0; max-width: 280px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+  #tooltip .tt-title { font-weight: 600; margin-bottom: 2px; }
+  #tooltip .tt-sub { color: #94a3b8; font-size: 10px; }
+
+  .help-hint { position: absolute; top: 14px; right: 14px; font-size: 10px; color: #334155; background: rgba(11,14,20,0.85); padding: 6px 10px; border-radius: 6px; border: 1px solid #1a1f2e; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>WidgeTDC Architecture</h1>
+  <div class="view-toggle">
+    <a href="arch-viewer.html">Graph</a>
+    <a href="arch-viewer-overview.html" class="active">Overview</a>
+  </div>
+  <div id="breadcrumb"><span class="current">System</span></div>
+</div>
+
+<div id="main">
+  <!-- Left controls panel -->
+  <div id="controls">
+    <div class="fg">
+      <label>Search</label>
+      <input id="search-bar" type="text" placeholder="e.g. neo4j or mcp">
+    </div>
+
+    <div class="fg">
+      <label>Filter Repo</label>
+      <select id="repoFilter">
+        <option value="all">All repos</option>
+        <option value="backend">Backend</option>
+        <option value="frontend">Frontend</option>
+        <option value="rlm">RLM Engine</option>
+        <option value="contracts">Contracts</option>
+      </select>
+    </div>
+
+    <div class="fg">
+      <label>Filter Layer</label>
+      <select id="layerFilter">
+        <option value="all">All layers</option>
+      </select>
+    </div>
+
+    <div class="fg">
+      <label>Size by</label>
+      <select id="sizeBy">
+        <option value="fan-in">Fan-in (importance)</option>
+        <option value="equal">Equal size</option>
+        <option value="deps">Dependency count</option>
+      </select>
+    </div>
+
+    <div class="fg">
+      <label>Color by</label>
+      <select id="colorBy">
+        <option value="repo">Repository</option>
+        <option value="layer">Layer type</option>
+      </select>
+    </div>
+
+    <div class="ctrl-sep"></div>
+
+    <div class="fg">
+      <label style="margin-bottom:2px">Display</label>
+      <label class="toggle"><input type="checkbox" id="showEdges" checked> Show cross-group edges</label>
+      <label class="toggle"><input type="checkbox" id="showLabels" checked> Show labels</label>
+      <label class="toggle"><input type="checkbox" id="showCounts" checked> Show module counts</label>
+    </div>
+
+    <div class="fg">
+      <label>Edge filter</label>
+      <select id="edgeFilter">
+        <option value="all">All types</option>
+        <option value="import">Import only</option>
+        <option value="http">HTTP only</option>
+        <option value="contract">Contract only</option>
+      </select>
+    </div>
+
+    <div class="ctrl-sep"></div>
+
+    <div class="fg">
+      <label>Repos</label>
+      <div class="legend" id="repoLegend"></div>
+    </div>
+
+    <div class="fg">
+      <label>Edge types</label>
+      <div class="edge-legend">
+        <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#334155" stroke-width="1"/></svg> import</span>
+        <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,2"/></svg> http</span>
+        <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#a855f7" stroke-width="2"/></svg> contract</span>
+      </div>
+    </div>
+
+    <div class="stats" id="stats">Loading...</div>
+  </div>
+
+  <!-- Graph canvas -->
+  <div id="graph-area">
+    <canvas id="canvas"></canvas>
+    <div id="tooltip"><div class="tt-title"></div><div class="tt-sub"></div></div>
+    <div class="help-hint">Click: drill down · Right-click: go up · Scroll: zoom · Shift+drag: pan</div>
+  </div>
+
+  <!-- Right sidebar -->
+  <div id="sidebar">
+    <h2 id="sb-title"></h2>
+    <div class="s-stats" id="sb-stats"></div>
+    <div class="s-heading">Details</div>
+    <div id="sb-details"></div>
+    <div class="s-heading">Cross-group edges</div>
+    <ul class="s-list" id="sb-edges"></ul>
+    <div class="s-heading">Children</div>
+    <ul class="s-list" id="sb-children"></ul>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ============================================================
+// Config
+// ============================================================
+const REPO_COLORS = {
+  backend:   { bg: "#1e3a5f", fg: "#3b82f6", text: "#93c5fd" },
+  frontend:  { bg: "#14532d", fg: "#22c55e", text: "#86efac" },
+  rlm:       { bg: "#7c2d12", fg: "#f97316", text: "#fdba74" },
+  contracts: { bg: "#581c87", fg: "#a855f7", text: "#d8b4fe" },
+};
+const LAYER_COLORS = {
+  routes:      "#3b82f6", services:     "#22c55e", mcp:         "#f97316",
+  controllers: "#06b6d4", middleware:    "#8b5cf6", platform:    "#ec4899",
+  domain:      "#14b8a6", pages:        "#f43f5e", components:  "#10b981",
+  store:       "#eab308", hooks:        "#6366f1", types:       "#a855f7",
+  lib:         "#64748b", utils:        "#94a3b8", config:      "#475569",
+  contracts:   "#d946ef", intelligence: "#f59e0b", context_folding: "#fb923c",
+  models:      "#2dd4bf", packages:     "#818cf8", adapters:    "#34d399",
+  integrations:"#38bdf8", bootstrap:    "#f472b6", core:        "#94a3b8",
+};
+const EDGE_COLORS = { import: "#334155", http: "#f59e0b", contract: "#a855f7" };
+
+// ============================================================
+// State
+// ============================================================
+let allData = null;
+let filteredData = null;   // data after repo/layer filters
+let hierarchy = null;
+let currentNode = null;
+let treemapLayout = null;
+let hoveredCell = null;
+let crossEdges = [];
+let searchTerm = "";
+let fanInMap = {};         // global fan-in map
+let depCountMap = {};      // dependency count per module
+let transform = { x: 0, y: 0, k: 1 }; // pan/zoom state
+
+// ============================================================
+// Canvas
+// ============================================================
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let W, H, dpr;
+
+function resize() {
+  const rect = document.getElementById("graph-area").getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = rect.width; H = rect.height;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (currentNode) layoutTreemap();
+}
+
+// ============================================================
+// Data loading & hierarchy construction
+// ============================================================
+async function loadGraph() {
+  for (const path of ["platform-graph.json", "arch/platform-graph.json", "../arch/platform-graph.json"]) {
+    try { const r = await fetch(path); if (r.ok) return r.json(); } catch(_) {}
+  }
+  return null;
+}
+
+function computeMetrics(data) {
+  fanInMap = {};
+  depCountMap = {};
+  data.nodes.forEach(n => { fanInMap[n.id] = 0; depCountMap[n.id] = 0; });
+  data.edges.forEach(e => {
+    if (fanInMap[e.target] !== undefined) fanInMap[e.target]++;
+    if (depCountMap[e.source] !== undefined) depCountMap[e.source]++;
+  });
+}
+
+function getNodeValue(mod) {
+  const sizeBy = document.getElementById("sizeBy").value;
+  if (sizeBy === "equal") return 1;
+  if (sizeBy === "deps") return Math.max(1, (depCountMap[mod.id] || 0) + 1);
+  return Math.max(1, (fanInMap[mod.id] || 0) + 1); // fan-in default
+}
+
+function buildHierarchy(data) {
+  const repoFilter = document.getElementById("repoFilter").value;
+  const layerFilter = document.getElementById("layerFilter").value;
+
+  // Filter nodes
+  let nodes = data.nodes;
+  if (repoFilter !== "all") nodes = nodes.filter(n => n.repo === repoFilter);
+  if (layerFilter !== "all") nodes = nodes.filter(n => n.layer === layerFilter);
+
+  // Build: root → repo → layer → module
+  const repoMap = {};
+  for (const node of nodes) {
+    if (!repoMap[node.repo]) repoMap[node.repo] = {};
+    if (!repoMap[node.repo][node.layer]) repoMap[node.repo][node.layer] = [];
+    repoMap[node.repo][node.layer].push(node);
+  }
+
+  const root = {
+    name: "WidgeTDC Platform",
+    nodeType: "root",
+    children: Object.entries(repoMap).sort((a,b) => a[0].localeCompare(b[0])).map(([repo, layers]) => ({
+      name: repo,
+      nodeType: "repo",
+      repo,
+      children: Object.entries(layers).sort((a,b) => a[0].localeCompare(b[0])).map(([layer, modules]) => ({
+        name: layer,
+        nodeType: "layer",
+        repo,
+        layer,
+        children: modules.sort((a,b) => a.label.localeCompare(b.label)).map(mod => ({
+          name: mod.label,
+          nodeType: "module",
+          repo: mod.repo,
+          layer: mod.layer,
+          moduleId: mod.id,
+          path: mod.path,
+          value: getNodeValue(mod),
+        })),
+      })),
+    })),
+  };
+
+  // If only one repo after filtering, skip the repo level
+  if (root.children.length === 1 && repoFilter !== "all") {
+    root.children = root.children[0].children;
+    root.name = repoFilter;
+    root.nodeType = "repo";
+    root.repo = repoFilter;
+  }
+
+  return d3.hierarchy(root).sum(d => d.value || 0).sort((a, b) => b.value - a.value);
+}
+
+// ============================================================
+// Treemap layout
+// ============================================================
+function layoutTreemap() {
+  if (!currentNode) return;
+
+  const pad = 4;
+  treemapLayout = d3.treemap()
+    .size([W - pad * 2, H - pad * 2])
+    .paddingOuter(6)
+    .paddingTop(currentNode.depth < 2 ? 28 : 22)
+    .paddingInner(3)
+    .round(true);
+
+  treemapLayout(currentNode);
+  currentNode.each(d => { d.x0 += pad; d.x1 += pad; d.y0 += pad; d.y1 += pad; });
+
+  computeCrossEdges();
+}
+
+// ============================================================
+// Cross-group edges at current level
+// ============================================================
+function computeCrossEdges() {
+  crossEdges = [];
+  if (!allData || !currentNode || !currentNode.children) return;
+
+  const showEdges = document.getElementById("showEdges").checked;
+  if (!showEdges) return;
+
+  const edgeFilterVal = document.getElementById("edgeFilter").value;
+
+  const moduleToGroup = {};
+  currentNode.children.forEach((child, idx) => {
+    child.each(d => {
+      if (d.data.moduleId) moduleToGroup[d.data.moduleId] = idx;
+    });
+  });
+
+  const edgeCounts = {};
+  for (const e of allData.edges) {
+    if (edgeFilterVal !== "all" && e.type !== edgeFilterVal) continue;
+    const sg = moduleToGroup[e.source];
+    const tg = moduleToGroup[e.target];
+    if (sg !== undefined && tg !== undefined && sg !== tg) {
+      const key = sg < tg ? `${sg}|${tg}` : `${tg}|${sg}`;
+      if (!edgeCounts[key]) edgeCounts[key] = { a: sg < tg ? sg : tg, b: sg < tg ? tg : sg, count: 0, types: {}, aName: "", bName: "" };
+      edgeCounts[key].count++;
+      edgeCounts[key].types[e.type] = (edgeCounts[key].types[e.type] || 0) + 1;
+    }
+  }
+
+  const children = currentNode.children;
+  for (const edge of Object.values(edgeCounts)) {
+    const a = children[edge.a], b = children[edge.b];
+    if (!a || !b) continue;
+    const ax = (a.x0 + a.x1) / 2, ay = (a.y0 + a.y1) / 2;
+    const bx = (b.x0 + b.x1) / 2, by = (b.y0 + b.y1) / 2;
+    const dominant = Object.entries(edge.types).sort((a,b) => b[1] - a[1])[0][0];
+    crossEdges.push({ ax, ay, bx, by, count: edge.count, type: dominant, types: edge.types, aName: a.data.name, bName: b.data.name });
+  }
+}
+
+// ============================================================
+// Rendering
+// ============================================================
+function getNodeColor(d) {
+  const colorBy = document.getElementById("colorBy").value;
+
+  if (colorBy === "layer" && d.data.nodeType === "layer") {
+    const c = LAYER_COLORS[d.data.layer] || "#64748b";
+    return { bg: hexToRgba(c, 0.2), fg: c, text: lighten(c) };
+  }
+  if (colorBy === "layer" && d.data.nodeType === "module") {
+    const c = LAYER_COLORS[d.data.layer] || "#64748b";
+    return { bg: hexToRgba(c, 0.12), fg: c, text: lighten(c) };
+  }
+
+  // Default: color by repo
+  if (d.data.nodeType === "repo") return REPO_COLORS[d.data.repo] || { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+  if (d.data.nodeType === "layer") {
+    const rc = REPO_COLORS[d.data.repo] || { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+    return { bg: hexToRgba(rc.fg, 0.12), fg: rc.fg, text: rc.text };
+  }
+  if (d.data.nodeType === "module") {
+    const rc = REPO_COLORS[d.data.repo] || { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+    return { bg: hexToRgba(rc.fg, 0.08), fg: rc.fg, text: rc.text };
+  }
+  return { bg: "#1e293b", fg: "#64748b", text: "#94a3b8" };
+}
+
+function hexToRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function lighten(hex) {
+  const r = Math.min(255, parseInt(hex.slice(1,3), 16) + 80);
+  const g = Math.min(255, parseInt(hex.slice(3,5), 16) + 80);
+  const b = Math.min(255, parseInt(hex.slice(5,7), 16) + 80);
+  return `rgb(${r},${g},${b})`;
+}
+
+function matchesSearch(d) {
+  if (!searchTerm) return true;
+  const s = searchTerm.toLowerCase();
+  if (d.data.name.toLowerCase().includes(s)) return true;
+  if (d.data.moduleId && d.data.moduleId.toLowerCase().includes(s)) return true;
+  if (d.children) return d.children.some(c => matchesSearch(c));
+  return false;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  if (!currentNode || !currentNode.children) { requestAnimationFrame(draw); return; }
+
+  const showLabels = document.getElementById("showLabels").checked;
+  const showCounts = document.getElementById("showCounts").checked;
+
+  // Apply pan/zoom transform
+  ctx.save();
+  ctx.translate(transform.x, transform.y);
+  ctx.scale(transform.k, transform.k);
+
+  // Draw cross-group edges (behind cells)
+  for (const e of crossEdges) {
+    const mx = (e.ax + e.bx) / 2;
+    const my = Math.min(e.ay, e.by) - 30 - Math.min(e.count * 0.5, 40);
+    ctx.beginPath();
+    ctx.moveTo(e.ax, e.ay);
+    ctx.quadraticCurveTo(mx, my, e.bx, e.by);
+    ctx.strokeStyle = EDGE_COLORS[e.type] || "#334155";
+    ctx.globalAlpha = Math.min(0.6, 0.15 + e.count * 0.01);
+    ctx.lineWidth = Math.min(4, 0.5 + e.count * 0.05) / transform.k;
+    if (e.type === "http") ctx.setLineDash([6, 4]); else ctx.setLineDash([]);
+    ctx.stroke();
+    if (e.count > 3) {
+      ctx.globalAlpha = 0.5;
+      ctx.font = `${9 / transform.k}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = "#94a3b8";
+      ctx.textAlign = "center";
+      ctx.fillText(`${e.count}`, mx, my - 4);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.setLineDash([]);
+  ctx.textAlign = "left";
+
+  // Recursively draw treemap cells
+  function drawCell(d, depth) {
+    const w = d.x1 - d.x0;
+    const h = d.y1 - d.y0;
+    if (w < 1 || h < 1) return;
+
+    // Viewport culling: skip cells fully outside visible area
+    const vx0 = -transform.x / transform.k, vy0 = -transform.y / transform.k;
+    const vx1 = vx0 + W / transform.k, vy1 = vy0 + H / transform.k;
+    if (d.x1 < vx0 || d.x0 > vx1 || d.y1 < vy0 || d.y0 > vy1) return;
+
+    const colors = getNodeColor(d);
+    const isHovered = hoveredCell === d;
+    const matches = matchesSearch(d);
+
+    ctx.globalAlpha = matches ? 1 : 0.25;
+    ctx.fillStyle = isHovered ? hexToRgba(colors.fg, 0.28) : colors.bg;
+    const r = d.data.nodeType === "module" ? 3 : 5;
+    roundRect(ctx, d.x0, d.y0, w, h, r);
+    ctx.fill();
+
+    ctx.strokeStyle = isHovered ? colors.fg : hexToRgba(colors.fg, 0.3);
+    ctx.lineWidth = (isHovered ? 2 : 1) / transform.k;
+    roundRect(ctx, d.x0, d.y0, w, h, r);
+    ctx.stroke();
+
+    // Labels — scale font size inversely so labels stay readable
+    const screenW = w * transform.k;
+    const screenH = h * transform.k;
+    if (showLabels && screenW > 24 && screenH > 12) {
+      const isGroup = !!d.children;
+      const baseFontSize = d.data.nodeType === "repo" ? 13 : d.data.nodeType === "layer" ? 11 : 10;
+      const fontSize = baseFontSize / transform.k;
+      ctx.font = `${d.data.nodeType === "repo" ? "600" : "500"} ${fontSize}px Inter, system-ui, sans-serif`;
+      ctx.fillStyle = colors.text;
+      ctx.globalAlpha = matches ? 1 : 0.25;
+
+      let label = d.data.name;
+      if (isGroup && showCounts) {
+        const leafCount = d.leaves().length;
+        label += ` (${leafCount})`;
+      }
+
+      const maxTextW = w - 12 / transform.k;
+      const clipped = clipText(ctx, label, maxTextW);
+      const headerH = (d.data.nodeType === "repo" ? 24 : 18) / transform.k;
+      ctx.fillText(clipped, d.x0 + 6 / transform.k, d.y0 + (isGroup ? headerH - 6 / transform.k : h / 2 + fontSize / 3));
+    }
+
+    ctx.globalAlpha = 1;
+
+    if (d.children && depth < 2) {
+      for (const child of d.children) drawCell(child, depth + 1);
+    }
+  }
+
+  for (const child of currentNode.children) drawCell(child, 0);
+
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function clipText(ctx, text, maxW) {
+  if (ctx.measureText(text).width <= maxW) return text;
+  let t = text;
+  while (t.length > 3 && ctx.measureText(t + "...").width > maxW) t = t.slice(0, -1);
+  return t + "...";
+}
+
+// ============================================================
+// Hit testing
+// ============================================================
+// Convert screen coords to layout coords
+function screenToLayout(sx, sy) {
+  return { x: (sx - transform.x) / transform.k, y: (sy - transform.y) / transform.k };
+}
+
+function getCellAt(mx, my) {
+  if (!currentNode || !currentNode.children) return null;
+  const { x, y } = screenToLayout(mx, my);
+
+  for (const child of currentNode.children) {
+    if (x >= child.x0 && x <= child.x1 && y >= child.y0 && y <= child.y1) {
+      if (child.children) {
+        for (const gc of child.children) {
+          if (x >= gc.x0 && x <= gc.x1 && y >= gc.y0 && y <= gc.y1) {
+            return gc;
+          }
+        }
+      }
+      return child;
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// Navigation
+// ============================================================
+function resetZoom() {
+  transform = { x: 0, y: 0, k: 1 };
+  d3.select(canvas).call(zoomBehavior.transform, d3.zoomIdentity);
+}
+
+function drillDown(node) {
+  if (!node || !node.children || node.children.length === 0) return;
+  currentNode = node;
+  resetZoom();
+  layoutTreemap();
+  updateBreadcrumb();
+  updateSidebar(node);
+}
+
+function drillUp() {
+  if (!currentNode || !currentNode.parent) return;
+  currentNode = currentNode.parent;
+  resetZoom();
+  layoutTreemap();
+  updateBreadcrumb();
+  updateSidebar(currentNode);
+}
+
+function navigateTo(depth) {
+  let target = currentNode;
+  while (target && target.depth > depth) target = target.parent;
+  if (target) {
+    currentNode = target;
+    resetZoom();
+    layoutTreemap();
+    updateBreadcrumb();
+    updateSidebar(currentNode);
+  }
+}
+
+function updateBreadcrumb() {
+  const bc = document.getElementById("breadcrumb");
+  bc.innerHTML = "";
+
+  const path = [];
+  let node = currentNode;
+  while (node) { path.unshift(node); node = node.parent; }
+
+  path.forEach((p, i) => {
+    if (i > 0) {
+      const sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = "›";
+      bc.appendChild(sep);
+    }
+    const span = document.createElement("span");
+    span.textContent = p.data.name;
+    if (i === path.length - 1) {
+      span.className = "current";
+    } else {
+      span.onclick = () => navigateTo(p.depth);
+    }
+    bc.appendChild(span);
+  });
+}
+
+// ============================================================
+// Sidebar
+// ============================================================
+function updateSidebar(node) {
+  const sb = document.getElementById("sidebar");
+  if (!node || node.data.nodeType === "root") {
+    sb.style.display = "block";
+    document.getElementById("sb-title").textContent = "System Overview";
+    document.getElementById("sb-stats").innerHTML = `
+      <div class="s-stat"><div class="val">${allData.meta.repos}</div><div class="lbl">Repos</div></div>
+      <div class="s-stat"><div class="val">${allData.meta.nodes}</div><div class="lbl">Modules</div></div>
+      <div class="s-stat"><div class="val">${allData.meta.edges}</div><div class="lbl">Edges</div></div>
+      <div class="s-stat"><div class="val">${hierarchy.leaves().length}</div><div class="lbl">Leaves</div></div>
+    `;
+    document.getElementById("sb-details").innerHTML = `
+      <div class="s-row"><b>Generated:</b> ${new Date(allData.meta.generated).toLocaleString()}</div>
+    `;
+    document.getElementById("sb-edges").innerHTML = "";
+    showChildrenList(node);
+    return;
+  }
+
+  sb.style.display = "block";
+  document.getElementById("sb-title").textContent = node.data.name;
+
+  const leafCount = node.leaves().length;
+  const childCount = node.children ? node.children.length : 0;
+
+  let internalEdges = 0, externalEdges = 0;
+  const leafIds = new Set();
+  node.each(d => { if (d.data.moduleId) leafIds.add(d.data.moduleId); });
+  for (const e of allData.edges) {
+    const sIn = leafIds.has(e.source), tIn = leafIds.has(e.target);
+    if (sIn && tIn) internalEdges++;
+    else if (sIn || tIn) externalEdges++;
+  }
+
+  document.getElementById("sb-stats").innerHTML = `
+    <div class="s-stat"><div class="val">${leafCount}</div><div class="lbl">Modules</div></div>
+    <div class="s-stat"><div class="val">${childCount}</div><div class="lbl">${node.data.nodeType === "repo" ? "Layers" : "Children"}</div></div>
+    <div class="s-stat"><div class="val">${internalEdges}</div><div class="lbl">Internal</div></div>
+    <div class="s-stat"><div class="val">${externalEdges}</div><div class="lbl">External</div></div>
+  `;
+
+  let details = "";
+  if (node.data.nodeType === "repo") {
+    details = `<div class="s-row"><b>Type:</b> Repository</div>`;
+    details += `<div class="s-row"><b>Weight:</b> ${node.value}</div>`;
+  } else if (node.data.nodeType === "layer") {
+    details = `<div class="s-row"><b>Type:</b> Layer</div>`;
+    details += `<div class="s-row"><b>Repo:</b> ${node.data.repo}</div>`;
+    details += `<div class="s-row"><b>Weight:</b> ${node.value}</div>`;
+  } else if (node.data.nodeType === "module") {
+    details = `<div class="s-row"><b>ID:</b> ${node.data.moduleId}</div>`;
+    details += `<div class="s-row"><b>Path:</b> ${node.data.path}</div>`;
+    details += `<div class="s-row"><b>Repo:</b> ${node.data.repo}</div>`;
+    details += `<div class="s-row"><b>Layer:</b> ${node.data.layer}</div>`;
+    details += `<div class="s-row"><b>Fan-in:</b> ${fanInMap[node.data.moduleId] || 0}</div>`;
+    details += `<div class="s-row"><b>Dependencies:</b> ${depCountMap[node.data.moduleId] || 0}</div>`;
+  }
+  document.getElementById("sb-details").innerHTML = details;
+
+  // Cross-group edge details for current level
+  const edgeList = document.getElementById("sb-edges");
+  if (crossEdges.length > 0) {
+    edgeList.innerHTML = crossEdges
+      .sort((a,b) => b.count - a.count)
+      .map(e => {
+        const types = Object.entries(e.types).map(([t, c]) => `${t}:${c}`).join(", ");
+        return `<li style="color:#94a3b8;cursor:default">${e.aName} ↔ ${e.bName}: ${e.count} (${types})</li>`;
+      }).join("");
+  } else {
+    edgeList.innerHTML = "<li style='color:#334155;cursor:default'>None at this level</li>";
+  }
+
+  showChildrenList(node);
+}
+
+function showChildrenList(node) {
+  const list = document.getElementById("sb-children");
+  if (!node || !node.children) {
+    // Show module-level deps/dependents
+    if (node && node.data.moduleId) {
+      const deps = allData.edges.filter(e => e.source === node.data.moduleId).map(e => e.target);
+      const depnts = allData.edges.filter(e => e.target === node.data.moduleId).map(e => e.source);
+      let html = "";
+      if (depnts.length) html += `<li style="color:#475569;cursor:default;font-weight:600">Dependents (${depnts.length})</li>` +
+        depnts.sort().slice(0, 20).map(d => `<li data-search="${d}">${d}</li>`).join("") +
+        (depnts.length > 20 ? `<li style="color:#334155;cursor:default">...and ${depnts.length - 20} more</li>` : "");
+      if (deps.length) html += `<li style="color:#475569;cursor:default;font-weight:600;margin-top:6px">Dependencies (${deps.length})</li>` +
+        deps.sort().slice(0, 20).map(d => `<li data-search="${d}">${d}</li>`).join("") +
+        (deps.length > 20 ? `<li style="color:#334155;cursor:default">...and ${deps.length - 20} more</li>` : "");
+      if (!html) html = "<li style='color:#334155;cursor:default'>No connections</li>";
+      list.innerHTML = html;
+      list.querySelectorAll("li[data-search]").forEach(li => {
+        li.addEventListener("click", () => {
+          document.getElementById("search-bar").value = li.getAttribute("data-search");
+          searchTerm = li.getAttribute("data-search");
+        });
+      });
+      return;
+    }
+    list.innerHTML = "<li style='color:#334155;cursor:default'>Leaf node</li>";
+    return;
+  }
+  list.innerHTML = node.children
+    .map(c => {
+      const count = c.leaves().length;
+      return `<li data-name="${c.data.name}">${c.data.name} (${count})</li>`;
+    }).join("");
+
+  list.querySelectorAll("li[data-name]").forEach(li => {
+    li.addEventListener("click", () => {
+      const name = li.getAttribute("data-name");
+      const child = node.children.find(c => c.data.name === name);
+      if (child && child.children) drillDown(child);
+    });
+  });
+}
+
+// ============================================================
+// Tooltip
+// ============================================================
+function showTooltip(cell, mx, my) {
+  const tt = document.getElementById("tooltip");
+  const titleEl = tt.querySelector(".tt-title");
+  const subEl = tt.querySelector(".tt-sub");
+
+  if (!cell) { tt.style.display = "none"; return; }
+
+  const leafCount = cell.leaves().length;
+  titleEl.textContent = cell.data.name;
+
+  if (cell.data.nodeType === "module") {
+    const fi = fanInMap[cell.data.moduleId] || 0;
+    const dc = depCountMap[cell.data.moduleId] || 0;
+    subEl.textContent = `${cell.data.moduleId} · fan-in: ${fi}, deps: ${dc}`;
+  } else if (cell.data.nodeType === "layer") {
+    subEl.textContent = `${cell.data.repo} · ${leafCount} modules`;
+  } else if (cell.data.nodeType === "repo") {
+    const layers = cell.children ? cell.children.length : 0;
+    subEl.textContent = `${layers} layers · ${leafCount} modules`;
+  } else {
+    subEl.textContent = `${leafCount} modules`;
+  }
+
+  tt.style.display = "block";
+  const graphRect = document.getElementById("graph-area").getBoundingClientRect();
+  tt.style.left = Math.min(mx + 12, graphRect.width - 290) + "px";
+  tt.style.top = Math.min(my + 12, graphRect.height - 60) + "px";
+}
+
+// ============================================================
+// Mouse events
+// ============================================================
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const cell = getCellAt(mx, my);
+  hoveredCell = cell;
+  canvas.style.cursor = cell && cell.children ? "pointer" : cell ? "default" : "default";
+  showTooltip(cell, mx, my);
+});
+
+canvas.addEventListener("mouseleave", () => {
+  hoveredCell = null;
+  document.getElementById("tooltip").style.display = "none";
+});
+
+canvas.addEventListener("click", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const cell = getCellAt(mx, my);
+  if (cell) {
+    if (cell.children && cell.children.length > 0) {
+      drillDown(cell);
+    } else {
+      updateSidebar(cell);
+    }
+  }
+});
+
+canvas.addEventListener("contextmenu", e => {
+  e.preventDefault();
+  drillUp();
+});
+
+// --- Pan & Zoom via d3.zoom ---
+const zoomBehavior = d3.zoom()
+  .scaleExtent([0.3, 8])
+  .filter(e => {
+    // Allow wheel zoom always, allow middle-button drag, allow left-drag only with ctrl/meta
+    if (e.type === "wheel") return true;
+    if (e.button === 1) return true; // middle mouse
+    if (e.type === "mousedown" && (e.ctrlKey || e.metaKey || e.shiftKey)) return true;
+    if (e.type === "touchstart") return true;
+    return false;
+  })
+  .on("zoom", e => {
+    transform = { x: e.transform.x, y: e.transform.y, k: e.transform.k };
+  });
+
+d3.select(canvas).call(zoomBehavior);
+
+// ============================================================
+// Controls event wiring
+// ============================================================
+function rebuildAndRender() {
+  if (!allData) return;
+  hierarchy = buildHierarchy(allData);
+  currentNode = hierarchy;
+  resetZoom();
+  resize();
+  layoutTreemap();
+  updateBreadcrumb();
+  updateSidebar(hierarchy);
+  updateStats();
+}
+
+function updateStats() {
+  if (!hierarchy) return;
+  const leaves = hierarchy.leaves().length;
+  const nodes = allData.meta.nodes;
+  const repoFilter = document.getElementById("repoFilter").value;
+  const layerFilter = document.getElementById("layerFilter").value;
+  document.getElementById("stats").innerHTML =
+    `Showing <b>${leaves}</b> modules` +
+    (repoFilter !== "all" ? ` (${repoFilter})` : "") +
+    (layerFilter !== "all" ? ` [${layerFilter}]` : "") +
+    `<br>Total: ${nodes} nodes, ${allData.meta.edges} edges, ${allData.meta.repos} repos`;
+}
+
+// Search
+document.getElementById("search-bar").addEventListener("input", e => {
+  searchTerm = e.target.value;
+});
+
+// Filters that require full rebuild
+["repoFilter", "layerFilter", "sizeBy"].forEach(id => {
+  document.getElementById(id).addEventListener("change", rebuildAndRender);
+});
+
+// Display toggles that only need re-layout or re-compute edges
+document.getElementById("showEdges").addEventListener("change", () => { computeCrossEdges(); });
+document.getElementById("edgeFilter").addEventListener("change", () => { computeCrossEdges(); });
+document.getElementById("colorBy").addEventListener("change", () => { /* redraw picks up new colors */ });
+
+// ============================================================
+// Populate legend
+// ============================================================
+function buildLegend() {
+  const legend = document.getElementById("repoLegend");
+  if (!allData) return;
+  const rc = {};
+  allData.nodes.forEach(n => rc[n.repo] = (rc[n.repo] || 0) + 1);
+  legend.innerHTML = "";
+  Object.entries(rc).sort((a,b) => b[1] - a[1]).forEach(([repo, count]) => {
+    const d = document.createElement("div"); d.className = "li active";
+    d.innerHTML = `<span class="dot" style="background:${REPO_COLORS[repo]?.fg || '#64748b'}"></span>${repo} (${count})`;
+    d.onclick = () => { document.getElementById("repoFilter").value = repo; rebuildAndRender(); };
+    legend.appendChild(d);
+  });
+}
+
+function populateLayerFilter() {
+  if (!allData) return;
+  const layers = [...new Set(allData.nodes.map(n => n.layer))].sort();
+  const sel = document.getElementById("layerFilter");
+  // Keep "all" option, add the rest
+  sel.innerHTML = '<option value="all">All layers</option>';
+  layers.forEach(l => { const o = document.createElement("option"); o.value = l; o.textContent = l; sel.appendChild(o); });
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadGraph().then(data => {
+  if (!data) { document.getElementById("stats").textContent = "Error loading data"; return; }
+  allData = data;
+  computeMetrics(data);
+  hierarchy = buildHierarchy(data);
+  currentNode = hierarchy;
+
+  populateLayerFilter();
+  buildLegend();
+  resize();
+  layoutTreemap();
+  updateBreadcrumb();
+  updateSidebar(hierarchy);
+  updateStats();
+  draw();
+
+  window.addEventListener("resize", resize);
+});
+</script>
+</body>
+</html>
