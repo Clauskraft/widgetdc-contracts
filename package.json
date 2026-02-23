@@ -57,7 +57,9 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@sinclair/typebox": "^0.34.0"
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@sinclair/typebox": "^0.34.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "dependency-cruiser": "^16.10.4",
