@@ -74,6 +74,12 @@
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   /* Scrollbar */
+  /* Board selector */
+  .board-selector { display: flex; gap: 2px; background: #0a0d12; border: 1px solid #1a1f2e; border-radius: 8px; padding: 3px; }
+  .board-btn { padding: 7px 16px; font-size: 12px; border-radius: 6px; text-decoration: none; color: #475569; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
+  .board-btn.active { background: #1e293b; color: #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .board-btn:hover:not(.active) { color: #94a3b8; background: #141824; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #0b0e14; }
   ::-webkit-scrollbar-thumb { background: #1a1f2e; border-radius: 3px; }
@@ -89,7 +95,10 @@
 <body>
 
 <div id="topbar">
-  <h1>Changelog</h1>
+  <div class="board-selector">
+    <a href="/dashboard" class="board-btn active">&#127959;&#65039; Architecture</a>
+    <a href="/data" class="board-btn">&#128300; DataPulse</a>
+  </div>
   <div class="view-toggle">
     <a href="/dashboard">Dashboard</a>
     <a href="/graph">Graph</a>
