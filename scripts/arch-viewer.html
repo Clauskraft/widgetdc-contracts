@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WidgeTDC Architecture Graph</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
+
+  #controls { width: 260px; border-right: 1px solid #1a1f2e; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-shrink: 0; background: #0f1219; }
+  #controls h1 { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+  #controls input, #controls select { width: 100%; padding: 7px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; }
+  #controls input:focus, #controls select:focus { border-color: #6366f1; }
+  .fg { display: flex; flex-direction: column; gap: 3px; }
+  .fg label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px; }
+  .li { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #94a3b8; cursor: pointer; padding: 2px 6px; border-radius: 4px; user-select: none; }
+  .li:hover { background: #1a1f2e; }
+  .li.active { background: #1e2740; color: #e2e8f0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; cursor: pointer; user-select: none; }
+  .toggle input { accent-color: #6366f1; }
+  .stats { font-size: 10px; color: #475569; padding: 6px 0; border-top: 1px solid #1a1f2e; line-height: 1.6; }
+  .edge-legend { display: flex; gap: 10px; font-size: 10px; color: #475569; }
+  .edge-legend span { display: flex; align-items: center; gap: 3px; }
+
+  #sidebar { width: 280px; border-left: 1px solid #1a1f2e; padding: 14px; overflow-y: auto; display: none; flex-shrink: 0; background: #0f1219; }
+  #sidebar h2 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #f1f5f9; }
+  #sidebar .dt { font-size: 11px; color: #64748b; margin-bottom: 5px; word-break: break-all; }
+  #sidebar .dt b { color: #94a3b8; }
+  #sidebar .dl { list-style: none; font-size: 11px; max-height: 180px; overflow-y: auto; }
+  #sidebar .dl li { padding: 2px 0; color: #818cf8; cursor: pointer; }
+  #sidebar .dl li:hover { text-decoration: underline; }
+  .sh { font-size: 10px; color: #475569; margin: 10px 0 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  #graph { flex: 1; position: relative; }
+  canvas { width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <h1>WidgeTDC Architecture</h1>
+
+  <div class="fg" style="flex-direction:row;gap:2px;background:#141824;border-radius:6px;padding:2px">
+    <a href="arch-viewer.html" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#e2e8f0;background:#1e2740;font-weight:500">Graph</a>
+    <a href="arch-viewer-overview.html" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Overview</a>
+  </div>
+
+  <div class="fg">
+    <label>Search</label>
+    <input id="search" type="text" placeholder="e.g. backend.mcp or contracts">
+  </div>
+
+  <div class="fg">
+    <label>Repo</label>
+    <select id="repoFilter">
+      <option value="all">All repos</option>
+      <option value="backend">Backend (blue)</option>
+      <option value="frontend">Frontend (green)</option>
+      <option value="rlm">RLM Engine (orange)</option>
+      <option value="contracts">Contracts (purple)</option>
+    </select>
+  </div>
+
+  <div class="fg">
+    <label>Layer</label>
+    <select id="layerFilter">
+      <option value="all">All layers</option>
+    </select>
+  </div>
+
+  <div class="fg">
+    <label>Edges</label>
+    <select id="edgeFilter">
+      <option value="all">All types</option>
+      <option value="import">Import only</option>
+      <option value="http">HTTP only</option>
+      <option value="contract">Contract only</option>
+    </select>
+  </div>
+
+  <div class="fg">
+    <label style="margin-bottom:2px">Display</label>
+    <label class="toggle"><input type="checkbox" id="showEdges"> Show edges</label>
+    <label class="toggle"><input type="checkbox" id="showLabels" checked> Show labels</label>
+    <label class="toggle"><input type="checkbox" id="clusterRepos" checked> Cluster by repo</label>
+  </div>
+
+  <div class="fg">
+    <label>Repos</label>
+    <div class="legend" id="repoLegend"></div>
+  </div>
+
+  <div class="fg">
+    <label>Edge types</label>
+    <div class="edge-legend">
+      <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#334155" stroke-width="1"/></svg> import</span>
+      <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,2"/></svg> http</span>
+      <span><svg width="16" height="4"><line x1="0" y1="2" x2="16" y2="2" stroke="#a78bfa" stroke-width="2"/></svg> contract</span>
+    </div>
+  </div>
+
+  <div class="stats" id="stats">Loading...</div>
+</div>
+
+<div id="graph"><canvas id="canvas"></canvas></div>
+
+<div id="sidebar">
+  <h2 id="sbTitle"></h2>
+  <div class="dt" id="sbId"></div>
+  <div class="dt" id="sbPath"></div>
+  <div class="dt" id="sbRepo"></div>
+  <div class="dt" id="sbLayer"></div>
+  <div class="dt" id="sbFanIn"></div>
+  <div class="sh">Dependencies</div>
+  <ul class="dl" id="sbDeps"></ul>
+  <div class="sh">Dependents</div>
+  <ul class="dl" id="sbDependents"></ul>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// --- Config ---
+const COLORS = { backend: "#3b82f6", frontend: "#22c55e", rlm: "#f97316", contracts: "#a855f7" };
+const COLORS_DIM = { backend: "#1e3a5f", frontend: "#14532d", rlm: "#7c2d12", contracts: "#581c87" };
+const EDGE_COLORS = { import: "#1e293b", http: "#f59e0b", contract: "#a78bfa" };
+const CLUSTER_CENTERS = { backend: { x: -300, y: 0 }, frontend: { x: 300, y: -200 }, rlm: { x: 300, y: 200 }, contracts: { x: 0, y: 300 } };
+
+let allData = null, visNodes = [], visEdges = [], simulation = null;
+let hoveredNode = null, selectedNode = null, transform = d3.zoomIdentity;
+let fanIn = {};
+
+// --- Load ---
+async function loadGraph() {
+  for (const path of ["arch/platform-graph.json", "platform-graph.json", "../arch/platform-graph.json"]) {
+    try { const r = await fetch(path); if (r.ok) return r.json(); } catch(_) {}
+  }
+  document.getElementById("stats").textContent = "Error: platform-graph.json not found";
+  return null;
+}
+
+// --- Canvas renderer (much faster than SVG for 1400+ nodes) ---
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let W, H, dpr;
+
+function resizeCanvas() {
+  const rect = document.getElementById("graph").getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = rect.width; H = rect.height;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function draw() {
+  ctx.save();
+  ctx.clearRect(0, 0, W, H);
+  ctx.translate(transform.x, transform.y);
+  ctx.scale(transform.k, transform.k);
+
+  const showEdges = document.getElementById("showEdges").checked;
+  const showLabels = document.getElementById("showLabels").checked;
+  const search = document.getElementById("search").value.toLowerCase();
+
+  // Edges
+  if (showEdges) {
+    for (const e of visEdges) {
+      const sx = e.source.x, sy = e.source.y, tx = e.target.x, ty = e.target.y;
+      if (sx === undefined || tx === undefined) continue;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy); ctx.lineTo(tx, ty);
+      let alpha = 0.12;
+      if (search) {
+        const sm = (e.source.id || "").toLowerCase().includes(search) || (e.target.id || "").toLowerCase().includes(search);
+        alpha = sm ? 0.5 : 0.02;
+      }
+      if (selectedNode && ((e.source.id || e.source) === selectedNode.id || (e.target.id || e.target) === selectedNode.id)) alpha = 0.8;
+      ctx.strokeStyle = EDGE_COLORS[e.type] || "#1e293b";
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = e.type === "contract" ? 1.5 : e.type === "http" ? 1 : 0.4;
+      if (e.type === "http") ctx.setLineDash([4, 3]); else ctx.setLineDash([]);
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.setLineDash([]);
+
+  // Nodes
+  for (const n of visNodes) {
+    if (n.x === undefined) continue;
+    const fi = fanIn[n.id] || 0;
+    const r = Math.max(2.5, Math.min(10, 2.5 + fi * 0.4));
+    const match = search ? n.id.toLowerCase().includes(search) : true;
+    const isSel = selectedNode && selectedNode.id === n.id;
+    const isHov = hoveredNode && hoveredNode.id === n.id;
+
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, isSel ? r * 1.8 : isHov ? r * 1.4 : r, 0, Math.PI * 2);
+    ctx.fillStyle = match ? (COLORS[n.repo] || "#6b7280") : (COLORS_DIM[n.repo] || "#1e293b");
+    ctx.globalAlpha = match ? 1 : 0.25;
+    ctx.fill();
+
+    if (isSel || isHov) {
+      ctx.strokeStyle = "#f1f5f9";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // Labels (only at sufficient zoom or for high fan-in / searched / selected)
+  if (showLabels && transform.k > 0.6) {
+    ctx.font = `${Math.max(8, 10 / transform.k)}px Inter, system-ui, sans-serif`;
+    ctx.textBaseline = "middle";
+    const labelThreshold = transform.k > 1.5 ? 0 : transform.k > 1 ? 2 : 5;
+    for (const n of visNodes) {
+      if (n.x === undefined) continue;
+      const fi = fanIn[n.id] || 0;
+      const match = search ? n.id.toLowerCase().includes(search) : false;
+      const isSel = selectedNode && selectedNode.id === n.id;
+      if (fi < labelThreshold && !match && !isSel) continue;
+      const r = Math.max(2.5, Math.min(10, 2.5 + fi * 0.4));
+      ctx.fillStyle = match || isSel ? "#e2e8f0" : "#64748b";
+      ctx.globalAlpha = match || isSel ? 1 : 0.7;
+      ctx.fillText(n.label, n.x + r + 3, n.y);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+  requestAnimationFrame(draw);
+}
+
+// --- Simulation ---
+function buildSim() {
+  const cluster = document.getElementById("clusterRepos").checked;
+  if (simulation) simulation.stop();
+
+  simulation = d3.forceSimulation(visNodes)
+    .force("link", d3.forceLink(visEdges).id(d => d.id).distance(25).strength(0.15))
+    .force("charge", d3.forceManyBody().strength(-18).distanceMax(300))
+    .force("center", d3.forceCenter(0, 0).strength(0.02))
+    .force("collision", d3.forceCollide().radius(4).strength(0.3))
+    .alphaDecay(0.015)
+    .velocityDecay(0.4);
+
+  if (cluster) {
+    simulation.force("cluster", d3.forceX(d => (CLUSTER_CENTERS[d.repo]?.x || 0) * 2).strength(0.12));
+    simulation.force("clusterY", d3.forceY(d => (CLUSTER_CENTERS[d.repo]?.y || 0) * 2).strength(0.12));
+  } else {
+    simulation.force("cluster", null);
+    simulation.force("clusterY", null);
+  }
+}
+
+// --- Filtering ---
+function applyFilters() {
+  if (!allData) return;
+  const repo = document.getElementById("repoFilter").value;
+  const layer = document.getElementById("layerFilter").value;
+  const edge = document.getElementById("edgeFilter").value;
+
+  visNodes = allData.nodes.filter(n => {
+    if (repo !== "all" && n.repo !== repo) return false;
+    if (layer !== "all" && n.layer !== layer) return false;
+    return true;
+  });
+  const nodeIds = new Set(visNodes.map(n => n.id));
+  visEdges = allData.edges.filter(e => {
+    if (!nodeIds.has(e.source.id || e.source) || !nodeIds.has(e.target.id || e.target)) return false;
+    if (edge !== "all" && e.type !== edge) return false;
+    return true;
+  });
+
+  // Recompute fan-in for visible
+  fanIn = {};
+  visNodes.forEach(n => fanIn[n.id] = 0);
+  visEdges.forEach(e => { const t = e.target.id || e.target; if (fanIn[t] !== undefined) fanIn[t]++; });
+
+  document.getElementById("stats").innerHTML =
+    `Showing <b>${visNodes.length}</b> nodes, <b>${visEdges.length}</b> edges` +
+    (repo !== "all" ? ` (${repo})` : "") +
+    (layer !== "all" ? ` [${layer}]` : "") +
+    `<br>Total: ${allData.meta.nodes} nodes, ${allData.meta.edges} edges, ${allData.meta.repos} repos`;
+
+  buildSim();
+}
+
+// --- Sidebar ---
+function showSidebar(node) {
+  selectedNode = node;
+  const sb = document.getElementById("sidebar");
+  sb.style.display = "block";
+  document.getElementById("sbTitle").textContent = node.label;
+  document.getElementById("sbId").innerHTML = `<b>ID:</b> ${node.id}`;
+  document.getElementById("sbPath").innerHTML = `<b>Path:</b> ${node.path}`;
+  document.getElementById("sbRepo").innerHTML = `<b>Repo:</b> ${node.repo}`;
+  document.getElementById("sbLayer").innerHTML = `<b>Layer:</b> ${node.layer}`;
+  document.getElementById("sbFanIn").innerHTML = `<b>Fan-in:</b> ${fanIn[node.id] || 0}`;
+
+  const deps = visEdges.filter(e => (e.source.id || e.source) === node.id).map(e => e.target.id || e.target);
+  const depnts = visEdges.filter(e => (e.target.id || e.target) === node.id).map(e => e.source.id || e.source);
+
+  const mkList = (arr, el) => {
+    el.innerHTML = arr.length
+      ? arr.sort().map(d => `<li onclick="document.getElementById('search').value='${d}';applyFilters()">${d}</li>`).join("")
+      : "<li style='color:#334155'>None</li>";
+  };
+  mkList(deps, document.getElementById("sbDeps"));
+  mkList(depnts, document.getElementById("sbDependents"));
+}
+
+// --- Mouse interaction on canvas ---
+function getNodeAt(mx, my) {
+  const px = (mx - transform.x) / transform.k;
+  const py = (my - transform.y) / transform.k;
+  let closest = null, minD = 12 / transform.k;
+  for (const n of visNodes) {
+    if (n.x === undefined) continue;
+    const d = Math.hypot(n.x - px, n.y - py);
+    if (d < minD) { minD = d; closest = n; }
+  }
+  return closest;
+}
+
+let dragNode = null, didDrag = false, downX = 0, downY = 0;
+
+canvas.addEventListener("mousemove", e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  if (dragNode) {
+    const dx = e.clientX - downX, dy = e.clientY - downY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag = true;
+    dragNode.fx = (mx - transform.x) / transform.k;
+    dragNode.fy = (my - transform.y) / transform.k;
+    simulation.alphaTarget(0.1).restart();
+    return;
+  }
+  hoveredNode = getNodeAt(mx, my);
+  canvas.style.cursor = hoveredNode ? "pointer" : "default";
+});
+
+canvas.addEventListener("mousedown", e => {
+  if (e.button !== 0) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const n = getNodeAt(mx, my);
+  if (n) {
+    e.stopPropagation();
+    dragNode = n; didDrag = false;
+    downX = e.clientX; downY = e.clientY;
+    n.fx = n.x; n.fy = n.y;
+  }
+});
+
+// Listen on window so release always fires even if cursor leaves canvas
+window.addEventListener("mouseup", () => {
+  if (!dragNode) return;
+  if (!didDrag) showSidebar(dragNode);
+  dragNode.fx = null; dragNode.fy = null;
+  simulation.alphaTarget(0);
+  dragNode = null; didDrag = false;
+});
+
+canvas.addEventListener("dblclick", e => {
+  const rect = canvas.getBoundingClientRect();
+  const n = getNodeAt(e.clientX - rect.left, e.clientY - rect.top);
+  if (n) {
+    document.getElementById("search").value = n.id;
+    applyFilters();
+  }
+});
+
+// --- Zoom ---
+d3.select(canvas).call(
+  d3.zoom().scaleExtent([0.05, 10]).on("zoom", e => { transform = e.transform; })
+).on("dblclick.zoom", null);
+
+// --- Init ---
+loadGraph().then(data => {
+  if (!data) return;
+  allData = data;
+
+  // Populate layer filter
+  const layers = [...new Set(data.nodes.map(n => n.layer))].sort();
+  const layerSel = document.getElementById("layerFilter");
+  layers.forEach(l => { const o = document.createElement("option"); o.value = l; o.textContent = l; layerSel.appendChild(o); });
+
+  // Legend
+  const legendEl = document.getElementById("repoLegend");
+  const rc = {}; data.nodes.forEach(n => rc[n.repo] = (rc[n.repo] || 0) + 1);
+  Object.entries(rc).sort((a, b) => b[1] - a[1]).forEach(([repo, count]) => {
+    const d = document.createElement("div"); d.className = "li active";
+    d.innerHTML = `<span class="dot" style="background:${COLORS[repo]}"></span>${repo} (${count})`;
+    d.onclick = () => { document.getElementById("repoFilter").value = repo; applyFilters(); };
+    legendEl.appendChild(d);
+  });
+
+  resizeCanvas();
+  // Set initial zoom to fit graph
+  transform = d3.zoomIdentity.translate(W / 2, H / 2).scale(0.5);
+  d3.select(canvas).call(d3.zoom().scaleExtent([0.05, 10]).on("zoom", e => { transform = e.transform; }).transform, transform);
+
+  applyFilters();
+  draw();
+
+  // Event listeners
+  ["repoFilter", "layerFilter", "edgeFilter"].forEach(id => document.getElementById(id).addEventListener("change", applyFilters));
+  document.getElementById("clusterRepos").addEventListener("change", () => buildSim());
+  window.addEventListener("resize", () => { resizeCanvas(); });
+});
+</script>
+</body>
+</html>
