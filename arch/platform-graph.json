@@ -134,18 +134,18 @@
       "label": "RedisService"
     },
     {
-      "id": "backend.services.logging.logStream",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/logging/logStream.ts",
-      "label": "logStream"
-    },
-    {
       "id": "backend.utils.LoggerWrapper",
       "repo": "backend",
       "layer": "utils",
       "path": "apps/backend/src/utils/LoggerWrapper.ts",
       "label": "LoggerWrapper"
+    },
+    {
+      "id": "backend.utils.logging.logStream",
+      "repo": "backend",
+      "layer": "utils",
+      "path": "apps/backend/src/utils/logging/logStream.ts",
+      "label": "logStream"
     },
     {
       "id": "backend.agents.sentinel-agent",
@@ -225,11 +225,11 @@
       "label": "EnneagramCore"
     },
     {
-      "id": "backend.mcp.EventBus",
+      "id": "backend.services.mcpEventBus",
       "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/EventBus.ts",
-      "label": "EventBus"
+      "layer": "services",
+      "path": "apps/backend/src/services/mcpEventBus.ts",
+      "label": "mcpEventBus"
     },
     {
       "id": "backend.mcp.memory.FailureMemory",
@@ -435,11 +435,32 @@
       "label": "harvest"
     },
     {
+      "id": "backend.lib.serviceAccessors",
+      "repo": "backend",
+      "layer": "lib",
+      "path": "apps/backend/src/lib/serviceAccessors.ts",
+      "label": "serviceAccessors"
+    },
+    {
       "id": "backend.mcp.agentTaskHandlers",
       "repo": "backend",
       "layer": "mcp",
       "path": "apps/backend/src/mcp/agentTaskHandlers.ts",
       "label": "agentTaskHandlers"
+    },
+    {
+      "id": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/cognitive/UnifiedGraphRAG.ts",
+      "label": "UnifiedGraphRAG"
+    },
+    {
+      "id": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/cognitive/UnifiedMemorySystem.ts",
+      "label": "UnifiedMemorySystem"
     },
     {
       "id": "backend.mcp.communityHandlers",
@@ -496,6 +517,13 @@
       "layer": "mcp",
       "path": "apps/backend/src/mcp/projectMemoryHandlers.ts",
       "label": "projectMemoryHandlers"
+    },
+    {
+      "id": "backend.mcp.prometheus.CodeDreaming",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/prometheus/CodeDreaming.ts",
+      "label": "CodeDreaming"
     },
     {
       "id": "backend.mcp.prometheus.CodeImmuneSystem",
@@ -1009,13 +1037,6 @@
       "label": "engram"
     },
     {
-      "id": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/cognitive/UnifiedGraphRAG.ts",
-      "label": "UnifiedGraphRAG"
-    },
-    {
       "id": "backend.services.InjectionService",
       "repo": "backend",
       "layer": "services",
@@ -1042,90 +1063,6 @@
       "layer": "core",
       "path": "apps/backend/src/engram/SimpleEngramCache.ts",
       "label": "SimpleEngramCache"
-    },
-    {
-      "id": "backend.services.evidence.EvidenceGraphService",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/evidence/EvidenceGraphService.ts",
-      "label": "EvidenceGraphService"
-    },
-    {
-      "id": "backend.services.memory.memoryRepository",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/memory/memoryRepository.ts",
-      "label": "memoryRepository"
-    },
-    {
-      "id": "backend.mcp.cognitive.HybridSearchEngine",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/cognitive/HybridSearchEngine.ts",
-      "label": "HybridSearchEngine"
-    },
-    {
-      "id": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/cognitive/UnifiedMemorySystem.ts",
-      "label": "UnifiedMemorySystem"
-    },
-    {
-      "id": "backend.services.context-folding.EvidenceExtractor",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/context-folding/EvidenceExtractor.ts",
-      "label": "EvidenceExtractor"
-    },
-    {
-      "id": "backend.services.context-folding.ChunkingService",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/context-folding/ChunkingService.ts",
-      "label": "ChunkingService"
-    },
-    {
-      "id": "backend.services.srag.sragRepository",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/srag/sragRepository.ts",
-      "label": "sragRepository"
-    },
-    {
-      "id": "backend.platform.working-memory.WorkingMemoryStore",
-      "repo": "backend",
-      "layer": "platform",
-      "path": "apps/backend/src/platform/working-memory/WorkingMemoryStore.ts",
-      "label": "WorkingMemoryStore"
-    },
-    {
-      "id": "backend.services.evolution.evolutionRepository",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/evolution/evolutionRepository.ts",
-      "label": "evolutionRepository"
-    },
-    {
-      "id": "backend.services.pal.palRepository",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/pal/palRepository.ts",
-      "label": "palRepository"
-    },
-    {
-      "id": "backend.mcp.cognitive.ProductionRuleEngine",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/cognitive/ProductionRuleEngine.ts",
-      "label": "ProductionRuleEngine"
-    },
-    {
-      "id": "backend.platform.outbox.OutboxService",
-      "repo": "backend",
-      "layer": "platform",
-      "path": "apps/backend/src/platform/outbox/OutboxService.ts",
-      "label": "OutboxService"
     },
     {
       "id": "backend.middleware.traceMiddleware",
@@ -1343,6 +1280,83 @@
       "layer": "core",
       "path": "apps/backend/src/cron/selfHealingCron.ts",
       "label": "selfHealingCron"
+    },
+    {
+      "id": "backend.services.evidence.EvidenceGraphService",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/evidence/EvidenceGraphService.ts",
+      "label": "EvidenceGraphService"
+    },
+    {
+      "id": "backend.services.memory.memoryRepository",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/memory/memoryRepository.ts",
+      "label": "memoryRepository"
+    },
+    {
+      "id": "backend.mcp.cognitive.HybridSearchEngine",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/cognitive/HybridSearchEngine.ts",
+      "label": "HybridSearchEngine"
+    },
+    {
+      "id": "backend.services.context-folding.EvidenceExtractor",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/context-folding/EvidenceExtractor.ts",
+      "label": "EvidenceExtractor"
+    },
+    {
+      "id": "backend.services.context-folding.ChunkingService",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/context-folding/ChunkingService.ts",
+      "label": "ChunkingService"
+    },
+    {
+      "id": "backend.services.srag.sragRepository",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/srag/sragRepository.ts",
+      "label": "sragRepository"
+    },
+    {
+      "id": "backend.platform.working-memory.WorkingMemoryStore",
+      "repo": "backend",
+      "layer": "platform",
+      "path": "apps/backend/src/platform/working-memory/WorkingMemoryStore.ts",
+      "label": "WorkingMemoryStore"
+    },
+    {
+      "id": "backend.services.evolution.evolutionRepository",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/evolution/evolutionRepository.ts",
+      "label": "evolutionRepository"
+    },
+    {
+      "id": "backend.services.pal.palRepository",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/pal/palRepository.ts",
+      "label": "palRepository"
+    },
+    {
+      "id": "backend.mcp.cognitive.ProductionRuleEngine",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/cognitive/ProductionRuleEngine.ts",
+      "label": "ProductionRuleEngine"
+    },
+    {
+      "id": "backend.platform.outbox.OutboxService",
+      "repo": "backend",
+      "layer": "platform",
+      "path": "apps/backend/src/platform/outbox/OutboxService.ts",
+      "label": "OutboxService"
     },
     {
       "id": "backend.services.ContributionBus",
@@ -1611,6 +1625,13 @@
       "label": "AgentIntelligenceLayer"
     },
     {
+      "id": "backend.mcp.prometheus.CodeEmbeddingSpace",
+      "repo": "backend",
+      "layer": "mcp",
+      "path": "apps/backend/src/mcp/prometheus/CodeEmbeddingSpace.ts",
+      "label": "CodeEmbeddingSpace"
+    },
+    {
       "id": "backend.types.mcp",
       "repo": "backend",
       "layer": "types",
@@ -1658,20 +1679,6 @@
       "layer": "mcp",
       "path": "apps/backend/src/mcp/prometheus/CodeAttentionMechanism.ts",
       "label": "CodeAttentionMechanism"
-    },
-    {
-      "id": "backend.mcp.prometheus.CodeDreaming",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/prometheus/CodeDreaming.ts",
-      "label": "CodeDreaming"
-    },
-    {
-      "id": "backend.mcp.prometheus.CodeEmbeddingSpace",
-      "repo": "backend",
-      "layer": "mcp",
-      "path": "apps/backend/src/mcp/prometheus/CodeEmbeddingSpace.ts",
-      "label": "CodeEmbeddingSpace"
     },
     {
       "id": "backend.mcp.prometheus.CodeHomeostasis",
@@ -2288,6 +2295,13 @@
       "layer": "routes",
       "path": "apps/backend/src/routes/approvals.ts",
       "label": "approvals"
+    },
+    {
+      "id": "backend.routes.archMcpRoutes",
+      "repo": "backend",
+      "layer": "routes",
+      "path": "apps/backend/src/routes/archMcpRoutes.ts",
+      "label": "archMcpRoutes"
     },
     {
       "id": "backend.routes.auth",
@@ -7806,6 +7820,13 @@
       "label": "pal"
     },
     {
+      "id": "backend.packages.mcp-types.src.service-ports",
+      "repo": "backend",
+      "layer": "core",
+      "path": "packages/mcp-types/src/service-ports.ts",
+      "label": "service-ports"
+    },
+    {
       "id": "backend.packages.mcp-types.src.srag",
       "repo": "backend",
       "layer": "core",
@@ -9903,12 +9924,12 @@
     },
     {
       "source": "backend.utils.logger",
-      "target": "backend.services.logging.logStream",
+      "target": "backend.utils.LoggerWrapper",
       "type": "import"
     },
     {
       "source": "backend.utils.logger",
-      "target": "backend.utils.LoggerWrapper",
+      "target": "backend.utils.logging.logStream",
       "type": "import"
     },
     {
@@ -10008,12 +10029,12 @@
     },
     {
       "source": "backend.mcp.memory.CognitiveMemory",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.memory.CognitiveMemory",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
@@ -10032,7 +10053,7 @@
       "type": "import"
     },
     {
-      "source": "backend.mcp.EventBus",
+      "source": "backend.services.mcpEventBus",
       "target": "backend.services.EventBus",
       "type": "import"
     },
@@ -10043,12 +10064,12 @@
     },
     {
       "source": "backend.mcp.memory.FailureMemory",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.memory.FailureMemory",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
@@ -10088,12 +10109,12 @@
     },
     {
       "source": "backend.mcp.memory.PatternMemory",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.memory.PatternMemory",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
@@ -10273,7 +10294,22 @@
     },
     {
       "source": "backend.bootstrap.mcp",
+      "target": "backend.lib.serviceAccessors",
+      "type": "import"
+    },
+    {
+      "source": "backend.bootstrap.mcp",
       "target": "backend.mcp.agentTaskHandlers",
+      "type": "import"
+    },
+    {
+      "source": "backend.bootstrap.mcp",
+      "target": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "type": "import"
+    },
+    {
+      "source": "backend.bootstrap.mcp",
+      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
       "type": "import"
     },
     {
@@ -10314,6 +10350,11 @@
     {
       "source": "backend.bootstrap.mcp",
       "target": "backend.mcp.projectMemoryHandlers",
+      "type": "import"
+    },
+    {
+      "source": "backend.bootstrap.mcp",
+      "target": "backend.mcp.prometheus.CodeDreaming",
       "type": "import"
     },
     {
@@ -10618,7 +10659,7 @@
     },
     {
       "source": "backend.services.project.ProjectMemory",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -10733,11 +10774,6 @@
     },
     {
       "source": "backend.services.consulting.CommanderService",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.consulting.CommanderService",
       "target": "backend.utils.logger",
       "type": "import"
     },
@@ -10748,17 +10784,22 @@
     },
     {
       "source": "backend.services.consulting.CommanderService",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.consulting.CommanderService",
       "target": "backend.services.consulting.ClientPersonalityService",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.DocumentGenerationService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.DocumentGenerationService",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -10788,12 +10829,12 @@
     },
     {
       "source": "backend.services.docgen.DrawioService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.DrawioService",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -10803,22 +10844,22 @@
     },
     {
       "source": "backend.services.docgen.MCPPowerPointBackend",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.MCPPowerPointBackend",
-      "target": "backend.utils.logger",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.docgen.PDFExportService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.PDFExportService",
       "target": "backend.utils.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.docgen.PDFExportService",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -10848,7 +10889,7 @@
     },
     {
       "source": "backend.services.LLMProxyService",
-      "target": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -10877,233 +10918,8 @@
       "type": "import"
     },
     {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.services.embeddings.EmbeddingService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.services.evidence.EvidenceGraphService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.services.llm.llmService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.services.memory.memoryRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.services.Neo4jService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.mcp.memory.CognitiveMemory",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.mcp.cognitive.HybridSearchEngine",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.evidence.EvidenceGraphService",
-      "target": "backend.utils.LoggerWrapper",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.evidence.EvidenceGraphService",
-      "target": "backend.services.context-folding.EvidenceExtractor",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.evidence.EvidenceGraphService",
-      "target": "backend.services.Neo4jService",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.context-folding.EvidenceExtractor",
-      "target": "backend.config.logger",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.context-folding.EvidenceExtractor",
-      "target": "backend.services.context-folding.ChunkingService",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.context-folding.ChunkingService",
-      "target": "backend.config.logger",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.memory.memoryRepository",
-      "target": "backend.database.prisma",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.memory.memoryRepository",
+      "source": "backend.lib.serviceAccessors",
       "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.HybridSearchEngine",
-      "target": "backend.services.memory.memoryRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.HybridSearchEngine",
-      "target": "backend.services.srag.sragRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.HybridSearchEngine",
-      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.HybridSearchEngine",
-      "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.srag.sragRepository",
-      "target": "backend.database.prisma",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.srag.sragRepository",
-      "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.database",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.database.prisma",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.platform.db.PrismaDatabaseAdapter",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.platform.working-memory.WorkingMemoryStore",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.services.evolution.evolutionRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.services.memory.memoryRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.services.pal.palRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.services.project.ProjectMemory",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.services.srag.sragRepository",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.mcp.memory.CognitiveMemory",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.mcp.memory.StorageAdapter",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.mcp.cognitive.HybridSearchEngine",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.mcp.cognitive.ProductionRuleEngine",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.platform.working-memory.WorkingMemoryStore",
-      "target": "backend.services.RedisService",
-      "type": "import"
-    },
-    {
-      "source": "backend.platform.working-memory.WorkingMemoryStore",
-      "target": "backend.platform.outbox.OutboxService",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.evolution.evolutionRepository",
-      "target": "backend.database",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.evolution.evolutionRepository",
-      "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.pal.palRepository",
-      "target": "backend.database.prisma",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.pal.palRepository",
-      "target": "backend.packages.mcp-types.dist",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.ProductionRuleEngine",
-      "target": "backend.database.prisma",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.ProductionRuleEngine",
-      "target": "backend.utils.logger",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.cognitive.ProductionRuleEngine",
-      "target": "backend.mcp.memory.CognitiveMemory",
       "type": "import"
     },
     {
@@ -11348,7 +11164,7 @@
     },
     {
       "source": "backend.harvest.HarvestNexus",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -11647,6 +11463,236 @@
       "type": "import"
     },
     {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.services.embeddings.EmbeddingService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.services.evidence.EvidenceGraphService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.services.llm.llmService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.services.memory.memoryRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.mcp.memory.CognitiveMemory",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.mcp.cognitive.HybridSearchEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedGraphRAG",
+      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.evidence.EvidenceGraphService",
+      "target": "backend.utils.LoggerWrapper",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.evidence.EvidenceGraphService",
+      "target": "backend.services.context-folding.EvidenceExtractor",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.evidence.EvidenceGraphService",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.context-folding.EvidenceExtractor",
+      "target": "backend.config.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.context-folding.EvidenceExtractor",
+      "target": "backend.services.context-folding.ChunkingService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.context-folding.ChunkingService",
+      "target": "backend.config.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.memory.memoryRepository",
+      "target": "backend.database.prisma",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.memory.memoryRepository",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.HybridSearchEngine",
+      "target": "backend.services.memory.memoryRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.HybridSearchEngine",
+      "target": "backend.services.srag.sragRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.HybridSearchEngine",
+      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.HybridSearchEngine",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.srag.sragRepository",
+      "target": "backend.database.prisma",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.srag.sragRepository",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.database",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.database.prisma",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.platform.db.PrismaDatabaseAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.platform.working-memory.WorkingMemoryStore",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.evolution.evolutionRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.memory.memoryRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.pal.palRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.project.ProjectMemory",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.services.srag.sragRepository",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.mcp.memory.CognitiveMemory",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.mcp.memory.StorageAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.mcp.cognitive.HybridSearchEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.mcp.cognitive.ProductionRuleEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.platform.working-memory.WorkingMemoryStore",
+      "target": "backend.services.RedisService",
+      "type": "import"
+    },
+    {
+      "source": "backend.platform.working-memory.WorkingMemoryStore",
+      "target": "backend.platform.outbox.OutboxService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.evolution.evolutionRepository",
+      "target": "backend.database",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.evolution.evolutionRepository",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.pal.palRepository",
+      "target": "backend.database.prisma",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.pal.palRepository",
+      "target": "backend.packages.mcp-types.dist",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.ProductionRuleEngine",
+      "target": "backend.database.prisma",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.ProductionRuleEngine",
+      "target": "backend.utils.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.cognitive.ProductionRuleEngine",
+      "target": "backend.mcp.memory.CognitiveMemory",
+      "type": "import"
+    },
+    {
       "source": "backend.mcp.communityHandlers",
       "target": "backend.services.ContributionBus",
       "type": "import"
@@ -11673,12 +11719,12 @@
     },
     {
       "source": "backend.services.devtools.DevToolsService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.devtools.DevToolsService",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -11853,12 +11899,12 @@
     },
     {
       "source": "backend.services.ingestion.DataIngestionEngine",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.platform.vector",
       "type": "import"
     },
     {
       "source": "backend.services.ingestion.DataIngestionEngine",
-      "target": "backend.platform.vector",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -12222,6 +12268,41 @@
       "type": "import"
     },
     {
+      "source": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.services.hyper-log",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.services.llm.llmService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.utils.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.mcp.prometheus.CodeEmbeddingSpace",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeEmbeddingSpace",
+      "target": "backend.services.hyper-log",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.CodeEmbeddingSpace",
+      "target": "backend.utils.logger",
+      "type": "import"
+    },
+    {
       "source": "backend.mcp.prometheus.CodeImmuneSystem",
       "target": "backend.services.hyper-log",
       "type": "import"
@@ -12283,12 +12364,12 @@
     },
     {
       "source": "backend.services.harvest.DanishAnnualReportsHarvester",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.harvest.DanishAnnualReportsHarvester",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -12482,41 +12563,6 @@
       "type": "import"
     },
     {
-      "source": "backend.mcp.prometheus.CodeDreaming",
-      "target": "backend.services.hyper-log",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeDreaming",
-      "target": "backend.services.llm.llmService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeDreaming",
-      "target": "backend.services.Neo4jService",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeDreaming",
-      "target": "backend.utils.logger",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeDreaming",
-      "target": "backend.mcp.prometheus.CodeEmbeddingSpace",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeEmbeddingSpace",
-      "target": "backend.services.hyper-log",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.CodeEmbeddingSpace",
-      "target": "backend.utils.logger",
-      "type": "import"
-    },
-    {
       "source": "backend.mcp.prometheus.CodeHomeostasis",
       "target": "backend.services.hyper-log",
       "type": "import"
@@ -12573,17 +12619,17 @@
     },
     {
       "source": "backend.mcp.prometheus.PrometheusTeacher",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.prometheus.PrometheusTeacher",
       "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.mcp.prometheus.PrometheusTeacher",
       "target": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.prometheus.PrometheusTeacher",
-      "target": "backend.mcp.EventBus",
       "type": "import"
     },
     {
@@ -12823,6 +12869,11 @@
     },
     {
       "source": "backend.mcp.toolHandlers",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.toolHandlers",
       "target": "backend.services.memory.memoryRepository",
       "type": "import"
     },
@@ -12899,11 +12950,6 @@
     {
       "source": "backend.mcp.toolHandlers",
       "target": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.toolHandlers",
-      "target": "backend.mcp.EventBus",
       "type": "import"
     },
     {
@@ -13033,12 +13079,12 @@
     },
     {
       "source": "backend.mcp.cognitive.TaskRecorder",
-      "target": "backend.services.project.ProjectMemory",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.cognitive.TaskRecorder",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.project.ProjectMemory",
       "type": "import"
     },
     {
@@ -13493,7 +13539,7 @@
     },
     {
       "source": "backend.services.intel.DanishIntelService",
-      "target": "backend.services.logging.logStream",
+      "target": "backend.utils.logging.logStream",
       "type": "import"
     },
     {
@@ -13503,7 +13549,7 @@
     },
     {
       "source": "backend.services.mcp-backend-core.mcpBackendCoreDeps",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -13523,7 +13569,7 @@
     },
     {
       "source": "backend.services.NeuralChat.CapabilityCatalog",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -13808,12 +13854,12 @@
     },
     {
       "source": "backend.utils.WarningAggregator",
-      "target": "backend.services.hyper-log",
+      "target": "backend.services.SelfHealingAdapter",
       "type": "import"
     },
     {
       "source": "backend.utils.WarningAggregator",
-      "target": "backend.services.SelfHealingAdapter",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
@@ -13909,6 +13955,11 @@
     {
       "source": "backend.bootstrap.routes",
       "target": "backend.routes.approvals",
+      "type": "import"
+    },
+    {
+      "source": "backend.bootstrap.routes",
+      "target": "backend.routes.archMcpRoutes",
       "type": "import"
     },
     {
@@ -14643,6 +14694,11 @@
     },
     {
       "source": "backend.mcp.autonomousRouter",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.autonomousRouter",
       "target": "backend.services.project.ProjectMemory",
       "type": "import"
     },
@@ -14688,11 +14744,6 @@
     },
     {
       "source": "backend.mcp.autonomousRouter",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.autonomousRouter",
       "target": "backend.mcp.memory.CognitiveMemory",
       "type": "import"
     },
@@ -14723,6 +14774,11 @@
     },
     {
       "source": "backend.mcp.mcpRouter",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.mcp.mcpRouter",
       "target": "backend.utils.logger",
       "type": "import"
     },
@@ -14734,11 +14790,6 @@
     {
       "source": "backend.mcp.mcpRouter",
       "target": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "type": "import"
-    },
-    {
-      "source": "backend.mcp.mcpRouter",
-      "target": "backend.mcp.EventBus",
       "type": "import"
     },
     {
@@ -14763,7 +14814,7 @@
     },
     {
       "source": "backend.harvest.HarvestMetrics",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -14778,12 +14829,12 @@
     },
     {
       "source": "backend.mcp.cognitive.AutonomousTaskEngine",
-      "target": "backend.mcp.autonomous.AutonomousAgent",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.cognitive.AutonomousTaskEngine",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.mcp.autonomous.AutonomousAgent",
       "type": "import"
     },
     {
@@ -14843,11 +14894,6 @@
     },
     {
       "source": "backend.routes.acquisition",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.routes.acquisition",
       "target": "backend.mcp.SourceRegistry",
       "type": "import"
     },
@@ -14859,6 +14905,11 @@
     {
       "source": "backend.routes.acquisition",
       "target": "backend.services.KnowledgeAcquisitionService",
+      "type": "import"
+    },
+    {
+      "source": "backend.routes.acquisition",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -15367,6 +15418,16 @@
       "type": "import"
     },
     {
+      "source": "backend.routes.archMcpRoutes",
+      "target": "backend.config.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.routes.archMcpRoutes",
+      "target": "backend.middleware.traceMiddleware",
+      "type": "import"
+    },
+    {
       "source": "backend.routes.auth",
       "target": "backend.middleware.authMiddleware",
       "type": "import"
@@ -15538,7 +15599,7 @@
     },
     {
       "source": "backend.services.NodeBooster",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -15553,7 +15614,7 @@
     },
     {
       "source": "backend.services.UniversalConnectivityMesh",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -15638,7 +15699,7 @@
     },
     {
       "source": "backend.services.ConsultingIntelligenceService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -15958,7 +16019,7 @@
     },
     {
       "source": "backend.routes.email",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16328,11 +16389,6 @@
     },
     {
       "source": "backend.services.agent.HansPedderAgentController",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.agent.HansPedderAgentController",
       "target": "backend.platform.vector.Neo4jVectorStoreAdapter",
       "type": "import"
     },
@@ -16353,6 +16409,11 @@
     },
     {
       "source": "backend.services.agent.HansPedderAgentController",
+      "target": "backend.services.mcpEventBus",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.agent.HansPedderAgentController",
       "target": "backend.services.MetricsService",
       "type": "import"
     },
@@ -16368,11 +16429,6 @@
     },
     {
       "source": "backend.services.ingestion.DataScheduler",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.DataScheduler",
       "target": "backend.platform.vector.Neo4jVectorStoreAdapter",
       "type": "import"
     },
@@ -16384,6 +16440,11 @@
     {
       "source": "backend.services.ingestion.DataScheduler",
       "target": "backend.utils.resilience",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.DataScheduler",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16418,17 +16479,17 @@
     },
     {
       "source": "backend.services.ingestion.InternalLeakHunter",
-      "target": "backend.mcp.EventBus",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.InternalLeakHunter",
       "target": "backend.platform.vector.Neo4jVectorStoreAdapter",
       "type": "import"
     },
     {
       "source": "backend.services.ingestion.InternalLeakHunter",
       "target": "backend.utils.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.InternalLeakHunter",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16463,7 +16524,7 @@
     },
     {
       "source": "backend.harvest.BullMQScheduler",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16488,7 +16549,7 @@
     },
     {
       "source": "backend.harvest.HarvestScheduler",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16803,7 +16864,7 @@
     },
     {
       "source": "backend.services.IntegrationOptimizer",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -16963,7 +17024,7 @@
     },
     {
       "source": "backend.routes.logs",
-      "target": "backend.services.logging.logStream",
+      "target": "backend.utils.logging.logStream",
       "type": "import"
     },
     {
@@ -17228,7 +17289,7 @@
     },
     {
       "source": "backend.services.NeuralOperationsHub",
-      "target": "backend.mcp.prometheus.CodeDreaming",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -17433,7 +17494,7 @@
     },
     {
       "source": "backend.routes.prototype",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -17508,12 +17569,12 @@
     },
     {
       "source": "backend.routes.sharepointRoutes",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.harvester.ExcelContentExtractor",
       "type": "import"
     },
     {
       "source": "backend.routes.sharepointRoutes",
-      "target": "backend.services.harvester.ExcelContentExtractor",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -17798,7 +17859,7 @@
     },
     {
       "source": "backend.routes.sys",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -17898,7 +17959,7 @@
     },
     {
       "source": "backend.services.tools.ToolCatalogService",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -18383,12 +18444,12 @@
     },
     {
       "source": "backend.services.email.emailIngestController",
-      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
       "source": "backend.services.email.emailIngestController",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -18778,11 +18839,6 @@
     },
     {
       "source": "backend.services.ChatService",
-      "target": "backend.mcp.cognitive.UnifiedGraphRAG",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ChatService",
       "target": "backend.services.llm.llmService",
       "type": "import"
     },
@@ -18923,12 +18979,12 @@
     },
     {
       "source": "backend.services.docgen.composer.PresentationOrchestrator",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.composer.PresentationOrchestrator",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -19068,12 +19124,12 @@
     },
     {
       "source": "backend.services.docgen.WordDocumentService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
       "source": "backend.services.docgen.WordDocumentService",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -19093,7 +19149,7 @@
     },
     {
       "source": "backend.services.CortexHealthMonitor",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -19148,7 +19204,7 @@
     },
     {
       "source": "backend.services.NudgeService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -19303,12 +19359,12 @@
     },
     {
       "source": "backend.bootstrap.telemetry",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.platform.graph.Neo4jGraphAdapter",
       "type": "import"
     },
     {
       "source": "backend.bootstrap.telemetry",
-      "target": "backend.platform.graph.Neo4jGraphAdapter",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -19948,7 +20004,7 @@
     },
     {
       "source": "backend.services.PrototypeService",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -20508,7 +20564,7 @@
     },
     {
       "source": "backend.services.OODALoop",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -20768,12 +20824,12 @@
     },
     {
       "source": "backend.mcp.mcpWebsocketServer",
-      "target": "backend.utils.logger",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.mcpWebsocketServer",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.utils.logger",
       "type": "import"
     },
     {
@@ -20808,12 +20864,12 @@
     },
     {
       "source": "backend.mcp.prototypeHandlers",
-      "target": "backend.services.PrototypeService",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
       "source": "backend.mcp.prototypeHandlers",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.PrototypeService",
       "type": "import"
     },
     {
@@ -22053,7 +22109,7 @@
     },
     {
       "source": "backend.services.DeliverableGeneratorService",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -22073,7 +22129,7 @@
     },
     {
       "source": "backend.services.StepExecutorService",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -22378,7 +22434,7 @@
     },
     {
       "source": "backend.services.agentic.AgentsetAdapter",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
@@ -22693,11 +22749,6 @@
     },
     {
       "source": "backend.services.harvester.AdaptiveScraper",
-      "target": "backend.mcp.cognitive.AgentCommunication",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.harvester.AdaptiveScraper",
       "target": "backend.services.harvester.ScribdHarvester",
       "type": "import"
     },
@@ -22743,17 +22794,17 @@
     },
     {
       "source": "backend.services.ingestion.IngestionPipeline",
-      "target": "backend.mcp.cognitive.UnifiedMemorySystem",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.IngestionPipeline",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.lib.serviceAccessors",
       "type": "import"
     },
     {
       "source": "backend.services.ingestion.IngestionPipeline",
       "target": "backend.platform.vector",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.IngestionPipeline",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -22953,7 +23004,7 @@
     },
     {
       "source": "backend.services.osint.OSINTEventPublisher",
-      "target": "backend.mcp.EventBus",
+      "target": "backend.services.mcpEventBus",
       "type": "import"
     },
     {
@@ -23558,7 +23609,17 @@
     },
     {
       "source": "backend.packages.mcp-types.src",
+      "target": "backend.packages.mcp-types.src.service-ports",
+      "type": "import"
+    },
+    {
+      "source": "backend.packages.mcp-types.src",
       "target": "backend.packages.mcp-types.src.srag",
+      "type": "import"
+    },
+    {
+      "source": "backend.packages.mcp-types.src.service-ports",
+      "target": "backend.packages.mcp-types.src",
       "type": "import"
     },
     {
@@ -26938,9 +26999,9 @@
     }
   ],
   "meta": {
-    "generated": "2026-02-23T08:55:07.687Z",
+    "generated": "2026-02-23T16:29:13.237Z",
     "repos": 4,
-    "nodes": 1402,
-    "edges": 3424
+    "nodes": 1405,
+    "edges": 3432
   }
 }
