@@ -1,5 +1,8 @@
 node_modules/
 
+# Architecture graph outputs (generated, ephemeral)
+arch/*.json
+
 # dist/ is committed — required for git+https: consumers (npm strips source via `files` field)
 # Regenerate: npm run build
 # schemas/ and python/ are also committed — generated artifacts consumed by other repos
