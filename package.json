@@ -51,9 +51,9 @@
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-sync.ts",
     "prepublishOnly": "npm run generate && npm run test",
-    "arch:scan": "depcruise --config .dependency-cruiser.cjs --output-type json src > arch/contracts-graph.json",
+    "arch:scan": "mkdir -p arch && depcruise --config .dependency-cruiser.cjs --output-type json src > arch/contracts-graph.json",
     "arch:aggregate": "tsx scripts/arch-aggregate.ts",
-    "arch:view": "npx serve arch/",
+    "arch:view": "npx serve .",
     "prepare": "husky"
   },
   "dependencies": {

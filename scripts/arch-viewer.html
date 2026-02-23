@@ -129,7 +129,7 @@ let fanIn = {};
 
 // --- Load ---
 async function loadGraph() {
-  for (const path of ["platform-graph.json", "arch/platform-graph.json", "../arch/platform-graph.json"]) {
+  for (const path of ["arch/platform-graph.json", "platform-graph.json", "../arch/platform-graph.json"]) {
     try { const r = await fetch(path); if (r.ok) return r.json(); } catch(_) {}
   }
   document.getElementById("stats").textContent = "Error: platform-graph.json not found";
@@ -343,6 +343,7 @@ canvas.addEventListener("mousedown", e => {
   const mx = e.clientX - rect.left, my = e.clientY - rect.top;
   const n = getNodeAt(mx, my);
   if (n) {
+    e.stopPropagation();
     dragNode = n; didDrag = false;
     downX = e.clientX; downY = e.clientY;
     n.fx = n.x; n.fy = n.y;
@@ -401,7 +402,6 @@ loadGraph().then(data => {
   draw();
 
   // Event listeners
-  ["search"].forEach(id => document.getElementById(id).addEventListener("input", applyFilters));
   ["repoFilter", "layerFilter", "edgeFilter"].forEach(id => document.getElementById(id).addEventListener("change", applyFilters));
   document.getElementById("clusterRepos").addEventListener("change", () => buildSim());
   window.addEventListener("resize", () => { resizeCanvas(); });
