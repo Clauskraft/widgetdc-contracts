@@ -1,0 +1,910 @@
+{
+  "meta": {
+    "generated": "2026-02-23T00:00:00Z",
+    "version": "1.0.0",
+    "totalSources": 24,
+    "totalPipelines": 18,
+    "totalDestinations": 6
+  },
+  "sources": [
+    {
+      "id": "src-neo4j-aura",
+      "name": "Neo4j AuraDB",
+      "type": "graph_database",
+      "category": "core_infrastructure",
+      "protocol": "bolt",
+      "endpoint": "neo4j+s://xxx.databases.neo4j.io",
+      "owner": "platform-team",
+      "description": "Central knowledge graph. 89K+ nodes, 484K+ relationships. L1/L2/L3 process hierarchy, methodologies, tools, case studies.",
+      "schema": {
+        "nodeLabels": ["L1ProcessFlow", "L2SubProcess", "L3Task", "Methodology", "MCPTool", "CodeImplementation", "FinancialModel", "DeliverableTemplate", "DataSource", "ConsultingDomain", "CaseStudy", "KPI", "DataContract", "Widget", "OSINTTool", "AgentProfile"],
+        "relationshipTypes": ["BELONGS_TO_DOMAIN", "HAS_SUBPROCESS", "HAS_TASK", "USES_METHODOLOGY", "IMPLEMENTED_BY", "EXECUTES", "PRODUCES", "MONITORS", "RENDERS"],
+        "estimatedNodes": 89724,
+        "estimatedRelationships": 484472
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T08:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.73,
+        "consistency": 0.85,
+        "accuracy": 0.91,
+        "knownIssues": [
+          "29 orphaned CodeImplementation nodes not linked to MCPTools",
+          "77/89 MCP tools are empty shells without code",
+          "0 L3 Task nodes exist (layer not built)",
+          "42+ widgets in code but 0 registered in graph"
+        ]
+      },
+      "dependencies": ["src-railway-compute"],
+      "consumers": ["pipe-consulting-engine", "pipe-rag-pipeline", "pipe-graph-viz"]
+    },
+    {
+      "id": "src-postgresql-pgvector",
+      "name": "PostgreSQL + pgvector",
+      "type": "relational_database",
+      "category": "core_infrastructure",
+      "protocol": "postgresql",
+      "endpoint": "postgresql://xxx.railway.app:5432/railway",
+      "owner": "platform-team",
+      "description": "Vector embeddings store for semantic similarity search. Stores document chunks, tool descriptions, methodology embeddings.",
+      "schema": {
+        "tables": ["embeddings", "documents", "chunks", "tool_embeddings"],
+        "extensions": ["pgvector", "pg_trgm"],
+        "estimatedRows": 150000
+      },
+      "freshness": {
+        "updateFrequency": "on_harvest",
+        "lastUpdate": "2026-02-22T14:30:00Z",
+        "staleness_threshold_hours": 48
+      },
+      "quality": {
+        "completeness": 0.65,
+        "consistency": 0.90,
+        "accuracy": 0.88,
+        "knownIssues": [
+          "Embedding model changed from OpenAI to HuggingFace — mixed vectors",
+          "Stale embeddings not pruned after source deletions",
+          "No automated embedding freshness validation"
+        ]
+      },
+      "dependencies": ["src-railway-compute"],
+      "consumers": ["pipe-rag-pipeline", "pipe-semantic-search"]
+    },
+    {
+      "id": "src-redis-cache",
+      "name": "Redis Cache",
+      "type": "cache",
+      "category": "core_infrastructure",
+      "protocol": "redis",
+      "endpoint": "redis://xxx.railway.app:6379",
+      "owner": "platform-team",
+      "description": "Session state, tool result caching, rate limiting, MCP transport session storage.",
+      "schema": {
+        "keyPatterns": ["session:*", "tool:*", "rate:*", "mcp:*", "health:*"],
+        "estimatedKeys": 5000
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.95,
+        "consistency": 0.99,
+        "accuracy": 0.99,
+        "knownIssues": [
+          "No TTL policy enforcement — some keys persist indefinitely",
+          "No memory usage monitoring alerting"
+        ]
+      },
+      "dependencies": ["src-railway-compute"],
+      "consumers": ["pipe-mcp-backbone", "pipe-session-mgmt"]
+    },
+    {
+      "id": "src-ms-graph",
+      "name": "Microsoft Graph API",
+      "type": "api",
+      "category": "enterprise_integration",
+      "protocol": "https_rest",
+      "endpoint": "https://graph.microsoft.com/v1.0",
+      "owner": "clak",
+      "description": "Microsoft 365 integration — emails, SharePoint documents, calendar, Teams messages. Primary enterprise data source.",
+      "schema": {
+        "scopes": ["Mail.Read", "Files.Read", "Sites.Read.All", "Calendars.Read"],
+        "entityTypes": ["message", "driveItem", "site", "event"]
+      },
+      "freshness": {
+        "updateFrequency": "hourly",
+        "lastUpdate": "2026-02-23T07:00:00Z",
+        "staleness_threshold_hours": 4
+      },
+      "quality": {
+        "completeness": 0.80,
+        "consistency": 0.92,
+        "accuracy": 0.95,
+        "knownIssues": [
+          "Token refresh failures cause 4-6h gaps",
+          "SharePoint delta sync not implemented — full re-crawl each time",
+          "No dedup for forwarded email chains"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-email-harvester", "pipe-sharepoint-harvester"]
+    },
+    {
+      "id": "src-sharepoint",
+      "name": "SharePoint Document Libraries",
+      "type": "document_store",
+      "category": "enterprise_integration",
+      "protocol": "https_rest",
+      "endpoint": "https://graph.microsoft.com/v1.0/sites",
+      "owner": "clak",
+      "description": "Corporate document libraries — policies, procedures, project files, templates. Accessed via MS Graph.",
+      "schema": {
+        "libraries": ["Shared Documents", "Project Files", "Templates", "Policies"],
+        "fileTypes": ["docx", "xlsx", "pptx", "pdf"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-22T02:00:00Z",
+        "staleness_threshold_hours": 48
+      },
+      "quality": {
+        "completeness": 0.55,
+        "consistency": 0.70,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Only 3 of 12 document libraries connected",
+          "No incremental sync — full re-crawl daily",
+          "PDF text extraction fails on scanned documents",
+          "No metadata extraction from file properties"
+        ]
+      },
+      "dependencies": ["src-ms-graph"],
+      "consumers": ["pipe-sharepoint-harvester", "pipe-document-processor"]
+    },
+    {
+      "id": "src-scribd",
+      "name": "Scribd Document Intelligence",
+      "type": "document_platform",
+      "category": "knowledge_acquisition",
+      "protocol": "https_scrape",
+      "endpoint": "https://www.scribd.com",
+      "owner": "clak",
+      "description": "Premium consulting documents, research papers, industry reports. Harvested via API + scraping.",
+      "schema": {
+        "documentTypes": ["consulting_report", "industry_analysis", "methodology_guide", "case_study"],
+        "estimatedDocuments": 2500
+      },
+      "freshness": {
+        "updateFrequency": "weekly",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.45,
+        "consistency": 0.60,
+        "accuracy": 0.75,
+        "knownIssues": [
+          "Scraping blocked intermittently — 30% failure rate",
+          "No structured metadata extraction",
+          "Document dedup not implemented — ~15% duplicates estimated",
+          "Table extraction accuracy varies 23-97%"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-scribd-harvester"]
+    },
+    {
+      "id": "src-cisa-kev",
+      "name": "CISA Known Exploited Vulnerabilities",
+      "type": "threat_feed",
+      "category": "threat_intelligence",
+      "protocol": "https_rest",
+      "endpoint": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+      "owner": "platform-team",
+      "description": "Authoritative US government feed of actively exploited vulnerabilities. Critical for NIS2 compliance.",
+      "schema": {
+        "fields": ["cveID", "vendorProject", "product", "vulnerabilityName", "dateAdded", "dueDate", "requiredAction"],
+        "estimatedEntries": 1200
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-23T06:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.98,
+        "consistency": 0.99,
+        "accuracy": 0.99,
+        "knownIssues": []
+      },
+      "dependencies": [],
+      "consumers": ["pipe-threat-intel-aggregator"]
+    },
+    {
+      "id": "src-hackernews-feed",
+      "name": "TheHackerNews RSS",
+      "type": "rss_feed",
+      "category": "threat_intelligence",
+      "protocol": "https_rss",
+      "endpoint": "https://feeds.feedburner.com/TheHackersNews",
+      "owner": "platform-team",
+      "description": "Real-time cybersecurity news feed. Harvested hourly for threat landscape awareness.",
+      "schema": {
+        "fields": ["title", "link", "description", "pubDate", "category"],
+        "estimatedItems": 5000
+      },
+      "freshness": {
+        "updateFrequency": "hourly",
+        "lastUpdate": "2026-02-23T08:30:00Z",
+        "staleness_threshold_hours": 4
+      },
+      "quality": {
+        "completeness": 0.95,
+        "consistency": 0.90,
+        "accuracy": 0.85,
+        "knownIssues": [
+          "No severity classification on articles",
+          "Duplicate articles from RSS re-syndication"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-threat-intel-aggregator"]
+    },
+    {
+      "id": "src-version2",
+      "name": "Version2.dk Tech News",
+      "type": "rss_feed",
+      "category": "threat_intelligence",
+      "protocol": "https_rss",
+      "endpoint": "https://www.version2.dk/rss",
+      "owner": "platform-team",
+      "description": "Danish IT news feed. Relevant for local regulatory and industry context.",
+      "schema": {
+        "fields": ["title", "link", "description", "pubDate"],
+        "estimatedItems": 3000
+      },
+      "freshness": {
+        "updateFrequency": "hourly",
+        "lastUpdate": "2026-02-23T08:00:00Z",
+        "staleness_threshold_hours": 8
+      },
+      "quality": {
+        "completeness": 0.90,
+        "consistency": 0.85,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Danish language — no auto-translation pipeline",
+          "No topic classification"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-threat-intel-aggregator"]
+    },
+    {
+      "id": "src-nvd",
+      "name": "NVD (National Vulnerability Database)",
+      "type": "threat_feed",
+      "category": "threat_intelligence",
+      "protocol": "https_rest",
+      "endpoint": "https://services.nvd.nist.gov/rest/json/cves/2.0",
+      "owner": "platform-team",
+      "description": "Comprehensive CVE database with CVSS scores. Enriches CISA KEV data.",
+      "schema": {
+        "fields": ["cveId", "descriptions", "metrics", "references", "configurations"],
+        "estimatedEntries": 230000
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-22T18:00:00Z",
+        "staleness_threshold_hours": 48
+      },
+      "quality": {
+        "completeness": 0.92,
+        "consistency": 0.95,
+        "accuracy": 0.97,
+        "knownIssues": [
+          "Rate limited to 5 req/30s — full sync takes 6+ hours",
+          "New CVEs sometimes delayed 24-48h vs CISA"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-threat-intel-aggregator"]
+    },
+    {
+      "id": "src-github-repos",
+      "name": "GitHub Repositories (4 repos)",
+      "type": "version_control",
+      "category": "development",
+      "protocol": "https_rest",
+      "endpoint": "https://api.github.com",
+      "owner": "clak",
+      "description": "WidgeTDC source code: backend, frontend, RLM engine, contracts. Commit history, PRs, branches.",
+      "schema": {
+        "repos": ["WidgeTDC", "widgetdc-consulting-frontend", "widgetdc-rlm-engine", "widgetdc-contracts"],
+        "trackableEntities": ["commits", "pulls", "branches", "issues"]
+      },
+      "freshness": {
+        "updateFrequency": "on_push",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.98,
+        "consistency": 0.99,
+        "accuracy": 1.0,
+        "knownIssues": [
+          "Rate limited without GITHUB_TOKEN (60 req/h)",
+          "No webhook for real-time push events"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-arch-intelligence", "pipe-changelog"]
+    },
+    {
+      "id": "src-railway-metrics",
+      "name": "Railway Deployment Metrics",
+      "type": "observability",
+      "category": "development",
+      "protocol": "https_graphql",
+      "endpoint": "https://backboard.railway.com/graphql/v2",
+      "owner": "platform-team",
+      "description": "Deployment status, resource usage, service health for all Railway services.",
+      "schema": {
+        "services": ["backend", "rlm-engine", "consulting-frontend", "arch-mcp-server"],
+        "metrics": ["cpu", "memory", "network", "deployStatus"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.75,
+        "consistency": 0.90,
+        "accuracy": 0.95,
+        "knownIssues": [
+          "GraphQL API requires manual token rotation",
+          "No automated alerting on deploy failures"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-health-monitor"]
+    },
+    {
+      "id": "src-notion-cortex",
+      "name": "Notion CORTEX Command Center",
+      "type": "project_management",
+      "category": "enterprise_integration",
+      "protocol": "https_rest",
+      "endpoint": "https://api.notion.com/v1",
+      "owner": "clak",
+      "description": "System monitoring, agent coordination, task tracking, documentation. CORTEX Command Center.",
+      "schema": {
+        "databases": ["Agent Status", "System Health", "Task Queue", "Incident Log"],
+        "pages": 500
+      },
+      "freshness": {
+        "updateFrequency": "on_event",
+        "lastUpdate": "2026-02-23T08:45:00Z",
+        "staleness_threshold_hours": 12
+      },
+      "quality": {
+        "completeness": 0.70,
+        "consistency": 0.65,
+        "accuracy": 0.80,
+        "knownIssues": [
+          "Manual data entry lag — agent status often stale",
+          "No bidirectional sync with Neo4j graph",
+          "Incident log not automatically populated"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-cortex-sync"]
+    },
+    {
+      "id": "src-ollama-local",
+      "name": "Ollama Local LLM",
+      "type": "ml_service",
+      "category": "ai_providers",
+      "protocol": "http_rest",
+      "endpoint": "http://localhost:11434",
+      "owner": "clak",
+      "description": "Local LLM inference for cost-effective processing. Fallback when cloud APIs are down or rate-limited.",
+      "schema": {
+        "models": ["llama3.2", "mistral", "codellama"],
+        "capabilities": ["text_generation", "embeddings", "code_completion"]
+      },
+      "freshness": {
+        "updateFrequency": "on_demand",
+        "lastUpdate": "2026-02-20T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.60,
+        "consistency": 0.70,
+        "accuracy": 0.75,
+        "knownIssues": [
+          "Only available when dev machine is running",
+          "No GPU on Surface ARM64 — slow inference",
+          "Model versions not pinned"
+        ]
+      },
+      "dependencies": ["src-railway-compute"],
+      "consumers": ["pipe-llm-router"]
+    },
+    {
+      "id": "src-anthropic-api",
+      "name": "Anthropic Claude API",
+      "type": "ml_service",
+      "category": "ai_providers",
+      "protocol": "https_rest",
+      "endpoint": "https://api.anthropic.com/v1",
+      "owner": "clak",
+      "description": "Primary LLM provider for complex reasoning, consulting analysis, code generation.",
+      "schema": {
+        "models": ["claude-sonnet-4-5-20250929", "claude-haiku-4-5-20251001"],
+        "capabilities": ["text_generation", "analysis", "coding", "tool_use"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.95,
+        "consistency": 0.92,
+        "accuracy": 0.95,
+        "knownIssues": [
+          "Rate limiting during peak hours",
+          "Cost tracking not automated"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-llm-router"]
+    },
+    {
+      "id": "src-google-gemini",
+      "name": "Google Gemini API",
+      "type": "ml_service",
+      "category": "ai_providers",
+      "protocol": "https_rest",
+      "endpoint": "https://generativelanguage.googleapis.com/v1",
+      "owner": "clak",
+      "description": "Secondary LLM provider. Used for document analysis, summarization, fallback.",
+      "schema": {
+        "models": ["gemini-2.0-flash", "gemini-2.0-pro"],
+        "capabilities": ["text_generation", "multimodal", "grounding"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.90,
+        "consistency": 0.85,
+        "accuracy": 0.88,
+        "knownIssues": [
+          "Grounding API sometimes returns stale web data",
+          "No streaming support in current integration"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-llm-router"]
+    },
+    {
+      "id": "src-deepseek-api",
+      "name": "DeepSeek API",
+      "type": "ml_service",
+      "category": "ai_providers",
+      "protocol": "https_rest",
+      "endpoint": "https://api.deepseek.com/v1",
+      "owner": "clak",
+      "description": "Cost-effective LLM for bulk processing tasks. Code analysis, data extraction.",
+      "schema": {
+        "models": ["deepseek-chat", "deepseek-coder"],
+        "capabilities": ["text_generation", "coding", "math"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.85,
+        "consistency": 0.80,
+        "accuracy": 0.82,
+        "knownIssues": [
+          "Occasional outages (China-based service)",
+          "EU data sovereignty concern — no GDPR DPA in place"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-llm-router"]
+    },
+    {
+      "id": "src-huggingface",
+      "name": "HuggingFace Models & Inference",
+      "type": "ml_service",
+      "category": "ai_providers",
+      "protocol": "https_rest",
+      "endpoint": "https://api-inference.huggingface.co",
+      "owner": "clak",
+      "description": "Open-source models for embeddings, classification, NER. Primary embedding provider after OpenAI migration.",
+      "schema": {
+        "models": ["sentence-transformers/all-MiniLM-L6-v2", "dslim/bert-base-NER"],
+        "capabilities": ["embeddings", "ner", "classification", "sentiment"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 0.90,
+        "consistency": 0.88,
+        "accuracy": 0.85,
+        "knownIssues": [
+          "Free tier rate limiting — 1000 req/day",
+          "Inference API cold starts up to 30s"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-embedding-pipeline", "pipe-ner-pipeline"]
+    },
+    {
+      "id": "src-gartner-feeds",
+      "name": "Gartner Research Feeds",
+      "type": "rss_feed",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rss",
+      "endpoint": "https://www.gartner.com/en/rss",
+      "owner": "platform-team",
+      "description": "Industry analysis, technology trends, market forecasts. Limited to public RSS.",
+      "schema": {
+        "fields": ["title", "link", "description", "pubDate", "category"],
+        "estimatedItems": 1000
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-22T12:00:00Z",
+        "staleness_threshold_hours": 48
+      },
+      "quality": {
+        "completeness": 0.40,
+        "consistency": 0.80,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Only public RSS — paywalled content not accessible",
+          "No full-text extraction",
+          "Limited to research summaries"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-market-intelligence"]
+    },
+    {
+      "id": "src-hbr-feeds",
+      "name": "Harvard Business Review RSS",
+      "type": "rss_feed",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rss",
+      "endpoint": "https://hbr.org/rss",
+      "owner": "platform-team",
+      "description": "Management and strategy articles. Key consulting knowledge source.",
+      "schema": {
+        "fields": ["title", "link", "description", "pubDate", "author"],
+        "estimatedItems": 2000
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-22T06:00:00Z",
+        "staleness_threshold_hours": 48
+      },
+      "quality": {
+        "completeness": 0.50,
+        "consistency": 0.85,
+        "accuracy": 0.95,
+        "knownIssues": [
+          "Paywall blocks full article access",
+          "Only summary/abstract available via RSS"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-market-intelligence"]
+    },
+    {
+      "id": "src-cvr-api",
+      "name": "CVR Danish Business Registry",
+      "type": "api",
+      "category": "market_data",
+      "protocol": "https_rest",
+      "endpoint": "https://cvrapi.dk/api",
+      "owner": "platform-team",
+      "description": "Danish company registry. Financial data, ownership, industry codes for all Danish entities.",
+      "schema": {
+        "fields": ["vat", "name", "address", "industrydesc", "employees", "companydesc"],
+        "estimatedEntities": 700000
+      },
+      "freshness": {
+        "updateFrequency": "on_demand",
+        "lastUpdate": "2026-02-20T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.95,
+        "consistency": 0.98,
+        "accuracy": 0.99,
+        "knownIssues": [
+          "Rate limited — no bulk export",
+          "Financial data 1-2 quarters behind"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-client-intelligence"]
+    },
+    {
+      "id": "src-shodan",
+      "name": "Shodan Internet Scanner",
+      "type": "osint_api",
+      "category": "threat_intelligence",
+      "protocol": "https_rest",
+      "endpoint": "https://api.shodan.io",
+      "owner": "platform-team",
+      "description": "Internet-wide device and service scanner. Attack surface mapping for cybersecurity assessments.",
+      "schema": {
+        "fields": ["ip", "port", "org", "os", "product", "vulns"],
+        "capabilities": ["host_search", "dns_resolve", "exploit_search"]
+      },
+      "freshness": {
+        "updateFrequency": "on_demand",
+        "lastUpdate": "2026-02-18T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.80,
+        "consistency": 0.85,
+        "accuracy": 0.80,
+        "knownIssues": [
+          "Free tier: 1 query credit/month",
+          "Scan data can be 24-48h stale"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-osint-aggregator"]
+    },
+    {
+      "id": "src-haveibeenpwned",
+      "name": "Have I Been Pwned",
+      "type": "osint_api",
+      "category": "threat_intelligence",
+      "protocol": "https_rest",
+      "endpoint": "https://haveibeenpwned.com/api/v3",
+      "owner": "platform-team",
+      "description": "Breach database. Check email exposure for client risk assessments.",
+      "schema": {
+        "fields": ["Name", "Title", "Domain", "BreachDate", "DataClasses", "IsVerified"],
+        "capabilities": ["breach_search", "paste_search", "password_check"]
+      },
+      "freshness": {
+        "updateFrequency": "on_demand",
+        "lastUpdate": "2026-02-15T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.90,
+        "consistency": 0.95,
+        "accuracy": 0.95,
+        "knownIssues": [
+          "Requires paid API key for domain search",
+          "Rate limited: 10 req/minute"
+        ]
+      },
+      "dependencies": [],
+      "consumers": ["pipe-osint-aggregator"]
+    },
+    {
+      "id": "src-railway-compute",
+      "name": "Railway Compute Platform",
+      "type": "compute",
+      "category": "core_infrastructure",
+      "protocol": "internal",
+      "endpoint": "https://backend-production-d3da.up.railway.app",
+      "owner": "platform-team",
+      "description": "Railway hosting platform. Runs all WidgeTDC services.",
+      "schema": {
+        "services": ["backend", "rlm-engine", "consulting-frontend", "arch-mcp-server"]
+      },
+      "freshness": {
+        "updateFrequency": "continuous",
+        "lastUpdate": "2026-02-23T09:00:00Z",
+        "staleness_threshold_hours": 1
+      },
+      "quality": {
+        "completeness": 1.0,
+        "consistency": 0.95,
+        "accuracy": 1.0,
+        "knownIssues": []
+      },
+      "dependencies": [],
+      "consumers": []
+    }
+  ],
+  "pipelines": [
+    {
+      "id": "pipe-consulting-engine",
+      "name": "Consulting Engine Pipeline",
+      "description": "L1/L2/L3 process orchestration. Reads graph, executes tools, produces deliverables.",
+      "sources": ["src-neo4j-aura", "src-postgresql-pgvector"],
+      "destinations": ["dest-neo4j-write", "dest-deliverable-output"],
+      "schedule": "on_demand",
+      "status": "partial"
+    },
+    {
+      "id": "pipe-rag-pipeline",
+      "name": "KG-RAG Pipeline",
+      "description": "Retrieval-Augmented Generation. Combines graph queries with vector similarity for evidence-based answers.",
+      "sources": ["src-neo4j-aura", "src-postgresql-pgvector"],
+      "destinations": ["dest-api-response"],
+      "schedule": "on_demand",
+      "status": "planned"
+    },
+    {
+      "id": "pipe-threat-intel-aggregator",
+      "name": "Threat Intelligence Aggregator",
+      "description": "Harvests CISA KEV, NVD, TheHackerNews, Version2. Deduplicates, classifies, injects into graph.",
+      "sources": ["src-cisa-kev", "src-nvd", "src-hackernews-feed", "src-version2"],
+      "destinations": ["dest-neo4j-write"],
+      "schedule": "hourly",
+      "status": "active"
+    },
+    {
+      "id": "pipe-email-harvester",
+      "name": "Email Harvester",
+      "description": "Fetches emails via MS Graph, extracts intelligence signals, stores in graph.",
+      "sources": ["src-ms-graph"],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "hourly",
+      "status": "active"
+    },
+    {
+      "id": "pipe-sharepoint-harvester",
+      "name": "SharePoint Document Harvester",
+      "description": "Crawls SharePoint document libraries, extracts text, generates embeddings.",
+      "sources": ["src-sharepoint", "src-ms-graph"],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "daily",
+      "status": "active"
+    },
+    {
+      "id": "pipe-scribd-harvester",
+      "name": "Scribd Document Harvester",
+      "description": "Downloads and processes Scribd documents for consulting knowledge extraction.",
+      "sources": ["src-scribd"],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "weekly",
+      "status": "degraded"
+    },
+    {
+      "id": "pipe-osint-aggregator",
+      "name": "OSINT Intelligence Aggregator",
+      "description": "Combines Shodan, HIBP, and other OSINT tools for cybersecurity assessments.",
+      "sources": ["src-shodan", "src-haveibeenpwned"],
+      "destinations": ["dest-neo4j-write"],
+      "schedule": "on_demand",
+      "status": "active"
+    },
+    {
+      "id": "pipe-llm-router",
+      "name": "LLM Provider Router",
+      "description": "Routes inference requests to optimal provider based on cost, speed, capability. Auto-failover.",
+      "sources": ["src-anthropic-api", "src-google-gemini", "src-deepseek-api", "src-ollama-local", "src-huggingface"],
+      "destinations": ["dest-api-response"],
+      "schedule": "continuous",
+      "status": "active"
+    },
+    {
+      "id": "pipe-embedding-pipeline",
+      "name": "Embedding Generation Pipeline",
+      "description": "Generates vector embeddings for documents, tools, methodologies using HuggingFace models.",
+      "sources": ["src-huggingface"],
+      "destinations": ["dest-pgvector-write"],
+      "schedule": "on_harvest",
+      "status": "active"
+    },
+    {
+      "id": "pipe-arch-intelligence",
+      "name": "Architecture Intelligence Pipeline",
+      "description": "Scans codebases, generates dependency graphs, computes health scores.",
+      "sources": ["src-github-repos"],
+      "destinations": ["dest-arch-graph"],
+      "schedule": "on_push",
+      "status": "active"
+    },
+    {
+      "id": "pipe-health-monitor",
+      "name": "System Health Monitor",
+      "description": "Monitors Railway services, databases, external APIs. Reports to CORTEX.",
+      "sources": ["src-railway-metrics", "src-neo4j-aura", "src-redis-cache"],
+      "destinations": ["dest-notion-cortex"],
+      "schedule": "every_5min",
+      "status": "partial"
+    },
+    {
+      "id": "pipe-cortex-sync",
+      "name": "CORTEX Bidirectional Sync",
+      "description": "Syncs Notion CORTEX Command Center with platform state.",
+      "sources": ["src-notion-cortex"],
+      "destinations": ["dest-neo4j-write"],
+      "schedule": "every_15min",
+      "status": "planned"
+    },
+    {
+      "id": "pipe-market-intelligence",
+      "name": "Market Intelligence Aggregator",
+      "description": "Aggregates Gartner, HBR, and industry feeds for consulting knowledge.",
+      "sources": ["src-gartner-feeds", "src-hbr-feeds"],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "daily",
+      "status": "planned"
+    },
+    {
+      "id": "pipe-client-intelligence",
+      "name": "Client Intelligence Pipeline",
+      "description": "Enriches client profiles with CVR data, public financials, news.",
+      "sources": ["src-cvr-api"],
+      "destinations": ["dest-neo4j-write"],
+      "schedule": "on_demand",
+      "status": "active"
+    },
+    {
+      "id": "pipe-mcp-backbone",
+      "name": "MCP Communication Backbone",
+      "description": "WebSocket + HTTP MCP transport. Routes tool calls between agents and services.",
+      "sources": ["src-redis-cache"],
+      "destinations": ["dest-api-response"],
+      "schedule": "continuous",
+      "status": "active"
+    },
+    {
+      "id": "pipe-graph-viz",
+      "name": "Graph Visualization Pipeline",
+      "description": "Renders Neo4j graph data for interactive frontend visualizations.",
+      "sources": ["src-neo4j-aura"],
+      "destinations": ["dest-api-response"],
+      "schedule": "on_demand",
+      "status": "partial"
+    },
+    {
+      "id": "pipe-changelog",
+      "name": "Cross-Repo Changelog",
+      "description": "Aggregates commits from all 4 GitHub repos for the architecture changelog.",
+      "sources": ["src-github-repos"],
+      "destinations": ["dest-api-response"],
+      "schedule": "on_demand",
+      "status": "active"
+    },
+    {
+      "id": "pipe-document-processor",
+      "name": "Document Processing Pipeline",
+      "description": "OCR, table extraction, metadata extraction from uploaded documents.",
+      "sources": ["src-sharepoint"],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "on_upload",
+      "status": "degraded"
+    }
+  ],
+  "destinations": [
+    { "id": "dest-neo4j-write", "name": "Neo4j Graph Write", "type": "graph_database" },
+    { "id": "dest-pgvector-write", "name": "pgvector Embedding Store", "type": "vector_store" },
+    { "id": "dest-api-response", "name": "API Response (Client)", "type": "api_response" },
+    { "id": "dest-deliverable-output", "name": "Deliverable File Output", "type": "file_system" },
+    { "id": "dest-notion-cortex", "name": "Notion CORTEX Updates", "type": "project_management" },
+    { "id": "dest-arch-graph", "name": "Architecture Graph File", "type": "static_file" }
+  ]
+}

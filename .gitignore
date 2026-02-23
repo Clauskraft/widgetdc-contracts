@@ -4,6 +4,7 @@ node_modules/
 # Exception: platform-graph.json is committed for Railway MCP server
 arch/*.json
 !arch/platform-graph.json
+!arch/data-sources.json
 
 # dist/ is committed — required for git+https: consumers (npm strips source via `files` field)
 # Regenerate: npm run build
