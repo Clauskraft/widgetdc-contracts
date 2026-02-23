@@ -64,6 +64,42 @@ const GITHUB_REPOS = [
 let changelogCache: { data: ChangelogCommit[]; ts: number; since?: string } | null = null;
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
+// --- GitHub Branches & PRs ---
+interface OpenPR {
+  number: number;
+  title: string;
+  author: string;
+  state: string;
+  draft: boolean;
+  createdAt: string;
+  updatedAt: string;
+  repo: string;
+  repoLabel: string;
+  url: string;
+  labels: string[];
+  reviewStatus: string; // 'approved' | 'changes_requested' | 'review_required' | 'none'
+  additions: number;
+  deletions: number;
+  changedFiles: number;
+  baseBranch: string;
+  headBranch: string;
+}
+
+interface UnmergedBranch {
+  name: string;
+  repo: string;
+  repoLabel: string;
+  lastCommitSha: string;
+  lastCommitDate: string;
+  lastCommitAuthor: string;
+  aheadBy: number;
+  behindBy: number;
+  url: string;
+  isStale: boolean; // >30 days without activity
+}
+
+let branchesCache: { data: { prs: OpenPR[]; branches: UnmergedBranch[] }; ts: number } | null = null;
+
 async function fetchRepoCommits(
   owner: string,
   repo: string,
@@ -128,6 +164,145 @@ async function fetchAllChangelog(since?: string, limit = 100): Promise<{ commits
 
   changelogCache = { data: commits, ts: Date.now(), since: cacheKey };
   return { commits: commits.slice(0, limit), fromCache: false, warning };
+}
+
+// --- GitHub Branches & PRs fetchers ---
+function ghHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "WidgeTDC-Arch-Server",
+  };
+  const token = process.env.GITHUB_TOKEN;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+}
+
+async function fetchRepoPRs(owner: string, repo: string, label: string): Promise<OpenPR[]> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100`;
+  const res = await fetch(url, { headers: ghHeaders() });
+
+  if (!res.ok) {
+    console.warn(`[branches] GitHub ${res.status} for ${owner}/${repo}/pulls: ${res.statusText}`);
+    return [];
+  }
+
+  const data = await res.json() as any[];
+  return data.map((pr: any) => ({
+    number: pr.number,
+    title: pr.title || "",
+    author: pr.user?.login || "unknown",
+    state: pr.state,
+    draft: pr.draft || false,
+    createdAt: pr.created_at || "",
+    updatedAt: pr.updated_at || "",
+    repo: label,
+    repoLabel: label,
+    url: pr.html_url || "",
+    labels: (pr.labels || []).map((l: any) => l.name),
+    reviewStatus: "none", // Will be enriched below if possible
+    additions: pr.additions || 0,
+    deletions: pr.deletions || 0,
+    changedFiles: pr.changed_files || 0,
+    baseBranch: pr.base?.ref || "main",
+    headBranch: pr.head?.ref || "",
+  }));
+}
+
+async function fetchRepoBranches(owner: string, repo: string, label: string): Promise<UnmergedBranch[]> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/branches?per_page=100`;
+  const res = await fetch(url, { headers: ghHeaders() });
+
+  if (!res.ok) {
+    console.warn(`[branches] GitHub ${res.status} for ${owner}/${repo}/branches: ${res.statusText}`);
+    return [];
+  }
+
+  const data = await res.json() as any[];
+  const skipBranches = new Set(["main", "master", "HEAD"]);
+  const filtered = data.filter((b: any) => !skipBranches.has(b.name));
+
+  const STALE_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 30 days
+  const branches: UnmergedBranch[] = [];
+
+  // Fetch compare data for each branch (limited concurrency)
+  const comparePromises = filtered.map(async (b: any) => {
+    try {
+      const compareUrl = `https://api.github.com/repos/${owner}/${repo}/compare/main...${encodeURIComponent(b.name)}`;
+      const compareRes = await fetch(compareUrl, { headers: ghHeaders() });
+      if (!compareRes.ok) return { branch: b, ahead: 0, behind: 0, lastDate: "", lastAuthor: "" };
+      const compareData = await compareRes.json() as any;
+      const lastCommit = compareData.commits?.[compareData.commits.length - 1];
+      return {
+        branch: b,
+        ahead: compareData.ahead_by || 0,
+        behind: compareData.behind_by || 0,
+        lastDate: lastCommit?.commit?.author?.date || "",
+        lastAuthor: lastCommit?.commit?.author?.name || lastCommit?.author?.login || "unknown",
+      };
+    } catch {
+      return { branch: b, ahead: 0, behind: 0, lastDate: "", lastAuthor: "" };
+    }
+  });
+
+  const results = await Promise.allSettled(comparePromises);
+  for (const r of results) {
+    if (r.status !== "fulfilled") continue;
+    const { branch: b, ahead, behind, lastDate, lastAuthor } = r.value;
+    const isStale = lastDate ? (Date.now() - new Date(lastDate).getTime()) > STALE_THRESHOLD : false;
+
+    branches.push({
+      name: b.name,
+      repo: label,
+      repoLabel: label,
+      lastCommitSha: b.commit?.sha?.slice(0, 7) || "",
+      lastCommitDate: lastDate,
+      lastCommitAuthor: lastAuthor,
+      aheadBy: ahead,
+      behindBy: behind,
+      url: `https://github.com/${owner}/${repo}/tree/${encodeURIComponent(b.name)}`,
+      isStale,
+    });
+  }
+
+  return branches;
+}
+
+async function fetchAllOpenChanges(): Promise<{ prs: OpenPR[]; branches: UnmergedBranch[]; fromCache: boolean; warning?: string }> {
+  if (branchesCache && Date.now() - branchesCache.ts < CACHE_TTL) {
+    return { ...branchesCache.data, fromCache: true };
+  }
+
+  let warning: string | undefined;
+  const prResults = await Promise.allSettled(
+    GITHUB_REPOS.map((r) => fetchRepoPRs(r.owner, r.repo, r.label))
+  );
+  const branchResults = await Promise.allSettled(
+    GITHUB_REPOS.map((r) => fetchRepoBranches(r.owner, r.repo, r.label))
+  );
+
+  const prs: OpenPR[] = [];
+  const branches: UnmergedBranch[] = [];
+
+  for (const r of prResults) {
+    if (r.status === "fulfilled") prs.push(...r.value);
+    else { warning = "Some repos failed to fetch. Partial results shown."; console.warn("[branches] PR fetch error:", r.reason); }
+  }
+  for (const r of branchResults) {
+    if (r.status === "fulfilled") branches.push(...r.value);
+    else { warning = warning || "Some repos failed to fetch. Partial results shown."; console.warn("[branches] Branch fetch error:", r.reason); }
+  }
+
+  // Sort PRs by most recently updated
+  prs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  // Sort branches by last commit date (newest first)
+  branches.sort((a, b) => {
+    if (!a.lastCommitDate) return 1;
+    if (!b.lastCommitDate) return -1;
+    return new Date(b.lastCommitDate).getTime() - new Date(a.lastCommitDate).getTime();
+  });
+
+  branchesCache = { data: { prs, branches }, ts: Date.now() };
+  return { prs, branches, fromCache: false, warning };
 }
 
 // --- Resolve graph path ---
@@ -670,6 +845,43 @@ app.get("/api/changelog", async (_req, res) => {
   }
 });
 
+// --- Branches & PRs API ---
+app.get("/api/branches", async (_req, res) => {
+  try {
+    const repo = _req.query.repo as string | undefined;
+    let result = await fetchAllOpenChanges();
+    let prs = result.prs;
+    let branches = result.branches;
+    if (repo) {
+      prs = prs.filter((p) => p.repo === repo);
+      branches = branches.filter((b) => b.repo === repo);
+    }
+
+    res.json({
+      prs,
+      branches,
+      meta: {
+        total_prs: prs.length,
+        total_branches: branches.length,
+        stale_branches: branches.filter((b) => b.isStale).length,
+        fromCache: result.fromCache,
+        warning: result.warning,
+        repos: GITHUB_REPOS.map((r) => r.label),
+      },
+    });
+  } catch (e: any) {
+    console.error("[branches] Error:", e);
+    if (branchesCache) {
+      res.json({
+        ...branchesCache.data,
+        meta: { total_prs: branchesCache.data.prs.length, total_branches: branchesCache.data.branches.length, fromCache: true, warning: "Error fetching fresh data, showing cached results." },
+      });
+    } else {
+      res.status(500).json({ error: "Failed to fetch branches", message: e.message });
+    }
+  }
+});
+
 // --- Architecture Viewers & Dashboard (static) ---
 const SCRIPTS_DIR = resolve(__dirname);
 const ARCH_DIR = resolve(__dirname, "../arch");
@@ -684,11 +896,13 @@ app.get("/dashboard", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-das
 app.get("/graph", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
 app.get("/overview", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
 app.get("/changelog", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
+app.get("/branches", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-branches.html")));
 // Support original filenames as links (used in view toggle buttons)
 app.get("/arch-viewer.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
 app.get("/arch-viewer-overview.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
 app.get("/arch-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-dashboard.html")));
 app.get("/arch-changelog.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
+app.get("/arch-branches.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-branches.html")));
 
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
@@ -764,6 +978,7 @@ app.listen(PORT, () => {
   console.log(`[arch-mcp] Graph:     http://localhost:${PORT}/graph`);
   console.log(`[arch-mcp] Overview:  http://localhost:${PORT}/overview`);
   console.log(`[arch-mcp] Changelog: http://localhost:${PORT}/changelog`);
+  console.log(`[arch-mcp] Branches:  http://localhost:${PORT}/branches`);
   console.log(`[arch-mcp] API:       http://localhost:${PORT}/api/analysis`);
   console.log(`[arch-mcp] Health:    http://localhost:${PORT}/health`);
   console.log(`[arch-mcp] SSE:       http://localhost:${PORT}/sse`);

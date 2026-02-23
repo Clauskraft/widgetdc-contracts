@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Changes - WidgeTDC</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: #0b0e14;
+    color: #e2e8f0;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0e14; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+  /* Skeleton loading */
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #141824 25%, #1a2030 50%, #141824 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 6px;
+  }
+  .skeleton-card { height: 120px; margin-bottom: 12px; border-radius: 8px; }
+  .skeleton-row { height: 48px; margin-bottom: 4px; }
+  .skeleton-stat { height: 72px; border-radius: 8px; }
+
+  /* Top bar */
+  #topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: #0f1219;
+    border-bottom: 1px solid #1e293b;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #topbar h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e2e8f0;
+    letter-spacing: -0.01em;
+  }
+
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+
+  /* Main container */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .filter-bar label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .filter-bar select {
+    background: #141824;
+    color: #e2e8f0;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: 6px 28px 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color 0.15s;
+  }
+  .filter-bar select:hover { border-color: #334155; }
+  .filter-bar select:focus { outline: none; border-color: #6366f1; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: #0f1219;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+  .stat-card .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: -0.02em;
+  }
+  .stat-card .stat-value.accent { color: #6366f1; }
+  .stat-card .stat-value.warn { color: #f59e0b; }
+
+  /* Section headers */
+  .section-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header .count {
+    font-size: 11px;
+    font-weight: 600;
+    background: #141824;
+    color: #64748b;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  /* PR cards */
+  .pr-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+
+  .pr-card {
+    background: #0f1219;
+    border: 1px solid #1e293b;
+    border-left: 3px solid #64748b;
+    border-radius: 8px;
+    padding: 14px 18px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .pr-card:hover { background: #111620; border-color: #334155; }
+  .pr-card[data-repo="backend"] { border-left-color: #3b82f6; }
+  .pr-card[data-repo="frontend"] { border-left-color: #22c55e; }
+  .pr-card[data-repo="rlm"] { border-left-color: #f97316; }
+  .pr-card[data-repo="contracts"] { border-left-color: #a855f7; }
+
+  .pr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .pr-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+  .pr-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6366f1;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .pr-number:hover { color: #818cf8; }
+  .pr-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e2e8f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .badge-draft { background: rgba(100,116,139,0.15); color: #64748b; }
+  .badge-approved { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .badge-changes { background: rgba(239,68,68,0.12); color: #ef4444; }
+  .badge-pending { background: rgba(245,158,11,0.12); color: #f59e0b; }
+  .badge-label {
+    background: rgba(99,102,241,0.12);
+    color: #a5b4fc;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .repo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .repo-badge[data-repo="backend"] { background: rgba(59,130,246,0.12); color: #3b82f6; }
+  .repo-badge[data-repo="frontend"] { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .repo-badge[data-repo="rlm"] { background: rgba(249,115,22,0.12); color: #f97316; }
+  .repo-badge[data-repo="contracts"] { background: rgba(168,85,247,0.12); color: #a855f7; }
+
+  .pr-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 12px; color: #64748b; }
+  .pr-meta .author { color: #94a3b8; font-weight: 500; }
+  .pr-meta .time { color: #64748b; }
+  .pr-meta .diff-adds { color: #22c55e; font-weight: 500; }
+  .pr-meta .diff-dels { color: #ef4444; font-weight: 500; }
+  .pr-meta .branch-indicator { color: #64748b; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 11px; }
+  .pr-meta .branch-indicator .arrow { color: #475569; margin: 0 4px; }
+  .pr-meta .changed-files { color: #64748b; }
+
+  /* Branch table */
+  .branch-table-wrap {
+    background: #0f1219;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .branch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .branch-table thead th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #0d1017;
+    border-bottom: 1px solid #1e293b;
+  }
+  .branch-table tbody tr {
+    border-bottom: 1px solid #141824;
+    transition: background 0.1s;
+  }
+  .branch-table tbody tr:nth-child(even) { background: rgba(15,18,25,0.5); }
+  .branch-table tbody tr:hover { background: #111620; }
+  .branch-table tbody td { padding: 10px 16px; color: #cbd5e1; vertical-align: middle; }
+
+  .branch-name {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 12px;
+    color: #e2e8f0;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .branch-name:hover { color: #6366f1; }
+
+  .ahead-behind { display: flex; gap: 8px; font-size: 12px; font-family: 'SFMono-Regular', Consolas, monospace; }
+  .ahead { color: #22c55e; }
+  .behind { color: #ef4444; }
+
+  .stale-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(245,158,11,0.12);
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  /* Empty / error states */
+  .state-msg {
+    text-align: center;
+    padding: 48px 24px;
+    color: #64748b;
+    font-size: 14px;
+  }
+  .state-msg .state-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+  .state-msg .state-title { font-size: 16px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+  .state-msg .state-detail { font-size: 13px; color: #64748b; }
+  .state-msg.error .state-title { color: #ef4444; }
+
+  /* Warning banner */
+  .warning-banner {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: #f59e0b;
+    display: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    #topbar { flex-direction: column; gap: 10px; align-items: flex-start; padding: 12px 16px; }
+    .container { padding: 16px; }
+    .stats-bar { grid-template-columns: 1fr; }
+    .pr-top { flex-direction: column; }
+    .pr-meta { gap: 8px; }
+    .branch-table-wrap { overflow-x: auto; }
+    .branch-table { min-width: 640px; }
+    .filter-bar { flex-wrap: wrap; }
+  }
+  @media (max-width: 480px) {
+    .view-toggle a { padding: 4px 8px; font-size: 10px; }
+    .stat-card .stat-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Open Changes</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/changelog">Changelog</a>
+    <a href="/branches" class="active">Branches</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="filter-bar">
+    <label for="repo-filter">Repo</label>
+    <select id="repo-filter" onchange="applyFilters()">
+      <option value="all">All Repos</option>
+      <option value="backend">Backend</option>
+      <option value="frontend">Frontend</option>
+      <option value="rlm">RLM</option>
+      <option value="contracts">Contracts</option>
+    </select>
+  </div>
+
+  <div class="warning-banner" id="warning-banner"></div>
+
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-card skeleton skeleton-stat"></div>
+    <div class="stat-card skeleton skeleton-stat"></div>
+    <div class="stat-card skeleton skeleton-stat"></div>
+  </div>
+
+  <div class="section-header">
+    Open Pull Requests <span class="count" id="pr-count">--</span>
+  </div>
+  <div class="pr-list" id="pr-list">
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+  </div>
+
+  <div class="section-header">
+    Unmerged Branches <span class="count" id="branch-count">--</span>
+  </div>
+  <div id="branch-section">
+    <div class="branch-table-wrap">
+      <table class="branch-table">
+        <thead><tr><th>Branch</th><th>Repo</th><th>Last Commit</th><th>Author</th><th>Ahead / Behind</th><th>Status</th></tr></thead>
+        <tbody id="branch-tbody">
+          <tr><td colspan="6"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="6"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="6"><div class="skeleton skeleton-row"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let DATA = { prs: [], branches: [], meta: {} };
+
+  /* --- Utilities --- */
+
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function escAttr(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function relativeTime(dateStr) {
+    if (!dateStr) return '';
+    var now = Date.now();
+    var then = new Date(dateStr).getTime();
+    if (isNaN(then)) return '';
+    var diff = Math.max(0, now - then);
+    var sec = Math.floor(diff / 1000);
+    if (sec < 60) return 'just now';
+    var min = Math.floor(sec / 60);
+    if (min < 60) return min + 'm ago';
+    var hr = Math.floor(min / 60);
+    if (hr < 24) return hr + 'h ago';
+    var day = Math.floor(hr / 24);
+    if (day < 30) return day + 'd ago';
+    var mo = Math.floor(day / 30);
+    if (mo < 12) return mo + 'mo ago';
+    var yr = Math.floor(mo / 12);
+    return yr + 'y ago';
+  }
+
+  /* --- Rendering --- */
+
+  function renderStats(filter) {
+    var prs = DATA.prs;
+    var branches = DATA.branches;
+    if (filter !== 'all') {
+      prs = prs.filter(function(p) { return p.repo === filter; });
+      branches = branches.filter(function(b) { return b.repo === filter; });
+    }
+    var staleCt = branches.filter(function(b) { return b.isStale; }).length;
+
+    document.getElementById('stats-bar').innerHTML =
+      '<div class="stat-card"><div class="stat-label">Open PRs</div><div class="stat-value accent">' + prs.length + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Unmerged Branches</div><div class="stat-value">' + branches.length + '</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Stale Branches (&gt;30d)</div><div class="stat-value warn">' + staleCt + '</div></div>';
+  }
+
+  function reviewBadge(status, draft) {
+    if (draft) return '<span class="badge badge-draft">Draft</span>';
+    switch (status) {
+      case 'approved': return '<span class="badge badge-approved">Approved</span>';
+      case 'changes_requested': return '<span class="badge badge-changes">Changes Requested</span>';
+      case 'review_required': return '<span class="badge badge-pending">Review Required</span>';
+      default: return '';
+    }
+  }
+
+  function renderLabels(labels) {
+    if (!labels || !labels.length) return '';
+    return labels.map(function(l) {
+      return '<span class="badge badge-label">' + escHtml(l) + '</span>';
+    }).join(' ');
+  }
+
+  function renderPRs(filter) {
+    var prs = DATA.prs;
+    if (filter !== 'all') {
+      prs = prs.filter(function(p) { return p.repo === filter; });
+    }
+
+    document.getElementById('pr-count').textContent = prs.length;
+
+    if (!prs.length) {
+      document.getElementById('pr-list').innerHTML =
+        '<div class="state-msg"><span class="state-icon">&#128269;</span><div class="state-title">No open pull requests</div><div class="state-detail">All clear across the selected repos.</div></div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < prs.length; i++) {
+      var pr = prs[i];
+      html += '<div class="pr-card" data-repo="' + escAttr(pr.repo) + '">';
+      html += '<div class="pr-top"><div class="pr-title-row">';
+      html += '<a class="pr-number" href="' + escAttr(pr.url) + '" target="_blank" rel="noopener">#' + escHtml(pr.number) + '</a>';
+      html += '<span class="pr-title">' + escHtml(pr.title) + '</span>';
+      html += reviewBadge(pr.reviewStatus, pr.draft);
+      html += ' ' + renderLabels(pr.labels);
+      html += '</div>';
+      html += '<span class="repo-badge" data-repo="' + escAttr(pr.repo) + '">' + escHtml(pr.repoLabel) + '</span>';
+      html += '</div>';
+
+      html += '<div class="pr-meta">';
+      html += '<span class="author">' + escHtml(pr.author) + '</span>';
+      html += '<span class="time">' + relativeTime(pr.createdAt) + '</span>';
+      if (typeof pr.additions === 'number') {
+        html += '<span class="diff-adds">+' + pr.additions + '</span>';
+      }
+      if (typeof pr.deletions === 'number') {
+        html += '<span class="diff-dels">-' + pr.deletions + '</span>';
+      }
+      if (typeof pr.changedFiles === 'number') {
+        html += '<span class="changed-files">' + pr.changedFiles + ' file' + (pr.changedFiles !== 1 ? 's' : '') + '</span>';
+      }
+      if (pr.baseBranch || pr.headBranch) {
+        html += '<span class="branch-indicator">' + escHtml(pr.baseBranch) + '<span class="arrow">&larr;</span>' + escHtml(pr.headBranch) + '</span>';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+
+    document.getElementById('pr-list').innerHTML = html;
+  }
+
+  function renderBranches(filter) {
+    var branches = DATA.branches;
+    if (filter !== 'all') {
+      branches = branches.filter(function(b) { return b.repo === filter; });
+    }
+
+    document.getElementById('branch-count').textContent = branches.length;
+
+    if (!branches.length) {
+      document.getElementById('branch-tbody').innerHTML =
+        '<tr><td colspan="6"><div class="state-msg"><span class="state-icon">&#127793;</span><div class="state-title">No unmerged branches</div><div class="state-detail">Everything is merged for the selected repos.</div></div></td></tr>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < branches.length; i++) {
+      var b = branches[i];
+      html += '<tr>';
+      html += '<td><a class="branch-name" href="' + escAttr(b.url) + '" target="_blank" rel="noopener">' + escHtml(b.name) + '</a></td>';
+      html += '<td><span class="repo-badge" data-repo="' + escAttr(b.repo) + '">' + escHtml(b.repoLabel) + '</span></td>';
+      html += '<td>' + relativeTime(b.lastCommitDate) + '</td>';
+      html += '<td>' + escHtml(b.lastCommitAuthor) + '</td>';
+      html += '<td><div class="ahead-behind">';
+      html += '<span class="ahead">+' + (b.aheadBy || 0) + '</span>';
+      html += '<span class="behind">-' + (b.behindBy || 0) + '</span>';
+      html += '</div></td>';
+      html += '<td>' + (b.isStale ? '<span class="stale-badge">&#9888; Stale</span>' : '<span style="color:#22c55e;font-size:12px">Active</span>') + '</td>';
+      html += '</tr>';
+    }
+
+    document.getElementById('branch-tbody').innerHTML = html;
+  }
+
+  /* --- Filtering --- */
+
+  window.applyFilters = function() {
+    var filter = document.getElementById('repo-filter').value;
+    renderStats(filter);
+    renderPRs(filter);
+    renderBranches(filter);
+  };
+
+  /* --- Data fetching --- */
+
+  function showError(msg) {
+    document.getElementById('stats-bar').innerHTML =
+      '<div class="stat-card"><div class="stat-label">Open PRs</div><div class="stat-value">--</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Unmerged Branches</div><div class="stat-value">--</div></div>' +
+      '<div class="stat-card"><div class="stat-label">Stale Branches</div><div class="stat-value">--</div></div>';
+
+    var errHtml = '<div class="state-msg error"><span class="state-icon">&#9888;&#65039;</span><div class="state-title">Failed to load data</div><div class="state-detail">' + escHtml(msg) + '</div></div>';
+    document.getElementById('pr-list').innerHTML = errHtml;
+    document.getElementById('branch-tbody').innerHTML = '<tr><td colspan="6">' + errHtml + '</td></tr>';
+    document.getElementById('pr-count').textContent = '--';
+    document.getElementById('branch-count').textContent = '--';
+  }
+
+  function fetchData() {
+    fetch('/api/branches')
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+        return res.json();
+      })
+      .then(function(data) {
+        DATA.prs = Array.isArray(data.prs) ? data.prs : [];
+        DATA.branches = Array.isArray(data.branches) ? data.branches : [];
+        DATA.meta = data.meta || {};
+
+        if (DATA.meta.warning) {
+          var banner = document.getElementById('warning-banner');
+          banner.textContent = DATA.meta.warning;
+          banner.style.display = 'block';
+        }
+
+        applyFilters();
+      })
+      .catch(function(err) {
+        showError(err.message || 'Unknown error');
+      });
+  }
+
+  fetchData();
+})();
+</script>
+</body>
+</html>
