@@ -9,7 +9,11 @@
   body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; display: flex; height: 100vh; overflow: hidden; }
 
   #controls { width: 260px; border-right: 1px solid #1a1f2e; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex-shrink: 0; background: #0f1219; }
-  #controls h1 { font-size: 15px; font-weight: 600; color: #f1f5f9; }
+  #controls h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
   #controls input, #controls select { width: 100%; padding: 7px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; }
   #controls input:focus, #controls select:focus { border-color: #6366f1; }
   .fg { display: flex; flex-direction: column; gap: 3px; }
@@ -43,12 +47,13 @@
 <div id="controls">
   <h1>WidgeTDC Architecture</h1>
 
-  <div class="fg" style="flex-direction:row;gap:2px;background:#141824;border-radius:6px;padding:2px">
-    <a href="/dashboard" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Dashboard</a>
-    <a href="/graph" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#e2e8f0;background:#1e2740;font-weight:500">Graph</a>
-    <a href="/overview" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Overview</a>
-    <a href="/changelog" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Changelog</a>
-    <a href="/branches" style="flex:1;text-align:center;padding:5px 8px;font-size:11px;border-radius:4px;text-decoration:none;color:#64748b;font-weight:500">Branches</a>
+  <div class="view-toggle">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/graph" class="active">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/changelog">Changelog</a>
+    <a href="/branches">Branches</a>
+    <a href="/analysis-report">Analysis</a>
   </div>
 
   <div class="fg">

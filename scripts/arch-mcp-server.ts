@@ -897,12 +897,14 @@ app.get("/graph", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.
 app.get("/overview", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
 app.get("/changelog", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
 app.get("/branches", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-branches.html")));
+app.get("/analysis-report", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-analysis.html")));
 // Support original filenames as links (used in view toggle buttons)
 app.get("/arch-viewer.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
 app.get("/arch-viewer-overview.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
 app.get("/arch-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-dashboard.html")));
 app.get("/arch-changelog.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-changelog.html")));
 app.get("/arch-branches.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-branches.html")));
+app.get("/arch-analysis.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-analysis.html")));
 
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
@@ -979,6 +981,7 @@ app.listen(PORT, () => {
   console.log(`[arch-mcp] Overview:  http://localhost:${PORT}/overview`);
   console.log(`[arch-mcp] Changelog: http://localhost:${PORT}/changelog`);
   console.log(`[arch-mcp] Branches:  http://localhost:${PORT}/branches`);
+  console.log(`[arch-mcp] Analysis:  http://localhost:${PORT}/analysis-report`);
   console.log(`[arch-mcp] API:       http://localhost:${PORT}/api/analysis`);
   console.log(`[arch-mcp] Health:    http://localhost:${PORT}/health`);
   console.log(`[arch-mcp] SSE:       http://localhost:${PORT}/sse`);

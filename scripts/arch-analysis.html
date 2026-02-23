@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WidgeTDC Architecture Analysis</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0e14; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+  /* Skeleton */
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  .skeleton { background: linear-gradient(90deg, #141824 25%, #1a2030 50%, #141824 75%); background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 6px; }
+
+  /* Top bar */
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+
+  .health-badge { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .health-score { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 28px; font-weight: 700; line-height: 1; }
+  .health-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; }
+  .health-sub { font-size: 11px; color: #94a3b8; }
+
+  /* Tabs */
+  .tab-bar { display: flex; gap: 0; margin-left: auto; }
+  .tab-btn { padding: 5px 14px; font-size: 11px; font-weight: 500; border: none; background: transparent; color: #64748b; cursor: pointer; position: relative; transition: color 0.15s; font-family: inherit; border-radius: 4px; }
+  .tab-btn:hover { color: #94a3b8; }
+  .tab-btn.active { color: #3b82f6; }
+  .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #3b82f6; border-radius: 1px 1px 0 0; }
+
+  /* Main */
+  #main { flex: 1; overflow-y: auto; padding: 24px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Grid & Cards */
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1fr 1fr 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .g6 { grid-template-columns: repeat(6, 1fr); }
+
+  .card { background: #0f1219; border: 1px solid #1a1f2e; border-radius: 10px; padding: 20px; }
+  .card-sm { padding: 14px; }
+  .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+  .card-value { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 28px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .card-value.sm { font-size: 20px; }
+  .card-sub { font-size: 11px; color: #475569; margin-top: 4px; }
+
+  /* Severity-border cards */
+  .sev-card { border-left: 3px solid transparent; padding: 16px 16px 16px 18px; }
+  .sev-critical { border-left-color: #ef4444; }
+  .sev-high { border-left-color: #f97316; }
+  .sev-warning { border-left-color: #f59e0b; }
+  .sev-medium { border-left-color: #f59e0b; }
+  .sev-healthy { border-left-color: #10b981; }
+  .sev-info { border-left-color: #6366f1; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-high { background: rgba(249,115,22,0.15); color: #f97316; }
+  .badge-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-healthy { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-info { background: rgba(99,102,241,0.15); color: #818cf8; }
+  .badge-cross { background: rgba(139,92,246,0.15); color: #a78bfa; margin-left: 6px; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tbl th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; padding: 8px 12px; border-bottom: 1px solid #1e293b; }
+  .tbl td { padding: 8px 12px; border-bottom: 1px solid rgba(30,41,59,0.5); color: #cbd5e1; }
+  .tbl tr:hover td { background: rgba(30,41,59,0.3); }
+  .tbl .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11px; color: #818cf8; }
+
+  /* Progress bars */
+  .progress-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-label { font-size: 12px; color: #cbd5e1; min-width: 160px; display: flex; align-items: center; gap: 6px; }
+  .progress-bar { flex: 1; height: 8px; background: #1a2235; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; color: #94a3b8; min-width: 30px; text-align: right; }
+
+  /* Health bars */
+  .health-bar-wrap { margin-bottom: 12px; }
+  .health-bar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .health-bar-name { font-size: 13px; font-weight: 500; color: #e2e8f0; }
+  .health-bar-meta { font-size: 11px; color: #64748b; }
+  .health-bar-track { height: 6px; background: #1a2235; border-radius: 3px; overflow: hidden; }
+  .health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* Cycle nodes */
+  .cycle-nodes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .cycle-node { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; padding: 2px 8px; background: #1a2235; border-radius: 4px; color: #94a3b8; }
+
+  /* Verdict */
+  .grade-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 42px; font-weight: 700; margin: 0 auto 16px; }
+  .verdict-section { margin-bottom: 20px; }
+  .verdict-section h3 { font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .verdict-item { font-size: 12px; color: #cbd5e1; padding: 6px 0; border-bottom: 1px solid rgba(30,41,59,0.3); display: flex; align-items: flex-start; gap: 8px; }
+  .verdict-icon { flex-shrink: 0; width: 18px; text-align: center; }
+
+  /* Loading */
+  #loading { display: flex; align-items: center; justify-content: center; height: 200px; color: #64748b; font-size: 13px; }
+  #error-banner { display: none; padding: 12px 24px; background: rgba(239,68,68,0.1); border-bottom: 1px solid rgba(239,68,68,0.2); color: #ef4444; font-size: 12px; }
+
+  /* Section headings */
+  .section-title { font-size: 14px; font-weight: 600; color: #f1f5f9; margin: 24px 0 12px; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* Observation box */
+  .observation { background: #1a2235; border: 1px solid #2a3550; border-radius: 8px; padding: 14px 16px; margin-top: 16px; font-size: 12px; color: #cbd5e1; line-height: 1.6; }
+  .observation strong { color: #f1f5f9; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .g4, .g6 { grid-template-columns: 1fr 1fr; }
+    .g3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>Architecture Analysis</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/changelog">Changelog</a>
+    <a href="/branches">Branches</a>
+    <a href="/analysis-report" class="active">Analysis</a>
+  </div>
+  <div class="health-badge">
+    <div>
+      <div class="health-score" id="health-score">--</div>
+      <div class="health-label">System Health</div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="findings">Findings</button>
+    <button class="tab-btn" data-tab="cycles">Cycles</button>
+    <button class="tab-btn" data-tab="antipatterns">Anti-Patterns</button>
+    <button class="tab-btn" data-tab="verdict">Verdict</button>
+  </div>
+</div>
+
+<div id="error-banner"></div>
+
+<div id="main">
+  <!-- Loading skeleton -->
+  <div id="loading">
+    <div>Loading analysis data...</div>
+  </div>
+
+  <!-- Tab 1: Overview -->
+  <div id="tab-overview" class="tab-content">
+    <div class="grid g6" style="margin-bottom:20px" id="metric-cards"></div>
+    <div class="section-title">Repository Health</div>
+    <div id="repo-health" style="margin-bottom:20px"></div>
+    <div class="section-title">Top 10 Blast Radius Modules</div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>Module</th><th>Blast Radius</th><th>Fan-In</th><th>Risk</th></tr></thead>
+        <tbody id="blast-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tab 2: Findings -->
+  <div id="tab-findings" class="tab-content">
+    <div id="findings-list"></div>
+  </div>
+
+  <!-- Tab 3: Cycles -->
+  <div id="tab-cycles" class="tab-content">
+    <div id="cycles-list"></div>
+  </div>
+
+  <!-- Tab 4: Anti-Patterns -->
+  <div id="tab-antipatterns" class="tab-content">
+    <div id="ap-bars"></div>
+    <div id="ap-observation"></div>
+  </div>
+
+  <!-- Tab 5: Verdict -->
+  <div id="tab-verdict" class="tab-content">
+    <div id="verdict-content"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // --- Tab logic ---
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-content');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // --- Helpers ---
+  function sevColor(sev) {
+    const m = { critical: '#ef4444', high: '#f97316', warning: '#f59e0b', medium: '#f59e0b', healthy: '#10b981', info: '#6366f1' };
+    return m[sev] || '#64748b';
+  }
+  function healthColor(score) {
+    if (score >= 90) return '#10b981';
+    if (score >= 70) return '#f59e0b';
+    return '#ef4444';
+  }
+  function riskFromHealth(score) {
+    if (score >= 70) return 'healthy';
+    if (score >= 40) return 'warning';
+    return 'critical';
+  }
+  function cycleSeverity(size) {
+    if (size >= 5) return 'critical';
+    if (size >= 3) return 'high';
+    return 'medium';
+  }
+  function grade(avgHealth) {
+    if (avgHealth >= 98) return 'A+';
+    if (avgHealth >= 95) return 'A';
+    if (avgHealth >= 90) return 'B+';
+    if (avgHealth >= 85) return 'B';
+    if (avgHealth >= 80) return 'C+';
+    if (avgHealth >= 70) return 'C';
+    if (avgHealth >= 60) return 'D';
+    return 'F';
+  }
+  function gradeColor(g) {
+    if (g.startsWith('A')) return '#10b981';
+    if (g.startsWith('B')) return '#3b82f6';
+    if (g.startsWith('C')) return '#f59e0b';
+    return '#ef4444';
+  }
+
+  const apIcons = {
+    god_module: '\u{1F451}',
+    circular_dependency: '\u{1F504}',
+    layer_violation: '\u26A0\uFE0F',
+    shotgun_surgery: '\u{1F52B}',
+    feature_envy: '\u{1F440}',
+    orphan_module: '\u{1F47B}',
+    hub_module: '\u{1F578}\uFE0F',
+  };
+  const apLabels = {
+    god_module: 'God Module',
+    circular_dependency: 'Circular Dependency',
+    layer_violation: 'Layer Violation',
+    shotgun_surgery: 'Shotgun Surgery',
+    feature_envy: 'Feature Envy',
+    orphan_module: 'Orphan Module',
+    hub_module: 'Hub Module',
+  };
+
+  // --- Fetch and render ---
+  fetch('/api/analysis')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => render(data))
+    .catch(err => {
+      document.getElementById('loading').innerHTML = '<div style="color:#ef4444">Failed to load: ' + err.message + '</div>';
+      document.getElementById('error-banner').style.display = 'block';
+      document.getElementById('error-banner').textContent = 'Error loading analysis data: ' + err.message;
+    });
+
+  function render(data) {
+    const { summary, modules, antiPatterns, cycles, repoMetrics, layerMetrics } = data;
+    document.getElementById('loading').style.display = 'none';
+
+    // Health badge
+    const avg = summary.avgHealth != null ? summary.avgHealth.toFixed(1) : '--';
+    const scoreEl = document.getElementById('health-score');
+    scoreEl.textContent = avg;
+    scoreEl.style.color = healthColor(summary.avgHealth || 0);
+
+    // Show first tab
+    document.getElementById('tab-overview').classList.add('active');
+
+    renderOverview(summary, modules, repoMetrics);
+    renderFindings(summary, modules, antiPatterns, cycles, repoMetrics);
+    renderCycles(cycles);
+    renderAntiPatterns(antiPatterns);
+    renderVerdict(summary, modules, antiPatterns, cycles, repoMetrics);
+  }
+
+  // ======= TAB 1: Overview =======
+  function renderOverview(summary, modules, repoMetrics) {
+    const metrics = [
+      { label: 'Modules', value: summary.totalModules, sub: 'Total analyzed' },
+      { label: 'Edges', value: summary.totalEdges, sub: 'Dependencies' },
+      { label: 'Warnings', value: summary.warningCount, sub: 'Risk modules', color: summary.warningCount > 0 ? '#f59e0b' : null },
+      { label: 'Cycles', value: summary.cycleCount, sub: 'Dependency cycles', color: summary.cycleCount > 0 ? '#ef4444' : null },
+      { label: 'Anti-Patterns', value: summary.antiPatternCount, sub: 'Detected issues', color: summary.antiPatternCount > 0 ? '#f97316' : null },
+      { label: 'Orphans', value: summary.orphanCount, sub: 'Disconnected', color: summary.orphanCount > 0 ? '#6366f1' : null },
+    ];
+
+    document.getElementById('metric-cards').innerHTML = metrics.map(m => `
+      <div class="card card-sm">
+        <div class="card-title">${m.label}</div>
+        <div class="card-value" ${m.color ? 'style="color:' + m.color + '"' : ''}>${m.value}</div>
+        <div class="card-sub">${m.sub}</div>
+      </div>
+    `).join('');
+
+    // Repo health bars
+    const repoHtml = repoMetrics.map(r => {
+      const color = healthColor(r.avgHealth);
+      return `<div class="health-bar-wrap">
+        <div class="health-bar-header">
+          <span class="health-bar-name">${r.repo}</span>
+          <span class="health-bar-meta">${r.moduleCount} modules &middot; ${r.antiPatternCount || 0} issues &middot; <span style="color:${color};font-weight:600">${r.avgHealth.toFixed(1)}</span></span>
+        </div>
+        <div class="health-bar-track"><div class="health-bar-fill" style="width:${r.avgHealth}%;background:${color}"></div></div>
+      </div>`;
+    }).join('');
+    document.getElementById('repo-health').innerHTML = repoHtml;
+
+    // Top 10 blast radius
+    const top10 = modules.slice().sort((a, b) => b.blastRadius - a.blastRadius).slice(0, 10);
+    document.getElementById('blast-table').innerHTML = top10.map(m => `
+      <tr>
+        <td class="mono">${m.id}</td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:${m.blastRadius >= 10 ? '#ef4444' : m.blastRadius >= 5 ? '#f59e0b' : '#e2e8f0'}">${m.blastRadius}</span></td>
+        <td style="font-family:'JetBrains Mono',monospace">${m.fanIn}</td>
+        <td><span class="badge badge-${m.risk}">${m.risk}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  // ======= TAB 2: Findings =======
+  function renderFindings(summary, modules, antiPatterns, cycles, repoMetrics) {
+    const findings = [];
+
+    // 1. Highest blast-radius modules in cycles
+    const cycleNodeSet = new Set();
+    cycles.forEach(c => c.nodes.forEach(n => cycleNodeSet.add(n)));
+    const cyclicHighBlast = modules
+      .filter(m => m.inCycle || cycleNodeSet.has(m.id))
+      .sort((a, b) => b.blastRadius - a.blastRadius)
+      .slice(0, 3);
+    if (cyclicHighBlast.length > 0) {
+      cyclicHighBlast.forEach(m => {
+        findings.push({
+          severity: 'critical',
+          title: 'High blast-radius module in dependency cycle',
+          location: m.id,
+          impact: `Blast radius of ${m.blastRadius} — changes propagate to ${m.blastRadius} transitive dependents while being trapped in a cycle.`,
+          fix: 'Break the cycle by extracting a shared interface or inverting the dependency direction.',
+        });
+      });
+    }
+
+    // 2. God modules
+    const godModules = antiPatterns.filter(p => p.type === 'god_module').sort((a, b) => (b.meta?.fanIn || 0) - (a.meta?.fanIn || 0));
+    godModules.slice(0, 3).forEach(gm => {
+      findings.push({
+        severity: 'warning',
+        title: 'God module detected (excessive fan-in)',
+        location: gm.moduleId,
+        impact: `Fan-in of ${gm.meta?.fanIn || '?'} — ${gm.description || 'Too many dependents makes this a single point of failure.'}`,
+        fix: gm.recommendation || 'Split into smaller, focused modules with clear single responsibilities.',
+      });
+    });
+
+    // 3. Largest cycle
+    const sortedCycles = cycles.slice().sort((a, b) => b.nodes.length - a.nodes.length);
+    if (sortedCycles.length > 0) {
+      const largest = sortedCycles[0];
+      findings.push({
+        severity: largest.nodes.length >= 5 ? 'critical' : 'warning',
+        title: `Largest dependency cycle (${largest.nodes.length} modules)`,
+        location: largest.nodes.slice(0, 3).join(', ') + (largest.nodes.length > 3 ? '...' : ''),
+        impact: `A ${largest.nodes.length}-module cycle creates tight coupling that prevents independent deployment and testing.`,
+        fix: 'Identify the weakest link in the cycle and break it with dependency inversion or an event bus.',
+      });
+    }
+
+    // 4. Layer violations
+    const layerViolations = antiPatterns.filter(p => p.type === 'layer_violation');
+    if (layerViolations.length > 0) {
+      findings.push({
+        severity: layerViolations.length >= 5 ? 'warning' : 'info',
+        title: `${layerViolations.length} layer violation${layerViolations.length > 1 ? 's' : ''} detected`,
+        location: layerViolations.slice(0, 3).map(v => v.moduleId).join(', '),
+        impact: 'Layer violations break architectural boundaries, making the system harder to reason about and maintain.',
+        fix: 'Refactor to respect layer boundaries or introduce a proper anti-corruption layer.',
+      });
+    }
+
+    // 5. Orphans
+    if (summary.orphanCount > 0) {
+      findings.push({
+        severity: 'info',
+        title: `${summary.orphanCount} orphan module${summary.orphanCount > 1 ? 's' : ''} (zero connectivity)`,
+        location: 'Various',
+        impact: 'Orphan modules add maintenance burden without contributing to the system graph.',
+        fix: 'Verify if orphans are truly unused and consider removal, or connect them to the dependency graph.',
+      });
+    }
+
+    // 6. Backend concentration
+    const totalMods = repoMetrics.reduce((s, r) => s + r.moduleCount, 0);
+    const backend = repoMetrics.find(r => r.repo === 'backend');
+    if (backend && totalMods > 0) {
+      const pct = ((backend.moduleCount / totalMods) * 100).toFixed(0);
+      if (pct > 50) {
+        findings.push({
+          severity: 'info',
+          title: `Backend concentrates ${pct}% of all modules`,
+          location: 'backend',
+          impact: `${backend.moduleCount} of ${totalMods} modules reside in the backend repository, increasing deployment risk.`,
+          fix: 'Consider extracting shared contracts or utilities into separate packages to reduce monolith risk.',
+        });
+      }
+    }
+
+    // Sort by severity
+    const sevOrder = { critical: 0, high: 1, warning: 2, medium: 3, info: 4 };
+    findings.sort((a, b) => (sevOrder[a.severity] ?? 5) - (sevOrder[b.severity] ?? 5));
+
+    document.getElementById('findings-list').innerHTML = findings.length === 0
+      ? '<div class="card" style="text-align:center;color:#64748b;padding:40px">No significant findings detected.</div>'
+      : findings.map((f, i) => `
+        <div class="card sev-card sev-${f.severity}" style="margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span class="badge badge-${f.severity}">${f.severity}</span>
+            <span style="font-size:14px;font-weight:600;color:#f1f5f9">${f.title}</span>
+          </div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:6px">
+            <span style="color:#64748b">Location:</span> <span class="mono" style="font-family:'JetBrains Mono',monospace;color:#818cf8">${f.location}</span>
+          </div>
+          <div style="font-size:12px;color:#cbd5e1;margin-bottom:6px">
+            <span style="color:#64748b">Impact:</span> ${f.impact}
+          </div>
+          <div style="font-size:12px;color:#10b981">
+            <span style="color:#64748b">Fix:</span> ${f.fix}
+          </div>
+        </div>
+      `).join('');
+  }
+
+  // ======= TAB 3: Cycles =======
+  function renderCycles(cycles) {
+    if (cycles.length === 0) {
+      document.getElementById('cycles-list').innerHTML = '<div class="card" style="text-align:center;color:#10b981;padding:40px">No dependency cycles detected.</div>';
+      return;
+    }
+
+    const sorted = cycles.slice().sort((a, b) => b.nodes.length - a.nodes.length);
+    document.getElementById('cycles-list').innerHTML = sorted.map((c, i) => {
+      const sev = cycleSeverity(c.nodes.length);
+      const crossRepo = c.crossRepo ? '<span class="badge badge-cross">cross-repo</span>' : '';
+      return `<div class="card sev-card sev-${sev}" style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span class="badge badge-${sev}">${sev}</span>
+          <span style="font-size:13px;font-weight:600;color:#f1f5f9">Cycle #${i + 1} &mdash; ${c.nodes.length} modules</span>
+          ${crossRepo}
+        </div>
+        <div class="cycle-nodes">${c.nodes.map(n => '<span class="cycle-node">' + n + '</span>').join(' <span style="color:#475569">&rarr;</span> ')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ======= TAB 4: Anti-Patterns =======
+  function renderAntiPatterns(antiPatterns) {
+    // Group by type
+    const grouped = {};
+    antiPatterns.forEach(p => {
+      if (!grouped[p.type]) grouped[p.type] = [];
+      grouped[p.type].push(p);
+    });
+
+    const types = Object.keys(grouped).sort((a, b) => grouped[b].length - grouped[a].length);
+    const maxCount = types.length > 0 ? grouped[types[0]].length : 1;
+
+    const barColors = {
+      god_module: '#ef4444',
+      circular_dependency: '#f97316',
+      layer_violation: '#f59e0b',
+      shotgun_surgery: '#ec4899',
+      feature_envy: '#8b5cf6',
+      orphan_module: '#6366f1',
+      hub_module: '#3b82f6',
+    };
+
+    document.getElementById('ap-bars').innerHTML = types.length === 0
+      ? '<div class="card" style="text-align:center;color:#10b981;padding:40px">No anti-patterns detected.</div>'
+      : '<div class="card">' + types.map(t => {
+        const count = grouped[t].length;
+        const pct = (count / maxCount * 100).toFixed(0);
+        const icon = apIcons[t] || '\u2753';
+        const label = apLabels[t] || t.replace(/_/g, ' ');
+        const color = barColors[t] || '#64748b';
+        return `<div class="progress-wrap">
+          <div class="progress-label"><span>${icon}</span> ${label}</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>
+          <div class="progress-count">${count}</div>
+        </div>`;
+      }).join('') + '</div>';
+
+    // Key observation
+    if (types.length > 0) {
+      const topType = types[0];
+      const topCount = grouped[topType].length;
+      const topLabel = apLabels[topType] || topType.replace(/_/g, ' ');
+      const totalAP = antiPatterns.length;
+      const pct = ((topCount / totalAP) * 100).toFixed(0);
+
+      let insight = `<strong>${topLabel}</strong> is the most prevalent anti-pattern, accounting for <strong>${topCount}</strong> of <strong>${totalAP}</strong> total issues (${pct}%).`;
+
+      if (topType === 'god_module') {
+        insight += ' These modules have accumulated excessive responsibilities and should be decomposed into smaller, focused units.';
+      } else if (topType === 'circular_dependency') {
+        insight += ' Circular dependencies create tight coupling that prevents independent testing and deployment.';
+      } else if (topType === 'layer_violation') {
+        insight += ' Layer violations break architectural boundaries, leading to spaghetti dependencies over time.';
+      } else if (topType === 'orphan_module') {
+        insight += ' Consider auditing orphan modules for removal or proper integration into the dependency graph.';
+      } else if (topType === 'hub_module') {
+        insight += ' Hub modules act as bottlenecks — consider splitting responsibilities to reduce blast radius.';
+      }
+
+      document.getElementById('ap-observation').innerHTML = `<div class="observation">${insight}</div>`;
+    }
+  }
+
+  // ======= TAB 5: Verdict =======
+  function renderVerdict(summary, modules, antiPatterns, cycles, repoMetrics) {
+    const avg = summary.avgHealth || 0;
+    const g = grade(avg);
+    const gc = gradeColor(g);
+
+    // Strengths
+    const strengths = [];
+    if (summary.criticalCount === 0) strengths.push('Zero critical-risk modules in the system');
+    const cleanRepos = repoMetrics.filter(r => (r.antiPatternCount || 0) === 0);
+    if (cleanRepos.length > 0) strengths.push(cleanRepos.map(r => r.repo).join(', ') + ' — clean with 0 anti-patterns');
+    if (cycles.length === 0) strengths.push('No dependency cycles detected');
+    if (summary.orphanCount === 0) strengths.push('All modules are connected — no orphans');
+    const highHealth = repoMetrics.filter(r => r.avgHealth >= 90);
+    if (highHealth.length > 0) strengths.push(highHealth.map(r => r.repo + ' (' + r.avgHealth.toFixed(0) + ')').join(', ') + ' — excellent health scores');
+    if (strengths.length === 0) strengths.push('System is actively maintained and analyzed');
+
+    // Weaknesses
+    const weaknesses = [];
+    const topBlast = modules.slice().sort((a, b) => b.blastRadius - a.blastRadius).slice(0, 3);
+    if (topBlast.length > 0 && topBlast[0].blastRadius >= 5) {
+      weaknesses.push(`Top blast radius: ${topBlast.map(m => m.id.split('.').pop() + '(' + m.blastRadius + ')').join(', ')}`);
+    }
+    if (cycles.length > 0) weaknesses.push(`${cycles.length} dependency cycle${cycles.length > 1 ? 's' : ''} creating tight coupling`);
+    const lvCount = antiPatterns.filter(p => p.type === 'layer_violation').length;
+    if (lvCount > 0) weaknesses.push(`${lvCount} layer violation${lvCount > 1 ? 's' : ''} breaking architectural boundaries`);
+    if (summary.criticalCount > 0) weaknesses.push(`${summary.criticalCount} critical-risk module${summary.criticalCount > 1 ? 's' : ''}`);
+    const godCount = antiPatterns.filter(p => p.type === 'god_module').length;
+    if (godCount > 0) weaknesses.push(`${godCount} god module${godCount > 1 ? 's' : ''} with excessive fan-in`);
+
+    // Action plan
+    const actions = [];
+    // From highest severity anti-patterns
+    const criticalAPs = antiPatterns.filter(p => p.severity === 'critical').slice(0, 2);
+    criticalAPs.forEach(p => {
+      actions.push(p.recommendation || `Address critical ${apLabels[p.type] || p.type}: ${p.moduleId}`);
+    });
+    // From largest cycle
+    const bigCycles = cycles.slice().sort((a, b) => b.nodes.length - a.nodes.length);
+    if (bigCycles.length > 0) {
+      actions.push(`Break the ${bigCycles[0].nodes.length}-module cycle: ${bigCycles[0].nodes.slice(0, 2).join(' → ')}...`);
+    }
+    // From top blast radius
+    if (topBlast.length > 0 && topBlast[0].blastRadius >= 8) {
+      actions.push(`Reduce blast radius of ${topBlast[0].id} (currently ${topBlast[0].blastRadius}) by extracting interfaces`);
+    }
+    // Layer violations
+    if (lvCount >= 3) {
+      actions.push(`Fix ${lvCount} layer violations to restore architectural boundaries`);
+    }
+    if (actions.length === 0) actions.push('Continue monitoring — system architecture is in good shape');
+
+    const html = `
+      <div style="text-align:center;margin-bottom:24px">
+        <div class="grade-circle" style="border:3px solid ${gc};color:${gc}">${g}</div>
+        <div style="font-size:13px;color:#94a3b8">Average health: <strong style="color:${gc}">${avg.toFixed(1)}</strong> / 100</div>
+      </div>
+      <div class="grid g2">
+        <div class="card verdict-section">
+          <h3><span style="color:#10b981">&#x2714;</span> Strengths</h3>
+          ${strengths.map(s => `<div class="verdict-item"><span class="verdict-icon" style="color:#10b981">+</span> ${s}</div>`).join('')}
+        </div>
+        <div class="card verdict-section">
+          <h3><span style="color:#ef4444">&#x2718;</span> Weaknesses</h3>
+          ${weaknesses.length === 0
+            ? '<div class="verdict-item" style="color:#10b981">No significant weaknesses detected</div>'
+            : weaknesses.map(w => `<div class="verdict-item"><span class="verdict-icon" style="color:#ef4444">&minus;</span> ${w}</div>`).join('')}
+        </div>
+      </div>
+      <div class="card verdict-section" style="margin-top:16px">
+        <h3><span style="color:#3b82f6">&#x25B6;</span> Action Plan</h3>
+        ${actions.map((a, i) => `<div class="verdict-item"><span class="verdict-icon" style="color:#3b82f6;font-weight:700">${i + 1}.</span> ${a}</div>`).join('')}
+      </div>
+    `;
+    document.getElementById('verdict-content').innerHTML = html;
+  }
+})();
+</script>
+</body>
+</html>
