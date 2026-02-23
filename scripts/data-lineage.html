@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataPulse — Data Lineage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+  #canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+  canvas { display: block; }
+  .legend { position: absolute; bottom: 16px; left: 16px; background: rgba(15,18,25,0.92); border: 1px solid #1a1f2e; border-radius: 8px; padding: 12px 16px; }
+  .legend-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; font-weight: 600; margin-bottom: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 11px; color: #94a3b8; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-line { width: 20px; height: 2px; border-radius: 1px; }
+  .info-panel { position: absolute; top: 16px; right: 16px; background: rgba(15,18,25,0.92); border: 1px solid #1a1f2e; border-radius: 8px; padding: 12px 16px; max-width: 280px; }
+  .info-panel .title { font-size: 13px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
+  .info-panel .sub { font-size: 11px; color: #64748b; margin-bottom: 8px; }
+  .info-panel .stat { font-size: 11px; color: #94a3b8; margin-bottom: 2px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+  .badge-source { background: rgba(6,182,212,0.15); color: #06b6d4; }
+  .badge-pipeline { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .badge-dest { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .controls { position: absolute; top: 16px; left: 16px; display: flex; gap: 6px; }
+  .ctrl-btn { padding: 6px 10px; font-size: 11px; border-radius: 5px; border: 1px solid #232940; background: #141824; color: #94a3b8; cursor: pointer; font-family: inherit; }
+  .ctrl-btn:hover { border-color: #06b6d4; color: #e2e8f0; }
+  .ctrl-btn.active { background: #06b6d4; color: #fff; border-color: #06b6d4; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>&#128300; DataPulse Lineage</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Architecture</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/data">DataPulse</a>
+    <a href="/data/lineage" class="active">Lineage</a>
+    <a href="/changelog">Changelog</a>
+    <a href="/branches">Branches</a>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="lineage-canvas"></canvas>
+  <div class="controls">
+    <button class="ctrl-btn active" onclick="setLayout('lr')">Left \u2192 Right</button>
+    <button class="ctrl-btn" onclick="setLayout('tb')">Top \u2192 Bottom</button>
+    <button class="ctrl-btn" onclick="resetView()">Reset View</button>
+  </div>
+  <div class="legend">
+    <div class="legend-title">Node Types</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>Data Source</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Pipeline</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Destination</div>
+    <div class="legend-title" style="margin-top:8px;">Edge Types</div>
+    <div class="legend-item"><div class="legend-line" style="background:#06b6d4"></div>Ingestion</div>
+    <div class="legend-item"><div class="legend-line" style="background:#22c55e"></div>Delivery</div>
+  </div>
+  <div class="info-panel" id="info-panel" style="display:none;"></div>
+</div>
+
+<script>
+var rawData = null;
+var analysisData = null;
+var nodes = [];
+var edges = [];
+var layout = "lr"; // lr or tb
+var camera = { x: 0, y: 0, zoom: 1 };
+var drag = { active: false, sx: 0, sy: 0, cx: 0, cy: 0 };
+var hovered = null;
+var canvas, ctx;
+
+var NODE_COLORS = { source: "#06b6d4", pipeline: "#a78bfa", destination: "#22c55e" };
+var STATUS_COLORS = { active: "#22c55e", degraded: "#ef4444", partial: "#f59e0b", planned: "#64748b", down: "#ef4444" };
+
+async function init() {
+  canvas = document.getElementById("lineage-canvas");
+  ctx = canvas.getContext("2d");
+  resize();
+  window.addEventListener("resize", resize);
+
+  canvas.addEventListener("mousedown", onMouseDown);
+  canvas.addEventListener("mousemove", onMouseMove);
+  canvas.addEventListener("mouseup", onMouseUp);
+  canvas.addEventListener("wheel", onWheel, { passive: false });
+
+  try {
+    var r1 = await fetch("/api/data/sources");
+    rawData = await r1.json();
+    var r2 = await fetch("/api/data/analysis");
+    analysisData = await r2.json();
+    buildGraph();
+    computeLayout();
+    resetView();
+    draw();
+  } catch (e) {
+    ctx.fillStyle = "#ef4444";
+    ctx.font = "14px Inter, system-ui, sans-serif";
+    ctx.fillText("Failed to load: " + e.message, 40, 60);
+  }
+}
+
+function resize() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+  if (nodes.length) draw();
+}
+
+function buildGraph() {
+  nodes = [];
+  edges = [];
+  var nodeMap = {};
+
+  // Sources
+  rawData.sources.forEach(function(s) {
+    var m = analysisData.sources.find(function(sm) { return sm.id === s.id; });
+    var n = { id: s.id, label: s.name, type: "source", category: s.category, health: m ? m.healthScore : 50, risk: m ? m.risk : "warning", x: 0, y: 0, w: 0, h: 0 };
+    nodes.push(n);
+    nodeMap[s.id] = n;
+  });
+
+  // Pipelines
+  rawData.pipelines.forEach(function(p) {
+    var pm = analysisData.pipelineMetrics.find(function(pm) { return pm.id === p.id; });
+    var n = { id: p.id, label: p.name, type: "pipeline", status: p.status, health: pm ? pm.avgSourceHealth : 50, risk: pm ? pm.risk : "warning", x: 0, y: 0, w: 0, h: 0 };
+    nodes.push(n);
+    nodeMap[p.id] = n;
+  });
+
+  // Destinations
+  rawData.destinations.forEach(function(d) {
+    var n = { id: d.id, label: d.name, type: "destination", x: 0, y: 0, w: 0, h: 0 };
+    nodes.push(n);
+    nodeMap[d.id] = n;
+  });
+
+  // Edges from lineage
+  analysisData.lineage.forEach(function(e) {
+    if (nodeMap[e.source] && nodeMap[e.target]) {
+      edges.push({ source: e.source, target: e.target, type: e.type, pipeline: e.pipeline });
+    }
+  });
+}
+
+function computeLayout() {
+  // 3-column layout: Sources | Pipelines | Destinations
+  var sources = nodes.filter(function(n) { return n.type === "source"; });
+  var pipelines = nodes.filter(function(n) { return n.type === "pipeline"; });
+  var dests = nodes.filter(function(n) { return n.type === "destination"; });
+
+  var nodeH = 32, nodeW = 180, gapY = 12, colGap = 260;
+
+  function layoutColumn(arr, colX) {
+    arr.sort(function(a, b) { return (a.label || "").localeCompare(b.label || ""); });
+    var startY = -(arr.length * (nodeH + gapY)) / 2;
+    arr.forEach(function(n, i) {
+      if (layout === "lr") {
+        n.x = colX;
+        n.y = startY + i * (nodeH + gapY);
+      } else {
+        n.x = startY + i * (nodeW + gapY);
+        n.y = colX;
+      }
+      n.w = nodeW;
+      n.h = nodeH;
+    });
+  }
+
+  if (layout === "lr") {
+    layoutColumn(sources, -colGap - nodeW / 2);
+    layoutColumn(pipelines, -nodeW / 2);
+    layoutColumn(dests, colGap - nodeW / 2);
+  } else {
+    layoutColumn(sources, -colGap - nodeH / 2);
+    layoutColumn(pipelines, -nodeH / 2);
+    layoutColumn(dests, colGap - nodeH / 2);
+  }
+}
+
+function resetView() {
+  camera.x = canvas.width / 2;
+  camera.y = canvas.height / 2;
+  // Auto-zoom to fit
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  nodes.forEach(function(n) {
+    minX = Math.min(minX, n.x);
+    maxX = Math.max(maxX, n.x + n.w);
+    minY = Math.min(minY, n.y);
+    maxY = Math.max(maxY, n.y + n.h);
+  });
+  var graphW = maxX - minX + 120;
+  var graphH = maxY - minY + 120;
+  camera.zoom = Math.min(1.2, Math.min(canvas.width / graphW, canvas.height / graphH));
+  draw();
+}
+
+function setLayout(l) {
+  layout = l;
+  document.querySelectorAll(".ctrl-btn").forEach(function(b) { b.classList.remove("active"); });
+  event.target.classList.add("active");
+  computeLayout();
+  resetView();
+}
+
+// ============================================================
+// Drawing
+// ============================================================
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(camera.x, camera.y);
+  ctx.scale(camera.zoom, camera.zoom);
+
+  // Draw edges
+  var nodeMap = {};
+  nodes.forEach(function(n) { nodeMap[n.id] = n; });
+
+  edges.forEach(function(e) {
+    var src = nodeMap[e.source];
+    var tgt = nodeMap[e.target];
+    if (!src || !tgt) return;
+
+    var sx, sy, tx, ty;
+    if (layout === "lr") {
+      sx = src.x + src.w;
+      sy = src.y + src.h / 2;
+      tx = tgt.x;
+      ty = tgt.y + tgt.h / 2;
+    } else {
+      sx = src.x + src.w / 2;
+      sy = src.y + src.h;
+      tx = tgt.x + tgt.w / 2;
+      ty = tgt.y;
+    }
+
+    var color = e.type === "ingestion" ? "#06b6d4" : "#22c55e";
+    var isHighlighted = hovered && (hovered.id === e.source || hovered.id === e.target || hovered.id === e.pipeline);
+
+    ctx.beginPath();
+    if (layout === "lr") {
+      var cpx = (sx + tx) / 2;
+      ctx.moveTo(sx, sy);
+      ctx.bezierCurveTo(cpx, sy, cpx, ty, tx, ty);
+    } else {
+      var cpy = (sy + ty) / 2;
+      ctx.moveTo(sx, sy);
+      ctx.bezierCurveTo(sx, cpy, tx, cpy, tx, ty);
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isHighlighted ? 2.5 : 1;
+    ctx.globalAlpha = isHighlighted ? 0.9 : 0.25;
+    ctx.stroke();
+
+    // Arrow
+    var angle = Math.atan2(ty - sy, tx - sx);
+    var arrowLen = 6;
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(tx - arrowLen * Math.cos(angle - 0.4), ty - arrowLen * Math.sin(angle - 0.4));
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(tx - arrowLen * Math.cos(angle + 0.4), ty - arrowLen * Math.sin(angle + 0.4));
+    ctx.stroke();
+
+    ctx.globalAlpha = 1;
+  });
+
+  // Draw nodes
+  nodes.forEach(function(n) {
+    var isHov = hovered && hovered.id === n.id;
+    var color = NODE_COLORS[n.type] || "#64748b";
+
+    // Connected highlight
+    var isConnected = false;
+    if (hovered) {
+      isConnected = edges.some(function(e) {
+        return (e.source === hovered.id && e.target === n.id) ||
+               (e.target === hovered.id && e.source === n.id) ||
+               (hovered.id === e.pipeline && (e.source === n.id || e.target === n.id));
+      }) || n.id === hovered.id;
+    }
+
+    var alpha = hovered ? (isConnected ? 1 : 0.3) : 1;
+    ctx.globalAlpha = alpha;
+
+    // Node background
+    ctx.beginPath();
+    roundRect(ctx, n.x, n.y, n.w, n.h, 6);
+    ctx.fillStyle = isHov ? "#1a2235" : "#0f1219";
+    ctx.fill();
+    ctx.strokeStyle = isHov ? color : "#1a1f2e";
+    ctx.lineWidth = isHov ? 2 : 1;
+    ctx.stroke();
+
+    // Health indicator bar at left
+    if (n.health !== undefined) {
+      var barH = (n.health / 100) * (n.h - 8);
+      var barColor = n.health >= 70 ? "#22c55e" : n.health >= 40 ? "#f59e0b" : "#ef4444";
+      ctx.fillStyle = barColor;
+      ctx.globalAlpha = alpha * 0.6;
+      ctx.beginPath();
+      roundRect(ctx, n.x + 3, n.y + n.h - 4 - barH, 3, barH, 1.5);
+      ctx.fill();
+      ctx.globalAlpha = alpha;
+    }
+
+    // Status dot for pipelines
+    if (n.type === "pipeline" && n.status) {
+      ctx.beginPath();
+      ctx.arc(n.x + n.w - 10, n.y + n.h / 2, 3, 0, Math.PI * 2);
+      ctx.fillStyle = STATUS_COLORS[n.status] || "#64748b";
+      ctx.fill();
+    }
+
+    // Type icon
+    ctx.font = "10px Inter, system-ui, sans-serif";
+    ctx.fillStyle = color;
+    ctx.textAlign = "left";
+    var icon = n.type === "source" ? "\u25C9" : n.type === "pipeline" ? "\u25B7" : "\u25A3";
+    ctx.fillText(icon, n.x + 10, n.y + n.h / 2 + 1);
+
+    // Label
+    ctx.font = (isHov ? "600 " : "") + "11px Inter, system-ui, sans-serif";
+    ctx.fillStyle = isHov ? "#f1f5f9" : "#94a3b8";
+    ctx.textAlign = "left";
+    var maxLabelW = n.w - 28;
+    var label = n.label;
+    while (ctx.measureText(label).width > maxLabelW && label.length > 5) {
+      label = label.slice(0, -4) + "...";
+    }
+    ctx.fillText(label, n.x + 22, n.y + n.h / 2 + 4);
+
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+}
+
+// ============================================================
+// Interaction
+// ============================================================
+function screenToWorld(sx, sy) {
+  return { x: (sx - camera.x) / camera.zoom, y: (sy - camera.y) / camera.zoom };
+}
+
+function hitTest(wx, wy) {
+  for (var i = nodes.length - 1; i >= 0; i--) {
+    var n = nodes[i];
+    if (wx >= n.x && wx <= n.x + n.w && wy >= n.y && wy <= n.y + n.h) return n;
+  }
+  return null;
+}
+
+function onMouseDown(e) {
+  drag.active = true;
+  drag.sx = e.clientX;
+  drag.sy = e.clientY;
+  drag.cx = camera.x;
+  drag.cy = camera.y;
+}
+
+function onMouseMove(e) {
+  if (drag.active) {
+    camera.x = drag.cx + (e.clientX - drag.sx);
+    camera.y = drag.cy + (e.clientY - drag.sy);
+    draw();
+    return;
+  }
+
+  var rect = canvas.getBoundingClientRect();
+  var w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+  var hit = hitTest(w.x, w.y);
+
+  if (hit !== hovered) {
+    hovered = hit;
+    canvas.style.cursor = hit ? "pointer" : "grab";
+    draw();
+    showInfoPanel(hit);
+  }
+}
+
+function onMouseUp() { drag.active = false; }
+
+function onWheel(e) {
+  e.preventDefault();
+  var rect = canvas.getBoundingClientRect();
+  var mx = e.clientX - rect.left;
+  var my = e.clientY - rect.top;
+  var factor = e.deltaY < 0 ? 1.1 : 0.9;
+  var newZoom = Math.max(0.2, Math.min(3, camera.zoom * factor));
+
+  camera.x = mx - (mx - camera.x) * (newZoom / camera.zoom);
+  camera.y = my - (my - camera.y) * (newZoom / camera.zoom);
+  camera.zoom = newZoom;
+  draw();
+}
+
+function showInfoPanel(node) {
+  var panel = document.getElementById("info-panel");
+  if (!node) { panel.style.display = "none"; return; }
+
+  var html = '<div class="title">' + node.label + '</div>';
+  html += '<div class="sub"><span class="badge badge-' + node.type + '">' + node.type + '</span>';
+  if (node.status) html += ' <span class="badge badge-' + node.status + '">' + node.status + '</span>';
+  html += '</div>';
+
+  if (node.health !== undefined) {
+    var hColor = node.health >= 70 ? "#22c55e" : node.health >= 40 ? "#f59e0b" : "#ef4444";
+    html += '<div class="stat">Health: <b style="color:' + hColor + '">' + node.health + '</b>/100</div>';
+  }
+
+  // Count connections
+  var inEdges = edges.filter(function(e) { return e.target === node.id; });
+  var outEdges = edges.filter(function(e) { return e.source === node.id; });
+  html += '<div class="stat">Incoming: ' + inEdges.length + ' &middot; Outgoing: ' + outEdges.length + '</div>';
+
+  if (node.category) html += '<div class="stat">Category: ' + node.category.replace(/_/g, " ") + '</div>';
+
+  panel.innerHTML = html;
+  panel.style.display = "block";
+}
+
+// ============================================================
+// Init
+// ============================================================
+init();
+</script>
+</body>
+</html>

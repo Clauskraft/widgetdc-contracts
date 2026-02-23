@@ -42,6 +42,12 @@ import {
   type AnalysisResult,
 } from "./arch-analysis.js";
 
+import {
+  analyzeDataSources,
+  type DataSourcesGraph,
+  type DataAnalysisResult,
+} from "./data-analysis.js";
+
 // --- GitHub Changelog ---
 interface ChangelogCommit {
   sha: string;
@@ -353,6 +359,29 @@ function loadGraph(): PlatformGraph {
   console.log(`[arch-mcp] Analysis complete: ${analysisResult.summary.totalModules} modules, ${analysisResult.summary.antiPatternCount} anti-patterns, ${analysisResult.summary.cycleCount} cycles`);
 
   return graph;
+}
+
+// --- Load DataPulse data sources ---
+let dataSourcesGraph: DataSourcesGraph | null = null;
+let dataAnalysisResult: DataAnalysisResult | null = null;
+
+function loadDataSources(): DataSourcesGraph {
+  if (dataSourcesGraph) return dataSourcesGraph;
+
+  const dsPath = resolve(__dirname, "../arch/data-sources.json");
+  if (!existsSync(dsPath)) {
+    throw new Error(`data-sources.json not found at ${dsPath}`);
+  }
+
+  dataSourcesGraph = JSON.parse(readFileSync(dsPath, "utf-8"));
+  console.log(`[datapulse] Loaded data-sources.json from ${dsPath}`);
+
+  // Run analysis
+  console.log(`[datapulse] Running data source analysis...`);
+  dataAnalysisResult = analyzeDataSources(dataSourcesGraph!);
+  console.log(`[datapulse] Analysis complete: ${dataAnalysisResult.summary.totalSources} sources, ${dataAnalysisResult.summary.antiPatternCount} issues, avg health ${dataAnalysisResult.summary.avgHealth}`);
+
+  return dataSourcesGraph!;
 }
 
 // --- Register MCP tools on a server instance ---
@@ -761,6 +790,136 @@ function registerTools(server: McpServer): void {
       return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
     }
   );
+
+  // =====================================================
+  // DATAPULSE TOOLS (7) — Data Intelligence
+  // =====================================================
+
+  // data_stats
+  server.tool(
+    "data_stats",
+    "Get DataPulse summary statistics: total sources, avg health, critical/warning counts, stale sources, pipeline status, anti-pattern count.",
+    {},
+    async () => {
+      loadDataSources();
+      return { content: [{ type: "text" as const, text: JSON.stringify(dataAnalysisResult!.summary, null, 2) }] };
+    }
+  );
+
+  // data_search
+  server.tool(
+    "data_search",
+    "Search data sources by name, ID, or category. Returns matching sources with health metrics.",
+    {
+      query: z.string().describe("Search term (matches ID, name, type, category)"),
+      category: z.string().optional().describe("Filter by category: core_infrastructure, enterprise_integration, threat_intelligence, ai_providers, knowledge_acquisition, development, market_data"),
+      risk: z.enum(["critical", "warning", "healthy"]).optional().describe("Filter by risk level"),
+      limit: z.number().int().optional().describe("Max results (default 20)"),
+    },
+    async ({ query, category, risk, limit }) => {
+      loadDataSources();
+      const q = query.toLowerCase();
+      const max = limit || 20;
+
+      let sources = dataAnalysisResult!.sources.filter((s) => {
+        if (category && s.category !== category) return false;
+        if (risk && s.risk !== risk) return false;
+        return s.id.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q);
+      }).slice(0, max);
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({ matches: sources.length, sources }, null, 2) }] };
+    }
+  );
+
+  // data_source
+  server.tool(
+    "data_source",
+    "Get full details for a specific data source: health scores, freshness, quality metrics, known issues, consuming pipelines.",
+    { sourceId: z.string().describe("Data source ID (e.g. src-neo4j-aura, src-anthropic-api)") },
+    async ({ sourceId }) => {
+      loadDataSources();
+      const ds = dataSourcesGraph!;
+      const source = ds.sources.find((s) => s.id === sourceId);
+      const metrics = dataAnalysisResult!.sources.find((s) => s.id === sourceId);
+
+      if (!source || !metrics) {
+        const suggestions = ds.sources.filter((s) => s.id.toLowerCase().includes(sourceId.toLowerCase())).slice(0, 5).map((s) => s.id);
+        return { content: [{ type: "text" as const, text: JSON.stringify({ error: `Source "${sourceId}" not found`, suggestions }, null, 2) }] };
+      }
+
+      const pipelines = ds.pipelines.filter((p) => p.sources.includes(sourceId)).map((p) => ({ id: p.id, name: p.name, status: p.status }));
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({
+        ...source, ...metrics, consumingPipelines: pipelines,
+      }, null, 2) }] };
+    }
+  );
+
+  // data_category
+  server.tool(
+    "data_category",
+    "Get health metrics aggregated by data source category. Shows avg health, freshness, quality, and source counts per category.",
+    { category: z.string().optional().describe("Specific category (omit for all)") },
+    async ({ category }) => {
+      loadDataSources();
+      let cats = dataAnalysisResult!.categoryMetrics;
+      if (category) cats = cats.filter((c) => c.category === category);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ categories: cats }, null, 2) }] };
+    }
+  );
+
+  // data_pipelines
+  server.tool(
+    "data_pipelines",
+    "Get all data pipeline metrics: status, source health, risk level. Filter by status.",
+    {
+      status: z.enum(["active", "degraded", "partial", "planned"]).optional().describe("Filter by pipeline status"),
+    },
+    async ({ status }) => {
+      loadDataSources();
+      let pipelines = dataAnalysisResult!.pipelineMetrics;
+      if (status) pipelines = pipelines.filter((p) => p.status === status);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ count: pipelines.length, pipelines }, null, 2) }] };
+    }
+  );
+
+  // data_quality
+  server.tool(
+    "data_quality",
+    "Get all detected data quality anti-patterns: stale_source, low_quality, gdpr_risk, single_point_of_failure, etc.",
+    {
+      type: z.string().optional().describe("Filter by type: stale_source, low_quality, single_point_of_failure, no_consumers, gdpr_risk, high_issue_count, orphan_pipeline, no_monitoring"),
+      severity: z.enum(["critical", "warning", "info"]).optional().describe("Filter by severity"),
+    },
+    async ({ type, severity }) => {
+      loadDataSources();
+      let patterns = dataAnalysisResult!.antiPatterns;
+      if (type) patterns = patterns.filter((p) => p.type === type);
+      if (severity) patterns = patterns.filter((p) => p.severity === severity);
+
+      const grouped: Record<string, number> = {};
+      patterns.forEach((p) => (grouped[p.type] = (grouped[p.type] || 0) + 1));
+
+      return { content: [{ type: "text" as const, text: JSON.stringify({ total: patterns.length, byType: grouped, patterns }, null, 2) }] };
+    }
+  );
+
+  // data_lineage
+  server.tool(
+    "data_lineage",
+    "Get the full data lineage graph: source → pipeline → destination edges. Optionally filter by source or pipeline.",
+    {
+      sourceId: z.string().optional().describe("Filter lineage edges involving this source"),
+      pipelineId: z.string().optional().describe("Filter lineage edges for this pipeline"),
+    },
+    async ({ sourceId, pipelineId }) => {
+      loadDataSources();
+      let edges = dataAnalysisResult!.lineage;
+      if (sourceId) edges = edges.filter((e) => e.source === sourceId || e.target === sourceId);
+      if (pipelineId) edges = edges.filter((e) => e.pipeline === pipelineId);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ edgeCount: edges.length, edges }, null, 2) }] };
+    }
+  );
 }
 
 // --- Create MCP server factory (one per session) ---
@@ -779,10 +938,22 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   const g = loadGraph();
   const a = analysisResult;
+  let dp = null;
+  try {
+    loadDataSources();
+    if (dataAnalysisResult) {
+      dp = {
+        totalSources: dataAnalysisResult.summary.totalSources,
+        avgHealth: dataAnalysisResult.summary.avgHealth,
+        criticalCount: dataAnalysisResult.summary.criticalCount,
+        antiPatternCount: dataAnalysisResult.summary.antiPatternCount,
+      };
+    }
+  } catch {}
   res.json({
     status: "ok",
     service: "arch-mcp-server",
-    version: "2.0.0",
+    version: "3.0.0",
     graph: { nodes: g.meta.nodes, edges: g.meta.edges, generated: g.meta.generated },
     analysis: a ? {
       avgHealth: a.summary.avgHealth,
@@ -790,6 +961,7 @@ app.get("/health", (_req, res) => {
       antiPatternCount: a.summary.antiPatternCount,
       cycleCount: a.summary.cycleCount,
     } : null,
+    datapulse: dp,
   });
 });
 
@@ -809,6 +981,61 @@ app.get("/api/impact/:moduleId", (req, res) => {
   const maxDepth = req.query.maxDepth ? parseInt(req.query.maxDepth as string, 10) : undefined;
   const result = computeImpact(g, moduleId, maxDepth);
   res.json(result);
+});
+
+// --- DataPulse REST API ---
+app.get("/api/data/analysis", (_req, res) => {
+  try {
+    loadDataSources();
+    if (!dataAnalysisResult) {
+      res.status(500).json({ error: "DataPulse analysis not ready" });
+      return;
+    }
+    res.json(dataAnalysisResult);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to load data sources", message: e.message });
+  }
+});
+
+app.get("/api/data/sources", (_req, res) => {
+  try {
+    const ds = loadDataSources();
+    res.json(ds);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to load data sources", message: e.message });
+  }
+});
+
+app.get("/api/data/impact/:sourceId", (req, res) => {
+  try {
+    loadDataSources();
+    const sourceId = req.params.sourceId;
+    const ds = dataSourcesGraph!;
+    const source = ds.sources.find((s) => s.id === sourceId);
+    if (!source) {
+      res.status(404).json({ error: `Source "${sourceId}" not found` });
+      return;
+    }
+
+    const metrics = dataAnalysisResult!.sources.find((s) => s.id === sourceId);
+    const consumingPipelines = ds.pipelines.filter((p) => p.sources.includes(sourceId));
+    const affectedDestinations = consumingPipelines.flatMap((p) => p.destinations);
+    const uniqueDestinations = [...new Set(affectedDestinations)];
+    const destDetails = uniqueDestinations.map((did) => ds.destinations.find((d) => d.id === did)).filter(Boolean);
+
+    res.json({
+      source: { id: source.id, name: source.name, category: source.category },
+      metrics,
+      impact: {
+        pipelinesAffected: consumingPipelines.length,
+        pipelines: consumingPipelines.map((p) => ({ id: p.id, name: p.name, status: p.status })),
+        destinationsAffected: destDetails.length,
+        destinations: destDetails.map((d: any) => ({ id: d.id, name: d.name, type: d.type })),
+      },
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to compute impact", message: e.message });
+  }
 });
 
 // --- Changelog API ---
@@ -906,6 +1133,12 @@ app.get("/arch-changelog.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR,
 app.get("/arch-branches.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-branches.html")));
 app.get("/arch-analysis.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-analysis.html")));
 
+// DataPulse views
+app.get("/data", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-dashboard.html")));
+app.get("/data/lineage", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-lineage.html")));
+app.get("/data-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-dashboard.html")));
+app.get("/data-lineage.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "data-lineage.html")));
+
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
 
@@ -971,21 +1204,25 @@ app.post("/messages", async (req, res) => {
 // --- Start ---
 const PORT = parseInt(process.env.PORT || "3100", 10);
 
-// Pre-load graph
+// Pre-load graph + data sources
 loadGraph();
+try { loadDataSources(); } catch (e: any) { console.warn(`[datapulse] Failed to pre-load: ${e.message}`); }
 
 app.listen(PORT, () => {
   console.log(`[arch-mcp] HTTP server listening on port ${PORT}`);
-  console.log(`[arch-mcp] Dashboard: http://localhost:${PORT}/`);
-  console.log(`[arch-mcp] Graph:     http://localhost:${PORT}/graph`);
-  console.log(`[arch-mcp] Overview:  http://localhost:${PORT}/overview`);
-  console.log(`[arch-mcp] Changelog: http://localhost:${PORT}/changelog`);
-  console.log(`[arch-mcp] Branches:  http://localhost:${PORT}/branches`);
-  console.log(`[arch-mcp] Analysis:  http://localhost:${PORT}/analysis-report`);
-  console.log(`[arch-mcp] API:       http://localhost:${PORT}/api/analysis`);
-  console.log(`[arch-mcp] Health:    http://localhost:${PORT}/health`);
-  console.log(`[arch-mcp] SSE:       http://localhost:${PORT}/sse`);
-  console.log(`[arch-mcp] MCP:       http://localhost:${PORT}/mcp`);
+  console.log(`[arch-mcp] Dashboard:  http://localhost:${PORT}/`);
+  console.log(`[arch-mcp] Graph:      http://localhost:${PORT}/graph`);
+  console.log(`[arch-mcp] Overview:   http://localhost:${PORT}/overview`);
+  console.log(`[arch-mcp] DataPulse:  http://localhost:${PORT}/data`);
+  console.log(`[arch-mcp] Lineage:    http://localhost:${PORT}/data/lineage`);
+  console.log(`[arch-mcp] Changelog:  http://localhost:${PORT}/changelog`);
+  console.log(`[arch-mcp] Branches:   http://localhost:${PORT}/branches`);
+  console.log(`[arch-mcp] Analysis:   http://localhost:${PORT}/analysis-report`);
+  console.log(`[arch-mcp] API Arch:   http://localhost:${PORT}/api/analysis`);
+  console.log(`[arch-mcp] API Data:   http://localhost:${PORT}/api/data/analysis`);
+  console.log(`[arch-mcp] Health:     http://localhost:${PORT}/health`);
+  console.log(`[arch-mcp] SSE:        http://localhost:${PORT}/sse`);
+  console.log(`[arch-mcp] MCP:        http://localhost:${PORT}/mcp`);
 });
 
 process.on("SIGINT", async () => {

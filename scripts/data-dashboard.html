@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataPulse — Master Data Intelligence</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; margin-left: auto; background: #141824; border-radius: 6px; padding: 2px; }
+  .tab-btn { padding: 5px 14px; font-size: 11px; border-radius: 4px; border: none; background: transparent; color: #64748b; cursor: pointer; font-weight: 500; transition: all 0.15s; font-family: inherit; }
+  .tab-btn.active { background: #06b6d4; color: #fff; }
+  .tab-btn:hover:not(.active) { color: #94a3b8; background: #1a1f2e; }
+
+  /* Main content */
+  #main { flex: 1; overflow-y: auto; padding: 20px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .grid-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+  .card { background: #0f1219; border: 1px solid #1a1f2e; border-radius: 10px; padding: 20px; }
+  .card-sm { padding: 14px; }
+  .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .card-value.sm { font-size: 22px; }
+  .card-sub { font-size: 11px; color: #475569; margin-top: 4px; }
+
+  /* Health gauge */
+  .gauge-wrap { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+  .gauge-ring { position: relative; width: 140px; height: 140px; }
+  .gauge-ring canvas { width: 100%; height: 100%; }
+  .gauge-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .gauge-label .val { font-size: 36px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .gauge-label .lbl { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Risk badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge-critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-healthy { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .badge-info { background: rgba(99,102,241,0.15); color: #818cf8; }
+  .badge-active { background: rgba(6,182,212,0.15); color: #06b6d4; }
+  .badge-degraded { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-planned { background: rgba(100,116,139,0.15); color: #94a3b8; }
+  .badge-partial { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
+  /* Category cards */
+  .cat-card { display: flex; flex-direction: column; gap: 8px; }
+  .cat-header { display: flex; align-items: center; gap: 8px; }
+  .cat-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .cat-name { font-size: 13px; font-weight: 600; color: #f1f5f9; text-transform: capitalize; }
+  .cat-bar { height: 6px; border-radius: 3px; background: #141824; overflow: hidden; }
+  .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .cat-stats { display: flex; gap: 12px; font-size: 10px; color: #64748b; }
+  .cat-stats span { display: flex; align-items: center; gap: 3px; }
+  .cat-stats .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* Tables */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; font-weight: 600; padding: 8px 10px; border-bottom: 1px solid #1a1f2e; }
+  .tbl td { font-size: 12px; padding: 8px 10px; border-bottom: 1px solid #0f1219; color: #94a3b8; }
+  .tbl tr:hover td { background: #141824; }
+  .tbl .source-link { color: #22d3ee; cursor: pointer; }
+  .tbl .source-link:hover { text-decoration: underline; }
+  .tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Score bars */
+  .score-bar { display: inline-flex; align-items: center; gap: 6px; }
+  .score-bar-track { width: 60px; height: 4px; background: #1a1f2e; border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* Anti-pattern section */
+  .ap-group { margin-bottom: 16px; }
+  .ap-group-header { display: flex; align-items: center; gap: 8px; padding: 10px 0; cursor: pointer; user-select: none; }
+  .ap-group-header:hover { opacity: 0.85; }
+  .ap-group-title { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+  .ap-group-count { font-size: 11px; color: #475569; }
+  .ap-group-chevron { font-size: 12px; color: #475569; transition: transform 0.2s; }
+  .ap-group-chevron.open { transform: rotate(90deg); }
+  .ap-list { display: none; }
+  .ap-list.open { display: block; }
+  .ap-item { padding: 10px 14px; margin: 4px 0; background: #141824; border-radius: 6px; border-left: 3px solid transparent; }
+  .ap-item.critical { border-left-color: #ef4444; }
+  .ap-item.warning { border-left-color: #f59e0b; }
+  .ap-item.info { border-left-color: #818cf8; }
+  .ap-entity { font-size: 12px; color: #22d3ee; cursor: pointer; font-weight: 500; }
+  .ap-entity:hover { text-decoration: underline; }
+  .ap-desc { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .ap-rec { font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-bar select, .filter-bar input { padding: 6px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; font-family: inherit; }
+  .filter-bar select:focus, .filter-bar input:focus { border-color: #06b6d4; }
+  .filter-bar label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; }
+
+  /* Detail panel */
+  #detail-panel { display: none; position: fixed; right: 0; top: 0; width: 420px; height: 100vh; background: #0f1219; border-left: 1px solid #1a1f2e; z-index: 100; overflow-y: auto; padding: 20px; box-shadow: -4px 0 20px rgba(0,0,0,0.5); }
+  #detail-panel.open { display: block; }
+  .detail-close { position: absolute; top: 12px; right: 12px; background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; }
+  .detail-close:hover { color: #e2e8f0; }
+  .detail-title { font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+  .detail-sub { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+  .detail-section { margin-bottom: 16px; }
+  .detail-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; font-weight: 600; margin-bottom: 8px; }
+  .detail-metric { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #141824; }
+  .detail-metric .label { font-size: 12px; color: #94a3b8; }
+  .detail-metric .value { font-size: 12px; color: #f1f5f9; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .detail-issue { padding: 6px 10px; margin: 4px 0; background: #141824; border-radius: 4px; font-size: 11px; color: #f59e0b; border-left: 2px solid #f59e0b; }
+
+  /* Pipeline flow */
+  .pipeline-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; margin: 4px 0; background: #141824; border-radius: 6px; flex-wrap: wrap; }
+  .pipeline-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .pipeline-name { font-size: 12px; color: #f1f5f9; font-weight: 500; min-width: 200px; }
+  .pipeline-meta { font-size: 10px; color: #64748b; }
+  .pipeline-arrow { color: #2a3650; font-size: 10px; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 60px 20px; color: #64748b; }
+  .loading .spinner { width: 32px; height: 32px; border: 3px solid #1a1f2e; border-top-color: #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1a1f2e; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2a3650; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>&#128300; DataPulse Intelligence</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Architecture</a>
+    <a href="/graph">Graph</a>
+    <a href="/overview">Overview</a>
+    <a href="/data" class="active">DataPulse</a>
+    <a href="/data/lineage">Lineage</a>
+    <a href="/changelog">Changelog</a>
+    <a href="/branches">Branches</a>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="sources">Sources</button>
+    <button class="tab-btn" data-tab="pipelines">Pipelines</button>
+    <button class="tab-btn" data-tab="issues">Quality Issues</button>
+  </div>
+</div>
+
+<div id="main">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    Loading data intelligence...
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid grid-5" style="margin-bottom: 16px;" id="kpi-cards"></div>
+    <div class="grid grid-2" style="margin-bottom: 16px;">
+      <div class="card" id="gauge-card">
+        <div class="card-title">Data Health Score</div>
+        <div class="gauge-wrap">
+          <div class="gauge-ring"><canvas id="gauge-canvas" width="280" height="280"></canvas><div class="gauge-label"><div class="val" id="gauge-val">--</div><div class="lbl">Health</div></div></div>
+        </div>
+      </div>
+      <div class="card" id="scatter-card">
+        <div class="card-title">Freshness vs Quality</div>
+        <canvas id="scatter-canvas" width="500" height="260"></canvas>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card" id="categories-card">
+        <div class="card-title">Category Health</div>
+        <div id="categories-list"></div>
+      </div>
+      <div class="card" id="top-issues-card">
+        <div class="card-title">Top Issues</div>
+        <table class="tbl" id="top-issues-table">
+          <thead><tr><th>Source</th><th>Type</th><th>Severity</th><th>Description</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOURCES TAB -->
+  <div class="tab-content" id="tab-sources">
+    <div class="filter-bar">
+      <label>Category</label>
+      <select id="filter-category"><option value="">All categories</option></select>
+      <label>Risk</label>
+      <select id="filter-risk">
+        <option value="">All</option>
+        <option value="critical">Critical</option>
+        <option value="warning">Warning</option>
+        <option value="healthy">Healthy</option>
+      </select>
+      <label>Search</label>
+      <input type="text" id="filter-search" placeholder="Search sources...">
+    </div>
+    <table class="tbl" id="sources-table">
+      <thead><tr><th>Source</th><th>Type</th><th>Category</th><th>Health</th><th>Freshness</th><th>Quality</th><th>Issues</th><th>Risk</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- PIPELINES TAB -->
+  <div class="tab-content" id="tab-pipelines">
+    <div id="pipelines-list"></div>
+  </div>
+
+  <!-- QUALITY ISSUES TAB -->
+  <div class="tab-content" id="tab-issues">
+    <div class="filter-bar">
+      <label>Type</label>
+      <select id="filter-ap-type"><option value="">All types</option></select>
+      <label>Severity</label>
+      <select id="filter-ap-severity">
+        <option value="">All</option>
+        <option value="critical">Critical</option>
+        <option value="warning">Warning</option>
+        <option value="info">Info</option>
+      </select>
+    </div>
+    <div id="antipatterns-list"></div>
+  </div>
+</div>
+
+<!-- Detail panel -->
+<div id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">&times;</button>
+  <div id="detail-content"></div>
+</div>
+
+<script>
+// ============================================================
+// State
+// ============================================================
+let analysisData = null;
+let rawData = null;
+
+const CAT_COLORS = {
+  core_infrastructure: "#06b6d4",
+  enterprise_integration: "#8b5cf6",
+  knowledge_acquisition: "#f59e0b",
+  threat_intelligence: "#ef4444",
+  development: "#3b82f6",
+  ai_providers: "#10b981",
+  market_data: "#ec4899",
+};
+
+const STATUS_COLORS = {
+  active: "#22c55e",
+  degraded: "#ef4444",
+  partial: "#f59e0b",
+  planned: "#64748b",
+  down: "#ef4444",
+};
+
+// ============================================================
+// Load data
+// ============================================================
+async function loadAnalysis() {
+  try {
+    const [analysisRes, rawRes] = await Promise.all([
+      fetch("/api/data/analysis"),
+      fetch("/api/data/sources"),
+    ]);
+    analysisData = await analysisRes.json();
+    rawData = await rawRes.json();
+    document.getElementById("loading").style.display = "none";
+    renderOverview();
+    renderSources();
+    renderPipelines();
+    populateFilters();
+  } catch (e) {
+    document.getElementById("loading").innerHTML = '<div style="color:#ef4444;">Failed to load data: ' + e.message + '</div>';
+  }
+}
+
+// ============================================================
+// KPI Cards
+// ============================================================
+function renderOverview() {
+  const s = analysisData.summary;
+
+  const kpis = [
+    { label: "Data Sources", value: s.totalSources, sub: s.activePipelines + " active pipelines" },
+    { label: "Avg Health", value: s.avgHealth, sub: "Freshness: " + s.avgFreshness + " &middot; Quality: " + s.avgQuality },
+    { label: "Critical", value: s.criticalCount, sub: s.warningCount + " warnings", color: s.criticalCount > 0 ? "#ef4444" : "#22c55e" },
+    { label: "Stale Sources", value: s.staleCount, sub: "of " + s.totalSources + " total", color: s.staleCount > 0 ? "#f59e0b" : "#22c55e" },
+    { label: "Quality Issues", value: s.antiPatternCount, sub: s.degradedPipelines + " degraded pipelines", color: s.antiPatternCount > 5 ? "#f59e0b" : "#22c55e" },
+  ];
+
+  var container = document.getElementById("kpi-cards");
+  container.innerHTML = kpis.map(function(k) {
+    return '<div class="card card-sm"><div class="card-title">' + k.label + '</div><div class="card-value sm"' + (k.color ? ' style="color:' + k.color + '"' : '') + '>' + k.value + '</div><div class="card-sub">' + k.sub + '</div></div>';
+  }).join("");
+
+  drawGauge(s.avgHealth);
+  drawScatter();
+  renderCategories();
+  renderTopIssues();
+}
+
+// ============================================================
+// Health Gauge
+// ============================================================
+function drawGauge(score) {
+  document.getElementById("gauge-val").textContent = score;
+  var canvas = document.getElementById("gauge-canvas");
+  var ctx = canvas.getContext("2d");
+  var cx = 140, cy = 140, r = 110, lw = 14;
+
+  ctx.clearRect(0, 0, 280, 280);
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+  ctx.strokeStyle = "#1a1f2e";
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Score arc
+  var frac = score / 100;
+  var endAngle = 0.75 * Math.PI + frac * 1.5 * Math.PI;
+  var color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0.75 * Math.PI, endAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Glow
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0.75 * Math.PI, endAngle);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw + 8;
+  ctx.lineCap = "round";
+  ctx.globalAlpha = 0.15;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Tick marks
+  for (var i = 0; i <= 10; i++) {
+    var a = 0.75 * Math.PI + (i / 10) * 1.5 * Math.PI;
+    var inner = r - lw / 2 - 6;
+    var outer = r - lw / 2 - 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + inner * Math.cos(a), cy + inner * Math.sin(a));
+    ctx.lineTo(cx + outer * Math.cos(a), cy + outer * Math.sin(a));
+    ctx.strokeStyle = "#2a3650";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  document.getElementById("gauge-val").style.color = color;
+}
+
+// ============================================================
+// Scatter: Freshness vs Quality
+// ============================================================
+function drawScatter() {
+  var canvas = document.getElementById("scatter-canvas");
+  var ctx = canvas.getContext("2d");
+  var w = canvas.width, h = canvas.height;
+  var pad = { t: 20, r: 20, b: 30, l: 40 };
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  ctx.strokeStyle = "#141824";
+  ctx.lineWidth = 1;
+  for (var i = 0; i <= 4; i++) {
+    var x = pad.l + (i / 4) * (w - pad.l - pad.r);
+    var y = pad.t + (i / 4) * (h - pad.t - pad.b);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, h - pad.b); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+  }
+
+  // Axes labels
+  ctx.font = "9px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#475569";
+  ctx.textAlign = "center";
+  ctx.fillText("Quality Score \u2192", (w - pad.l - pad.r) / 2 + pad.l, h - 5);
+  ctx.save();
+  ctx.translate(10, (h - pad.t - pad.b) / 2 + pad.t);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText("Freshness Score \u2192", 0, 0);
+  ctx.restore();
+
+  // Axis numbers
+  for (var i = 0; i <= 4; i++) {
+    var val = i * 25;
+    var x = pad.l + (i / 4) * (w - pad.l - pad.r);
+    var y = h - pad.b - (i / 4) * (h - pad.t - pad.b);
+    ctx.fillStyle = "#475569";
+    ctx.textAlign = "center";
+    ctx.fillText(val, x, h - pad.b + 14);
+    ctx.textAlign = "right";
+    ctx.fillText(val, pad.l - 6, y + 3);
+  }
+
+  // Quadrant labels
+  ctx.globalAlpha = 0.15;
+  ctx.font = "10px Inter, system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ef4444";
+  ctx.fillText("STALE & LOW QUALITY", pad.l + (w - pad.l - pad.r) * 0.25, pad.t + (h - pad.t - pad.b) * 0.75);
+  ctx.fillStyle = "#22c55e";
+  ctx.fillText("FRESH & HIGH QUALITY", pad.l + (w - pad.l - pad.r) * 0.75, pad.t + (h - pad.t - pad.b) * 0.25);
+  ctx.globalAlpha = 1;
+
+  // Plot sources
+  for (var si = 0; si < analysisData.sources.length; si++) {
+    var source = analysisData.sources[si];
+    var x = pad.l + (source.qualityScore / 100) * (w - pad.l - pad.r);
+    var y = h - pad.b - (source.freshnessScore / 100) * (h - pad.t - pad.b);
+    var color = CAT_COLORS[source.category] || "#64748b";
+    var radius = 4 + (source.consumerCount || 0) * 0.8;
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.7;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Legend
+  var categories = [];
+  var seen = {};
+  analysisData.sources.forEach(function(s) { if (!seen[s.category]) { seen[s.category] = true; categories.push(s.category); } });
+  var lx = pad.l;
+  ctx.font = "9px Inter, system-ui, sans-serif";
+  for (var ci = 0; ci < categories.length; ci++) {
+    var cat = categories[ci];
+    var color = CAT_COLORS[cat] || "#64748b";
+    ctx.beginPath();
+    ctx.arc(lx + 4, pad.t + 6, 3, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = "#64748b";
+    ctx.textAlign = "left";
+    var label = cat.replace(/_/g, " ");
+    ctx.fillText(label, lx + 10, pad.t + 9);
+    lx += ctx.measureText(label).width + 22;
+  }
+}
+
+// ============================================================
+// Category Health
+// ============================================================
+function renderCategories() {
+  var container = document.getElementById("categories-list");
+  container.innerHTML = analysisData.categoryMetrics.map(function(cat) {
+    var color = CAT_COLORS[cat.category] || "#64748b";
+    var barColor = cat.avgHealth >= 70 ? "#22c55e" : cat.avgHealth >= 40 ? "#f59e0b" : "#ef4444";
+    return '<div class="cat-card" style="margin-bottom: 12px;">' +
+      '<div class="cat-header"><div class="cat-dot" style="background:' + color + '"></div><div class="cat-name">' + cat.category.replace(/_/g, " ") + '</div><span style="margin-left:auto;font-size:11px;color:#64748b;">' + cat.sourceCount + ' sources</span></div>' +
+      '<div class="cat-bar"><div class="cat-bar-fill" style="width:' + cat.avgHealth + '%;background:' + barColor + '"></div></div>' +
+      '<div class="cat-stats"><span><div class="dot" style="background:#22c55e"></div>' + cat.healthyCount + ' healthy</span><span><div class="dot" style="background:#f59e0b"></div>' + cat.warningCount + ' warning</span><span><div class="dot" style="background:#ef4444"></div>' + cat.criticalCount + ' critical</span><span style="margin-left:auto;">Health: ' + cat.avgHealth + ' &middot; Fresh: ' + cat.avgFreshness + ' &middot; Quality: ' + cat.avgQuality + '</span></div></div>';
+  }).join("");
+}
+
+// ============================================================
+// Top Issues
+// ============================================================
+function renderTopIssues() {
+  var tbody = document.querySelector("#top-issues-table tbody");
+  var issues = analysisData.antiPatterns.filter(function(ap) { return ap.severity === "critical" || ap.severity === "warning"; }).slice(0, 8);
+
+  tbody.innerHTML = issues.map(function(ap) {
+    return '<tr><td><span class="source-link" onclick="openDetail(\'' + ap.entityId + '\')">' + ap.entityId + '</span></td>' +
+      '<td><span class="badge badge-' + (ap.severity === 'critical' ? 'critical' : 'info') + '">' + ap.type.replace(/_/g, " ") + '</span></td>' +
+      '<td><span class="badge badge-' + ap.severity + '">' + ap.severity + '</span></td>' +
+      '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(ap.description) + '</td></tr>';
+  }).join("");
+}
+
+// ============================================================
+// Sources Table
+// ============================================================
+function renderSources(filters) {
+  filters = filters || {};
+  var sources = analysisData.sources.slice();
+  if (filters.category) sources = sources.filter(function(s) { return s.category === filters.category; });
+  if (filters.risk) sources = sources.filter(function(s) { return s.risk === filters.risk; });
+  if (filters.search) {
+    var q = filters.search.toLowerCase();
+    sources = sources.filter(function(s) { return s.name.toLowerCase().indexOf(q) >= 0 || s.id.toLowerCase().indexOf(q) >= 0; });
+  }
+
+  sources.sort(function(a, b) { return a.healthScore - b.healthScore; });
+
+  var tbody = document.querySelector("#sources-table tbody");
+  tbody.innerHTML = sources.map(function(s) {
+    return '<tr><td><span class="source-link" onclick="openDetail(\'' + s.id + '\')">' + s.name + '</span></td>' +
+      '<td>' + s.type.replace(/_/g, " ") + '</td>' +
+      '<td><span style="color:' + (CAT_COLORS[s.category] || '#64748b') + '">' + s.category.replace(/_/g, " ") + '</span></td>' +
+      '<td>' + scoreBar(s.healthScore) + '</td>' +
+      '<td>' + scoreBar(s.freshnessScore) + '</td>' +
+      '<td>' + scoreBar(s.qualityScore) + '</td>' +
+      '<td class="num">' + s.issueCount + '</td>' +
+      '<td><span class="badge badge-' + s.risk + '">' + s.risk + '</span></td></tr>';
+  }).join("");
+}
+
+function scoreBar(score) {
+  var color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+  return '<div class="score-bar"><div class="score-bar-track"><div class="score-bar-fill" style="width:' + score + '%;background:' + color + '"></div></div><span style="font-size:11px;color:' + color + ';font-weight:600;font-variant-numeric:tabular-nums;">' + score + '</span></div>';
+}
+
+// ============================================================
+// Pipelines
+// ============================================================
+function renderPipelines() {
+  var container = document.getElementById("pipelines-list");
+  var pipelines = analysisData.pipelineMetrics;
+
+  container.innerHTML = pipelines.map(function(p) {
+    var statusColor = STATUS_COLORS[p.status] || "#64748b";
+    var raw = rawData.pipelines.find(function(rp) { return rp.id === p.id; });
+    var sourceNames = raw ? raw.sources.map(function(sid) {
+      var src = rawData.sources.find(function(s) { return s.id === sid; });
+      return src ? src.name : sid;
+    }) : [];
+    var destNames = raw ? raw.destinations.map(function(did) {
+      var d = rawData.destinations.find(function(dd) { return dd.id === did; });
+      return d ? d.name : did;
+    }) : [];
+
+    return '<div class="pipeline-row">' +
+      '<div class="pipeline-status" style="background:' + statusColor + '"></div>' +
+      '<div class="pipeline-name">' + p.name + '</div>' +
+      '<span class="badge badge-' + p.status + '">' + p.status + '</span>' +
+      '<div class="pipeline-meta">' + sourceNames.join(", ") + ' <span class="pipeline-arrow">\u2192</span> ' + destNames.join(", ") + '</div>' +
+      '<div class="pipeline-meta">Health: ' + scoreBar(p.avgSourceHealth) + '</div></div>';
+  }).join("");
+}
+
+// ============================================================
+// Quality Issues (Anti-Patterns)
+// ============================================================
+function renderAntiPatterns(filters) {
+  filters = filters || {};
+  var patterns = analysisData.antiPatterns.slice();
+  if (filters.type) patterns = patterns.filter(function(p) { return p.type === filters.type; });
+  if (filters.severity) patterns = patterns.filter(function(p) { return p.severity === filters.severity; });
+
+  // Group by type
+  var grouped = {};
+  patterns.forEach(function(p) {
+    if (!grouped[p.type]) grouped[p.type] = [];
+    grouped[p.type].push(p);
+  });
+
+  var container = document.getElementById("antipatterns-list");
+  container.innerHTML = Object.keys(grouped).map(function(type) {
+    var items = grouped[type];
+    return '<div class="ap-group">' +
+      '<div class="ap-group-header" onclick="toggleApGroup(this)">' +
+      '<span class="ap-group-chevron">\u25B6</span>' +
+      '<span class="ap-group-title">' + type.replace(/_/g, " ") + '</span>' +
+      '<span class="ap-group-count">(' + items.length + ')</span>' +
+      '<span class="badge badge-' + items[0].severity + '" style="margin-left:8px;">' + items[0].severity + '</span></div>' +
+      '<div class="ap-list">' +
+      items.map(function(ap) {
+        return '<div class="ap-item ' + ap.severity + '">' +
+          '<span class="ap-entity" onclick="openDetail(\'' + ap.entityId + '\')">' + ap.entityId + '</span>' +
+          '<div class="ap-desc">' + escHtml(ap.description) + '</div>' +
+          '<div class="ap-rec">\uD83D\uDCA1 ' + escHtml(ap.recommendation) + '</div></div>';
+      }).join("") + '</div></div>';
+  }).join("");
+}
+
+function toggleApGroup(header) {
+  var chevron = header.querySelector(".ap-group-chevron");
+  var list = header.nextElementSibling;
+  chevron.classList.toggle("open");
+  list.classList.toggle("open");
+}
+
+// ============================================================
+// Detail Panel
+// ============================================================
+function openDetail(sourceId) {
+  var source = rawData.sources.find(function(s) { return s.id === sourceId; });
+  var metrics = analysisData.sources.find(function(s) { return s.id === sourceId; });
+  if (!source || !metrics) return;
+
+  var panel = document.getElementById("detail-panel");
+  var content = document.getElementById("detail-content");
+
+  var consumingPipelines = rawData.pipelines.filter(function(p) { return p.sources.indexOf(sourceId) >= 0; });
+
+  var html = '<div class="detail-title">' + source.name + '</div>' +
+    '<div class="detail-sub">' + source.type.replace(/_/g, " ") + ' &middot; ' + source.category.replace(/_/g, " ") + ' &middot; Owner: ' + source.owner + '</div>' +
+    '<p style="font-size:12px;color:#94a3b8;margin-bottom:16px;">' + source.description + '</p>' +
+
+    '<div class="detail-section"><div class="detail-section-title">Health Scores</div>' +
+    '<div class="detail-metric"><span class="label">Overall Health</span><span class="value">' + scoreBar(metrics.healthScore) + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Freshness</span><span class="value">' + scoreBar(metrics.freshnessScore) + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Quality</span><span class="value">' + scoreBar(metrics.qualityScore) + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Reliability</span><span class="value">' + scoreBar(metrics.reliabilityScore) + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Risk Level</span><span class="value"><span class="badge badge-' + metrics.risk + '">' + metrics.risk + '</span></span></div></div>' +
+
+    '<div class="detail-section"><div class="detail-section-title">Freshness</div>' +
+    '<div class="detail-metric"><span class="label">Update Frequency</span><span class="value">' + source.freshness.updateFrequency + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Last Update</span><span class="value">' + new Date(source.freshness.lastUpdate).toLocaleString() + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Stale After</span><span class="value">' + source.freshness.staleness_threshold_hours + 'h</span></div>' +
+    '<div class="detail-metric"><span class="label">Stale?</span><span class="value">' + (metrics.isStale ? '<span class="badge badge-warning">Yes (' + metrics.hoursStale + 'h over)</span>' : '<span class="badge badge-healthy">No</span>') + '</span></div></div>' +
+
+    '<div class="detail-section"><div class="detail-section-title">Quality Metrics</div>' +
+    '<div class="detail-metric"><span class="label">Completeness</span><span class="value">' + Math.round(source.quality.completeness * 100) + '%</span></div>' +
+    '<div class="detail-metric"><span class="label">Consistency</span><span class="value">' + Math.round(source.quality.consistency * 100) + '%</span></div>' +
+    '<div class="detail-metric"><span class="label">Accuracy</span><span class="value">' + Math.round(source.quality.accuracy * 100) + '%</span></div></div>';
+
+  if (source.quality.knownIssues.length > 0) {
+    html += '<div class="detail-section"><div class="detail-section-title">Known Issues (' + source.quality.knownIssues.length + ')</div>' +
+      source.quality.knownIssues.map(function(issue) { return '<div class="detail-issue">' + escHtml(issue) + '</div>'; }).join("") + '</div>';
+  }
+
+  html += '<div class="detail-section"><div class="detail-section-title">Connection</div>' +
+    '<div class="detail-metric"><span class="label">Protocol</span><span class="value">' + source.protocol + '</span></div>' +
+    '<div class="detail-metric"><span class="label">Endpoint</span><span class="value" style="font-size:10px;word-break:break-all;">' + escHtml(source.endpoint) + '</span></div></div>';
+
+  if (consumingPipelines.length > 0) {
+    html += '<div class="detail-section"><div class="detail-section-title">Consuming Pipelines (' + consumingPipelines.length + ')</div>' +
+      consumingPipelines.map(function(p) {
+        return '<div style="padding:6px 10px;margin:4px 0;background:#141824;border-radius:4px;display:flex;align-items:center;gap:8px;"><div style="width:8px;height:8px;border-radius:50%;background:' + (STATUS_COLORS[p.status] || '#64748b') + '"></div><span style="font-size:12px;color:#f1f5f9;">' + p.name + '</span><span class="badge badge-' + p.status + '" style="margin-left:auto;">' + p.status + '</span></div>';
+      }).join("") + '</div>';
+  }
+
+  if (source.schema) {
+    html += '<div class="detail-section"><div class="detail-section-title">Schema</div>' +
+      '<pre style="font-size:10px;color:#94a3b8;background:#141824;padding:10px;border-radius:6px;overflow-x:auto;max-height:200px;">' + JSON.stringify(source.schema, null, 2) + '</pre></div>';
+  }
+
+  content.innerHTML = html;
+  panel.classList.add("open");
+}
+
+function closeDetail() {
+  document.getElementById("detail-panel").classList.remove("open");
+}
+
+// ============================================================
+// Filters
+// ============================================================
+function populateFilters() {
+  var categories = [];
+  var catSeen = {};
+  analysisData.sources.forEach(function(s) { if (!catSeen[s.category]) { catSeen[s.category] = true; categories.push(s.category); } });
+  categories.sort();
+  var catSelect = document.getElementById("filter-category");
+  categories.forEach(function(c) {
+    var opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c.replace(/_/g, " ");
+    catSelect.appendChild(opt);
+  });
+
+  var apTypes = [];
+  var apSeen = {};
+  analysisData.antiPatterns.forEach(function(ap) { if (!apSeen[ap.type]) { apSeen[ap.type] = true; apTypes.push(ap.type); } });
+  apTypes.sort();
+  var apSelect = document.getElementById("filter-ap-type");
+  apTypes.forEach(function(t) {
+    var opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t.replace(/_/g, " ");
+    apSelect.appendChild(opt);
+  });
+
+  document.getElementById("filter-category").addEventListener("change", applySourceFilters);
+  document.getElementById("filter-risk").addEventListener("change", applySourceFilters);
+  document.getElementById("filter-search").addEventListener("input", applySourceFilters);
+  document.getElementById("filter-ap-type").addEventListener("change", applyApFilters);
+  document.getElementById("filter-ap-severity").addEventListener("change", applyApFilters);
+}
+
+function applySourceFilters() {
+  renderSources({
+    category: document.getElementById("filter-category").value,
+    risk: document.getElementById("filter-risk").value,
+    search: document.getElementById("filter-search").value,
+  });
+}
+
+function applyApFilters() {
+  renderAntiPatterns({
+    type: document.getElementById("filter-ap-type").value,
+    severity: document.getElementById("filter-ap-severity").value,
+  });
+}
+
+// ============================================================
+// Tabs
+// ============================================================
+document.querySelectorAll(".tab-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".tab-btn").forEach(function(b) { b.classList.remove("active"); });
+    document.querySelectorAll(".tab-content").forEach(function(t) { t.classList.remove("active"); });
+    btn.classList.add("active");
+    var tab = document.getElementById("tab-" + btn.dataset.tab);
+    if (tab) tab.classList.add("active");
+    if (btn.dataset.tab === "issues") renderAntiPatterns();
+  });
+});
+
+// Close detail on Escape
+document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeDetail(); });
+
+// ============================================================
+// Utility
+// ============================================================
+function escHtml(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadAnalysis();
+window.addEventListener("resize", function() { if (analysisData) drawScatter(); });
+</script>
+</body>
+</html>
