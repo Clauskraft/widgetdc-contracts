@@ -324,6 +324,22 @@ app.get("/health", (_req, res) => {
   });
 });
 
+// --- Architecture Viewer (static) ---
+const SCRIPTS_DIR = resolve(__dirname);
+const ARCH_DIR = resolve(__dirname, "../arch");
+
+// Serve graph data at multiple paths (viewers try several)
+app.get("/platform-graph.json", (_req, res) => res.sendFile(resolve(ARCH_DIR, "platform-graph.json")));
+app.get("/arch/platform-graph.json", (_req, res) => res.sendFile(resolve(ARCH_DIR, "platform-graph.json")));
+
+// Viewer routes
+app.get("/", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
+app.get("/graph", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
+app.get("/overview", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
+// Support original filenames as links (used in view toggle buttons)
+app.get("/arch-viewer.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer.html")));
+app.get("/arch-viewer-overview.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "arch-viewer-overview.html")));
+
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
 
