@@ -421,6 +421,13 @@
       "label": "shutdown"
     },
     {
+      "id": "backend.bootstrap.types",
+      "repo": "backend",
+      "layer": "bootstrap",
+      "path": "apps/backend/src/bootstrap/types.ts",
+      "label": "types"
+    },
+    {
       "id": "backend.harvest",
       "repo": "backend",
       "layer": "core",
@@ -6679,13 +6686,6 @@
       "label": "NecromancerService"
     },
     {
-      "id": "backend.services.ingestion.HyperionService",
-      "repo": "backend",
-      "layer": "services",
-      "path": "apps/backend/src/services/ingestion/HyperionService.ts",
-      "label": "HyperionService"
-    },
-    {
       "id": "backend.services.NeuralChat.NeuralCortex",
       "repo": "backend",
       "layer": "services",
@@ -7034,6 +7034,13 @@
       "layer": "services",
       "path": "apps/backend/src/services/immunity/index.ts",
       "label": "immunity"
+    },
+    {
+      "id": "backend.services.ingestion.HyperionService",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/ingestion/HyperionService.ts",
+      "label": "HyperionService"
     },
     {
       "id": "backend.services.ingestion.IngestionPipeline",
@@ -10217,6 +10224,11 @@
       "type": "import"
     },
     {
+      "source": "backend.bootstrap",
+      "target": "backend.bootstrap.types",
+      "type": "import"
+    },
+    {
       "source": "backend.bootstrap.mcp",
       "target": "backend.config.logger",
       "type": "import"
@@ -10473,7 +10485,7 @@
     },
     {
       "source": "backend.bootstrap.mcp",
-      "target": "backend.bootstrap",
+      "target": "backend.bootstrap.types",
       "type": "import"
     },
     {
@@ -10983,7 +10995,7 @@
     },
     {
       "source": "backend.mcp.tools.integrationTools",
-      "target": "backend.mcp.mcpRegistry",
+      "target": "backend.packages.mcp-types.dist",
       "type": "import"
     },
     {
@@ -14548,7 +14560,7 @@
     },
     {
       "source": "backend.bootstrap.routes",
-      "target": "backend.bootstrap",
+      "target": "backend.bootstrap.types",
       "type": "import"
     },
     {
@@ -18728,7 +18740,7 @@
     },
     {
       "source": "backend.bootstrap.services",
-      "target": "backend.bootstrap",
+      "target": "backend.bootstrap.types",
       "type": "import"
     },
     {
@@ -19123,7 +19135,7 @@
     },
     {
       "source": "backend.bootstrap.shutdown",
-      "target": "backend.bootstrap",
+      "target": "backend.bootstrap.types",
       "type": "import"
     },
     {
@@ -22277,36 +22289,6 @@
       "type": "import"
     },
     {
-      "source": "backend.services.NecromancerService",
-      "target": "backend.services.ingestion.HyperionService",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.HyperionService",
-      "target": "backend.services.governance.CircuitBreaker",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.HyperionService",
-      "target": "backend.services.HyperLog",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.HyperionService",
-      "target": "backend.services.identity.BotSpawner",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.HyperionService",
-      "target": "backend.services.NecromancerService",
-      "type": "import"
-    },
-    {
-      "source": "backend.services.ingestion.HyperionService",
-      "target": "backend.services.VectorService",
-      "type": "import"
-    },
-    {
       "source": "backend.services.NeuralChat.NeuralCortex",
       "target": "backend.adapters.Neo4jAdapter",
       "type": "import"
@@ -22839,6 +22821,31 @@
     {
       "source": "backend.services.immunity",
       "target": "backend.services.immunity.SelfHealingAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.HyperionService",
+      "target": "backend.services.governance.CircuitBreaker",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.HyperionService",
+      "target": "backend.services.HyperLog",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.HyperionService",
+      "target": "backend.services.identity.BotSpawner",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.HyperionService",
+      "target": "backend.services.NecromancerService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.ingestion.HyperionService",
+      "target": "backend.services.VectorService",
       "type": "import"
     },
     {
@@ -27053,9 +27060,9 @@
     }
   ],
   "meta": {
-    "generated": "2026-02-24T10:52:29.812Z",
+    "generated": "2026-02-24T11:14:33.422Z",
     "repos": 4,
-    "nodes": 1397,
+    "nodes": 1398,
     "edges": 3454
   }
 }
