@@ -1513,6 +1513,13 @@
       "label": "PgVectorStoreAdapter"
     },
     {
+      "id": "backend.platform.vector.types",
+      "repo": "backend",
+      "layer": "platform",
+      "path": "apps/backend/src/platform/vector/types.ts",
+      "label": "types"
+    },
+    {
       "id": "backend.services.harvester.ExcelContentExtractor",
       "repo": "backend",
       "layer": "services",
@@ -4698,18 +4705,11 @@
       "label": "ConsultingMcpHandler"
     },
     {
-      "id": "backend.consulting",
+      "id": "backend.consulting.engine",
       "repo": "backend",
       "layer": "core",
-      "path": "apps/backend/src/consulting/index.ts",
-      "label": "consulting"
-    },
-    {
-      "id": "backend.consulting.L1ConsultingEngine",
-      "repo": "backend",
-      "layer": "core",
-      "path": "apps/backend/src/consulting/L1ConsultingEngine.ts",
-      "label": "L1ConsultingEngine"
+      "path": "apps/backend/src/consulting/engine.ts",
+      "label": "engine"
     },
     {
       "id": "backend.consulting.L1L2Orchestrator",
@@ -4717,6 +4717,20 @@
       "layer": "core",
       "path": "apps/backend/src/consulting/L1L2Orchestrator.ts",
       "label": "L1L2Orchestrator"
+    },
+    {
+      "id": "backend.consulting.Level2MCPTools",
+      "repo": "backend",
+      "layer": "core",
+      "path": "apps/backend/src/consulting/Level2MCPTools.ts",
+      "label": "Level2MCPTools"
+    },
+    {
+      "id": "backend.consulting.L1ConsultingEngine",
+      "repo": "backend",
+      "layer": "core",
+      "path": "apps/backend/src/consulting/L1ConsultingEngine.ts",
+      "label": "L1ConsultingEngine"
     },
     {
       "id": "backend.consulting.L2DueDiligenceEngine",
@@ -4754,18 +4768,18 @@
       "label": "L3TrainingHandler"
     },
     {
-      "id": "backend.consulting.Level2MCPTools",
-      "repo": "backend",
-      "layer": "core",
-      "path": "apps/backend/src/consulting/Level2MCPTools.ts",
-      "label": "Level2MCPTools"
-    },
-    {
       "id": "backend.consulting.UnifiedTrainingPipeline",
       "repo": "backend",
       "layer": "core",
       "path": "apps/backend/src/consulting/UnifiedTrainingPipeline.ts",
       "label": "UnifiedTrainingPipeline"
+    },
+    {
+      "id": "backend.consulting",
+      "repo": "backend",
+      "layer": "core",
+      "path": "apps/backend/src/consulting/index.ts",
+      "label": "consulting"
     },
     {
       "id": "backend.contracts.rlm-contracts",
@@ -7713,6 +7727,13 @@
       "layer": "core",
       "path": "packages/mcp-client/src/index.ts",
       "label": "src"
+    },
+    {
+      "id": "backend.packages.mcp-types.src.core",
+      "repo": "backend",
+      "layer": "core",
+      "path": "packages/mcp-types/src/core.ts",
+      "label": "core"
     },
     {
       "id": "backend.packages.mcp-types.src.evolution",
@@ -11856,13 +11877,18 @@
       "type": "import"
     },
     {
-      "source": "backend.platform.vector.ChromaVectorStoreAdapter",
-      "target": "backend.platform.vector",
+      "source": "backend.platform.vector",
+      "target": "backend.platform.vector.types",
       "type": "import"
     },
     {
       "source": "backend.platform.vector.ChromaVectorStoreAdapter",
       "target": "backend.platform.vector.PgVectorStoreAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.platform.vector.ChromaVectorStoreAdapter",
+      "target": "backend.platform.vector.types",
       "type": "import"
     },
     {
@@ -11897,17 +11923,17 @@
     },
     {
       "source": "backend.platform.vector.HybridSearchAdapter",
-      "target": "backend.platform.vector",
-      "type": "import"
-    },
-    {
-      "source": "backend.platform.vector.HybridSearchAdapter",
       "target": "backend.platform.vector.Neo4jVectorStoreAdapter",
       "type": "import"
     },
     {
       "source": "backend.platform.vector.HybridSearchAdapter",
       "target": "backend.platform.vector.PgVectorStoreAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.platform.vector.HybridSearchAdapter",
+      "target": "backend.platform.vector.types",
       "type": "import"
     },
     {
@@ -19137,7 +19163,42 @@
     },
     {
       "source": "backend.consulting.ConsultingMcpHandler",
-      "target": "backend.consulting",
+      "target": "backend.consulting.engine",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.ConsultingMcpHandler",
+      "target": "backend.consulting.L1L2Orchestrator",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.ConsultingMcpHandler",
+      "target": "backend.consulting.Level2MCPTools",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.engine",
+      "target": "backend.consulting.L1ConsultingEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.engine",
+      "target": "backend.consulting.L1L2Orchestrator",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.engine",
+      "target": "backend.consulting.L2DueDiligenceEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.L1L2Orchestrator",
+      "target": "backend.consulting.L1ConsultingEngine",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting.L1L2Orchestrator",
+      "target": "backend.consulting.L2DueDiligenceEngine",
       "type": "import"
     },
     {
@@ -19148,6 +19209,11 @@
     {
       "source": "backend.consulting",
       "target": "backend.consulting.ConsultingMcpHandler",
+      "type": "import"
+    },
+    {
+      "source": "backend.consulting",
+      "target": "backend.consulting.engine",
       "type": "import"
     },
     {
@@ -19193,16 +19259,6 @@
     {
       "source": "backend.consulting",
       "target": "backend.consulting.UnifiedTrainingPipeline",
-      "type": "import"
-    },
-    {
-      "source": "backend.consulting.L1L2Orchestrator",
-      "target": "backend.consulting.L1ConsultingEngine",
-      "type": "import"
-    },
-    {
-      "source": "backend.consulting.L1L2Orchestrator",
-      "target": "backend.consulting.L2DueDiligenceEngine",
       "type": "import"
     },
     {
@@ -23587,6 +23643,11 @@
     },
     {
       "source": "backend.packages.mcp-types.src",
+      "target": "backend.packages.mcp-types.src.core",
+      "type": "import"
+    },
+    {
+      "source": "backend.packages.mcp-types.src",
       "target": "backend.packages.mcp-types.src.evolution",
       "type": "import"
     },
@@ -23612,7 +23673,7 @@
     },
     {
       "source": "backend.packages.mcp-types.src.service-ports",
-      "target": "backend.packages.mcp-types.src",
+      "target": "backend.packages.mcp-types.src.core",
       "type": "import"
     },
     {
@@ -26992,9 +27053,9 @@
     }
   ],
   "meta": {
-    "generated": "2026-02-24T08:11:43.800Z",
+    "generated": "2026-02-24T10:52:29.812Z",
     "repos": 4,
-    "nodes": 1394,
-    "edges": 3446
+    "nodes": 1397,
+    "edges": 3454
   }
 }
