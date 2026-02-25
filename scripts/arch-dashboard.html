@@ -972,6 +972,9 @@ function drawBlastRadius(impact) {
 // ============================================================
 // Compliance matrix tab
 // ============================================================
+let complianceListenersInitialized = false;
+let complianceState = { currentPage: 1 };
+
 function renderCompliance() {
   if (!complianceData || !Array.isArray(complianceData.rows)) {
     document.getElementById("cm-body").innerHTML = '<tr><td colspan="6" style="color:#ef4444">Compliance matrix unavailable</td></tr>';
@@ -999,12 +1002,11 @@ function renderCompliance() {
   const prevBtn = document.getElementById("cm-prev");
   const nextBtn = document.getElementById("cm-next");
   const pageInfo = document.getElementById("cm-page-info");
-  let currentPage = 1;
 
   const liveChecks = Array.isArray(complianceData.live_checks) ? complianceData.live_checks : [];
   document.getElementById("cm-live-checks").innerHTML = liveChecks.map(c => `
     <div class="live-check">
-      <span class="status-pill status-${c.status}">${c.status}</span>
+      <span class="status-pill status-${escHtml(c.status)}">${escHtml(c.status)}</span>
       <span style="color:#e2e8f0">${escHtml(c.id)}</span>
       <span>${escHtml(c.detail)}</span>
     </div>
@@ -1052,8 +1054,8 @@ function renderCompliance() {
     const filtered = applyFiltersAndSort();
     const pageSize = Math.max(1, Number(pageSizeSel.value) || 20);
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const start = (currentPage - 1) * pageSize;
+    if (complianceState.currentPage > totalPages) complianceState.currentPage = totalPages;
+    const start = (complianceState.currentPage - 1) * pageSize;
     const pageRows = filtered.slice(start, start + pageSize);
 
     document.getElementById("cm-body").innerHTML = pageRows.map(r => `
@@ -1061,7 +1063,7 @@ function renderCompliance() {
         <td>${escHtml(r.endpoint_tool)}</td>
         <td>${escHtml(r.repo)}</td>
         <td>${escHtml(r.contract_type)}</td>
-        <td><span class="status-pill status-${r.current_status}">${r.current_status}</span></td>
+        <td><span class="status-pill status-${escHtml(r.current_status)}">${escHtml(r.current_status)}</span></td>
         <td style="max-width:320px"><div>${escHtml(r.evidence.source)}</div><div style="color:#64748b;font-size:11px">${escHtml(r.evidence.check)}</div></td>
         <td style="max-width:320px">${escHtml(r.remediation)}</td>
       </tr>
@@ -1069,48 +1071,51 @@ function renderCompliance() {
 
     pageInfo.textContent = filtered.length === 0
       ? "0 rows"
-      : `Showing ${start + 1}-${Math.min(start + pageSize, filtered.length)} of ${filtered.length} rows (page ${currentPage}/${totalPages})`;
-    prevBtn.disabled = currentPage <= 1 || filtered.length === 0;
-    nextBtn.disabled = currentPage >= totalPages || filtered.length === 0;
+      : `Showing ${start + 1}-${Math.min(start + pageSize, filtered.length)} of ${filtered.length} rows (page ${complianceState.currentPage}/${totalPages})`;
+    prevBtn.disabled = complianceState.currentPage <= 1 || filtered.length === 0;
+    nextBtn.disabled = complianceState.currentPage >= totalPages || filtered.length === 0;
   };
 
   const resetAndRender = () => {
-    currentPage = 1;
+    complianceState.currentPage = 1;
     renderRows();
   };
 
-  ["cm-repo-filter", "cm-status-filter", "cm-type-filter", "cm-sort", "cm-page-size"].forEach(id => {
-    document.getElementById(id).addEventListener("change", resetAndRender);
-  });
-  searchInput.addEventListener("input", resetAndRender);
-  prevBtn.addEventListener("click", () => { if (currentPage > 1) { currentPage--; renderRows(); } });
-  nextBtn.addEventListener("click", () => { currentPage++; renderRows(); });
-  exportBtn.addEventListener("click", () => {
-    const filtered = applyFiltersAndSort();
-    const header = ["endpoint_tool", "repo", "contract_type", "status", "evidence_source", "evidence_check", "remediation"];
-    const csvRows = [header.join(",")];
-    for (const r of filtered) {
-      const vals = [
-        r.endpoint_tool,
-        r.repo,
-        r.contract_type,
-        r.current_status,
-        r.evidence.source,
-        r.evidence.check,
-        r.remediation,
-      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
-      csvRows.push(vals.join(","));
-    }
-    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "compliance-matrix.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
+  if (!complianceListenersInitialized) {
+    ["cm-repo-filter", "cm-status-filter", "cm-type-filter", "cm-sort", "cm-page-size"].forEach(id => {
+      document.getElementById(id).addEventListener("change", resetAndRender);
+    });
+    searchInput.addEventListener("input", resetAndRender);
+    prevBtn.addEventListener("click", () => { if (complianceState.currentPage > 1) { complianceState.currentPage--; renderRows(); } });
+    nextBtn.addEventListener("click", () => { complianceState.currentPage++; renderRows(); });
+    exportBtn.addEventListener("click", () => {
+      const filtered = applyFiltersAndSort();
+      const header = ["endpoint_tool", "repo", "contract_type", "status", "evidence_source", "evidence_check", "remediation"];
+      const csvRows = [header.join(",")];
+      for (const r of filtered) {
+        const vals = [
+          r.endpoint_tool,
+          r.repo,
+          r.contract_type,
+          r.current_status,
+          r.evidence.source,
+          r.evidence.check,
+          r.remediation,
+        ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+        csvRows.push(vals.join(","));
+      }
+      const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "compliance-matrix.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+    complianceListenersInitialized = true;
+  }
   renderRows();
 }
 
