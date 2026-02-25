@@ -84,7 +84,7 @@ interface ChangelogCommit {
 }
 
 const GITHUB_REPOS = [
-  { owner: "Clauskraft", repo: "WidgeTDC", label: "backend" },
+  { owner: "Clauskraft", repo: "WidgeTDC_fresh", label: "backend" },
   { owner: "Clauskraft", repo: "widgetdc-consulting-frontend", label: "frontend" },
   { owner: "Clauskraft", repo: "widgetdc-rlm-engine", label: "rlm" },
   { owner: "Clauskraft", repo: "widgetdc-contracts", label: "contracts" },

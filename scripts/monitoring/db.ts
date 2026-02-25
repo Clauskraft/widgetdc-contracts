@@ -33,7 +33,7 @@ export async function initDb(): Promise<void> {
       max: 5,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 10_000,
-      ssl: dbUrl.includes("railway") || dbUrl.includes("neon") ? { rejectUnauthorized: false } : undefined,
+      ssl: dbUrl.includes(".internal") ? false : (dbUrl.includes("railway") || dbUrl.includes("neon")) ? { rejectUnauthorized: false } : undefined,
     });
 
     // Test connection

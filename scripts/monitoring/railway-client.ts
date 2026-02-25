@@ -7,7 +7,7 @@
 
 import type { RailwayService, ServiceMetric, CostEntry, Deployment } from "./types.js";
 
-const RAILWAY_GQL = "https://backboard.railway.com/graphql/v2";
+const RAILWAY_GQL = "https://backboard.railway.app/graphql/v2";
 
 export const PROJECT_IDS = [
   process.env.RAILWAY_PROJECT_1 || "7f5fd3c8-2f76-44a7-b6e4-7a86b2a3dabb",
