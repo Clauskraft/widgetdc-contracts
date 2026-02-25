@@ -129,6 +129,166 @@ interface UnmergedBranch {
 
 let branchesCache: { data: { prs: OpenPR[]; branches: UnmergedBranch[] }; ts: number } | null = null;
 
+type ComplianceStatus = "pass" | "warn";
+
+interface ComplianceMatrixRow {
+  endpoint_tool: string;
+  repo: "WidgeTDC" | "widgetdc-consulting-frontend" | "widgetdc-rlm-engine" | "widgetdc-contracts" | "openclaw-railway-template";
+  contract_type: "http-envelope" | "error-envelope" | "cognitive-request" | "health-pulse" | "mcp-tooling" | "cron-output-contract" | "tool-policy";
+  expected_format: string;
+  current_status: ComplianceStatus;
+  evidence: {
+    source: string;
+    check: string;
+  };
+  remediation: string;
+}
+
+function buildComplianceMatrix() {
+  const rows: ComplianceMatrixRow[] = [
+    {
+      endpoint_tool: "backend:/api/contracts",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Contract discovery payload for HTTP/MCP surface",
+      current_status: "pass",
+      evidence: { source: "apps/backend/src/routes/contractsRoutes.ts", check: "Route exposes canonical contract catalog" },
+      remediation: "Keep as source-of-truth and add schema version field."
+    },
+    {
+      endpoint_tool: "backend:error middleware",
+      repo: "WidgeTDC",
+      contract_type: "error-envelope",
+      expected_format: "ApiResponse.error with code/status_code/correlation_id",
+      current_status: "pass",
+      evidence: { source: "apps/backend/src/middleware/apiErrorMiddleware.ts", check: "Centralized error mapping for common HTTP statuses" },
+      remediation: "Keep regression tests for 400/413/429/500 mappings."
+    },
+    {
+      endpoint_tool: "backend:/api/mcp/route",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Validated route request with structured errors",
+      current_status: "pass",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Schema validation and unknown-tool handling" },
+      remediation: "Expose formal request schema in docs endpoint."
+    },
+    {
+      endpoint_tool: "backend:/api/mcp/tools",
+      repo: "WidgeTDC",
+      contract_type: "http-envelope",
+      expected_format: "ApiResponse envelope for list payload",
+      current_status: "warn",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Plain JSON list response (no envelope parity)" },
+      remediation: "Wrap success payload in shared HTTP envelope contract."
+    },
+    {
+      endpoint_tool: "backend:/api/mcp/status",
+      repo: "WidgeTDC",
+      contract_type: "http-envelope",
+      expected_format: "ApiResponse envelope for status payload",
+      current_status: "warn",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Status response bypasses common HTTP envelope" },
+      remediation: "Return typed envelope with metadata timestamp."
+    },
+    {
+      endpoint_tool: "rlm:/health",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "health-pulse",
+      expected_format: "Shared health schema parity across services",
+      current_status: "warn",
+      evidence: { source: "src/routes/health.py", check: "Route returns raw dict shape" },
+      remediation: "Adopt shared health response adapter for wire parity."
+    },
+    {
+      endpoint_tool: "rlm:exception handler",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "error-envelope",
+      expected_format: "ApiError-compatible fields",
+      current_status: "warn",
+      evidence: { source: "src/main.py", check: "Error payload differs from backend envelope" },
+      remediation: "Map exceptions to canonical ApiError fields and code taxonomy."
+    },
+    {
+      endpoint_tool: "rlm:cognitive request mapping",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "cognitive-request",
+      expected_format: "Canonical CognitiveRequest wire mapping",
+      current_status: "warn",
+      evidence: { source: "src/models/requests.py", check: "Service-local request DTO diverges from shared wire model" },
+      remediation: "Add explicit mapper + tests for exact wire compatibility."
+    },
+    {
+      endpoint_tool: "contracts:package exports",
+      repo: "widgetdc-contracts",
+      contract_type: "mcp-tooling",
+      expected_format: "Canonical TS exports + JSON schemas",
+      current_status: "pass",
+      evidence: { source: "package.json", check: "Exports for cognitive/health/http/consulting/agent/graph present" },
+      remediation: "Maintain strict semver and synchronized consumer versions."
+    },
+    {
+      endpoint_tool: "arch:/api/analysis",
+      repo: "widgetdc-contracts",
+      contract_type: "http-envelope",
+      expected_format: "Consistent envelope with metadata",
+      current_status: "warn",
+      evidence: { source: "scripts/arch-mcp-server.ts", check: "Returns raw analysis object for dashboard speed" },
+      remediation: "Add optional envelope mode for contract consistency."
+    },
+    {
+      endpoint_tool: "openclaw:tool policy profile",
+      repo: "openclaw-railway-template",
+      contract_type: "tool-policy",
+      expected_format: "Allowed tool policy + shell deny constraints",
+      current_status: "pass",
+      evidence: { source: "docs/CRON_ROUTING_PROFILE.json", check: "Tool allow-list and policy constraints declared" },
+      remediation: "Add deny-event audit stream for blocked tool attempts."
+    },
+    {
+      endpoint_tool: "openclaw:cron output contracts",
+      repo: "openclaw-railway-template",
+      contract_type: "cron-output-contract",
+      expected_format: "Prompt output shape validated against schema",
+      current_status: "warn",
+      evidence: { source: "docs/CRON_PROMPTS.md", check: "Output shape in prompts; runtime schema validator not explicit" },
+      remediation: "Validate cron output JSON against schema before notifications."
+    }
+  ];
+
+  const repos = [...new Set(rows.map((r) => r.repo))];
+  const statuses: ComplianceStatus[] = ["pass", "warn"];
+  const contract_types = [...new Set(rows.map((r) => r.contract_type))];
+  const pass = rows.filter((r) => r.current_status === "pass").length;
+  const warn = rows.filter((r) => r.current_status === "warn").length;
+
+  const by_repo = repos.reduce<Record<string, { pass: number; warn: number }>>((acc, repo) => {
+    const repoRows = rows.filter((r) => r.repo === repo);
+    acc[repo] = {
+      pass: repoRows.filter((r) => r.current_status === "pass").length,
+      warn: repoRows.filter((r) => r.current_status === "warn").length,
+    };
+    return acc;
+  }, {});
+
+  return {
+    generated_at: new Date().toISOString(),
+    matrix_version: "v1",
+    summary: {
+      total: rows.length,
+      pass,
+      warn,
+      by_repo,
+    },
+    filters: {
+      repos,
+      statuses,
+      contract_types,
+    },
+    rows,
+  };
+}
+
 async function fetchRepoCommits(
   owner: string,
   repo: string,
@@ -1129,6 +1289,14 @@ app.get("/api/branches", async (_req, res) => {
     } else {
       res.status(500).json({ error: "Failed to fetch branches", message: e.message });
     }
+  }
+});
+
+app.get("/api/compliance-matrix", (_req, res) => {
+  try {
+    res.json(buildComplianceMatrix());
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to build compliance matrix", message: e.message });
   }
 });
 

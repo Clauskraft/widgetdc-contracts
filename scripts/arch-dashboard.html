@@ -115,6 +115,14 @@
   .impact-search button { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; }
   .impact-search button:hover { background: #5558e6; }
 
+  /* Compliance */
+  .compliance-filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .compliance-filters select, .compliance-filters input { padding: 6px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; font-family: inherit; }
+  .compliance-filters select:focus, .compliance-filters input:focus { border-color: #6366f1; }
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .status-pass { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .status-warn { background: rgba(245,158,11,0.15); color: #f59e0b; }
+
   /* Scatter plot */
   .scatter-wrap { position: relative; width: 100%; height: 280px; }
   .scatter-wrap canvas { width: 100%; height: 100%; }
@@ -165,6 +173,7 @@
     <button class="tab-btn" data-tab="antipatterns" aria-selected="false" role="tab">Anti-Patterns</button>
     <button class="tab-btn" data-tab="detail" aria-selected="false" role="tab">Module Detail</button>
     <button class="tab-btn" data-tab="impact" aria-selected="false" role="tab">Impact Explorer</button>
+    <button class="tab-btn" data-tab="compliance" aria-selected="false" role="tab">Compliance Matrix</button>
   </div>
 </div>
 
@@ -234,6 +243,37 @@
       <div class="card" style="text-align:center;padding:40px;color:#475569">Enter a module ID and click Analyze to see its blast radius</div>
     </div>
   </div>
+
+  <!-- TAB 5: Compliance Matrix -->
+  <div id="tab-compliance" class="tab-content">
+    <div class="grid grid-4" style="margin-bottom:16px" id="compliance-summary-cards">
+      <div class="card card-sm"><div class="card-title">Total Checks</div><div class="card-value">--</div></div>
+      <div class="card card-sm"><div class="card-title">Pass</div><div class="card-value" style="color:#22c55e">--</div></div>
+      <div class="card card-sm"><div class="card-title">Warn</div><div class="card-value" style="color:#f59e0b">--</div></div>
+      <div class="card card-sm"><div class="card-title">Coverage</div><div class="card-value">--</div></div>
+    </div>
+    <div class="card">
+      <div class="compliance-filters">
+        <select id="cm-repo-filter"><option value="all">All repos</option></select>
+        <select id="cm-status-filter"><option value="all">All status</option><option value="pass">pass</option><option value="warn">warn</option></select>
+        <select id="cm-type-filter"><option value="all">All contract types</option></select>
+        <input id="cm-search" type="text" placeholder="Search endpoint / evidence...">
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Endpoint/Tool</th>
+            <th>Repo</th>
+            <th>Contract</th>
+            <th>Status</th>
+            <th>Evidence</th>
+            <th>Remediation</th>
+          </tr>
+        </thead>
+        <tbody id="cm-body"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -249,21 +289,27 @@ const AP_LABELS = {
 
 let analysisData = null;
 let moduleIndex = {};
+let complianceData = null;
 
 // ============================================================
 // Data loading
 // ============================================================
 async function loadAnalysis() {
   try {
-    const r = await fetch("/api/analysis");
-    if (!r.ok) throw new Error("Failed to load analysis");
-    analysisData = await r.json();
+    const [analysisRes, complianceRes] = await Promise.all([
+      fetch("/api/analysis"),
+      fetch("/api/compliance-matrix"),
+    ]);
+    if (!analysisRes.ok) throw new Error("Failed to load analysis");
+    analysisData = await analysisRes.json();
+    complianceData = complianceRes.ok ? await complianceRes.json() : null;
     // Build index
     moduleIndex = {};
     for (const m of analysisData.modules) moduleIndex[m.id] = m;
     renderOverview();
     populateFilters();
     populateModuleLists();
+    renderCompliance();
   } catch(e) {
     document.getElementById("summary-cards").innerHTML = `<div class="card" style="grid-column:1/-1;color:#ef4444;text-align:center;padding:20px">Failed to load analysis data: ${e.message}</div>`;
   }
@@ -883,6 +929,74 @@ function drawBlastRadius(impact) {
   ctx.textAlign = "center";
   const label = impact.moduleId.split(".").pop();
   ctx.fillText(label, cx, cy + 22);
+}
+
+// ============================================================
+// Compliance matrix tab
+// ============================================================
+function renderCompliance() {
+  if (!complianceData || !Array.isArray(complianceData.rows)) {
+    document.getElementById("cm-body").innerHTML = '<tr><td colspan="6" style="color:#ef4444">Compliance matrix unavailable</td></tr>';
+    return;
+  }
+
+  const rows = complianceData.rows;
+  const pass = rows.filter(r => r.current_status === "pass").length;
+  const warn = rows.filter(r => r.current_status === "warn").length;
+  const coverage = rows.length ? Math.round((pass / rows.length) * 100) : 0;
+  document.getElementById("compliance-summary-cards").innerHTML = `
+    <div class="card card-sm"><div class="card-title">Total Checks</div><div class="card-value">${rows.length}</div></div>
+    <div class="card card-sm"><div class="card-title">Pass</div><div class="card-value" style="color:#22c55e">${pass}</div></div>
+    <div class="card card-sm"><div class="card-title">Warn</div><div class="card-value" style="color:#f59e0b">${warn}</div></div>
+    <div class="card card-sm"><div class="card-title">Coverage</div><div class="card-value">${coverage}%</div></div>
+  `;
+
+  const repoSel = document.getElementById("cm-repo-filter");
+  const typeSel = document.getElementById("cm-type-filter");
+  repoSel.innerHTML = '<option value="all">All repos</option>';
+  typeSel.innerHTML = '<option value="all">All contract types</option>';
+  [...new Set(rows.map(r => r.repo))].sort().forEach(repo => {
+    const o = document.createElement("option"); o.value = repo; o.textContent = repo; repoSel.appendChild(o);
+  });
+  [...new Set(rows.map(r => r.contract_type))].sort().forEach(type => {
+    const o = document.createElement("option"); o.value = type; o.textContent = type; typeSel.appendChild(o);
+  });
+
+  const renderRows = () => {
+    const repo = repoSel.value;
+    const status = document.getElementById("cm-status-filter").value;
+    const type = typeSel.value;
+    const search = document.getElementById("cm-search").value.toLowerCase().trim();
+    let filtered = rows;
+    if (repo !== "all") filtered = filtered.filter(r => r.repo === repo);
+    if (status !== "all") filtered = filtered.filter(r => r.current_status === status);
+    if (type !== "all") filtered = filtered.filter(r => r.contract_type === type);
+    if (search) {
+      filtered = filtered.filter(r =>
+        r.endpoint_tool.toLowerCase().includes(search) ||
+        r.evidence.source.toLowerCase().includes(search) ||
+        r.evidence.check.toLowerCase().includes(search) ||
+        r.remediation.toLowerCase().includes(search)
+      );
+    }
+
+    document.getElementById("cm-body").innerHTML = filtered.map(r => `
+      <tr>
+        <td>${escHtml(r.endpoint_tool)}</td>
+        <td>${escHtml(r.repo)}</td>
+        <td>${escHtml(r.contract_type)}</td>
+        <td><span class="status-pill status-${r.current_status}">${r.current_status}</span></td>
+        <td style="max-width:320px"><div>${escHtml(r.evidence.source)}</div><div style="color:#64748b;font-size:11px">${escHtml(r.evidence.check)}</div></td>
+        <td style="max-width:320px">${escHtml(r.remediation)}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="6" style="color:#475569">No rows match current filters</td></tr>';
+  };
+
+  ["cm-repo-filter", "cm-status-filter", "cm-type-filter"].forEach(id => {
+    document.getElementById(id).addEventListener("change", renderRows);
+  });
+  document.getElementById("cm-search").addEventListener("input", renderRows);
+  renderRows();
 }
 
 // ============================================================
