@@ -18,7 +18,7 @@ export const PROJECT_IDS = [
 // GraphQL helper with retry + circuit breaker
 // ---------------------------------------------------------------------------
 let consecutiveFailures = 0;
-const CIRCUIT_OPEN_THRESHOLD = 5;
+const CIRCUIT_OPEN_THRESHOLD = 25;
 const CIRCUIT_RESET_MS = 60_000;
 let circuitOpenUntil = 0;
 
