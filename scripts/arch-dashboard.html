@@ -122,6 +122,7 @@
   .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .status-pass { background: rgba(34,197,94,0.15); color: #22c55e; }
   .status-warn { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .live-check { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #1a1f2e; font-size: 12px; color: #94a3b8; }
 
   /* Scatter plot */
   .scatter-wrap { position: relative; width: 100%; height: 280px; }
@@ -251,6 +252,10 @@
       <div class="card card-sm"><div class="card-title">Pass</div><div class="card-value" style="color:#22c55e">--</div></div>
       <div class="card card-sm"><div class="card-title">Warn</div><div class="card-value" style="color:#f59e0b">--</div></div>
       <div class="card card-sm"><div class="card-title">Coverage</div><div class="card-value">--</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Live Signals</div>
+      <div id="cm-live-checks"></div>
     </div>
     <div class="card">
       <div class="compliance-filters">
@@ -953,6 +958,15 @@ function renderCompliance() {
 
   const repoSel = document.getElementById("cm-repo-filter");
   const typeSel = document.getElementById("cm-type-filter");
+  const liveChecks = Array.isArray(complianceData.live_checks) ? complianceData.live_checks : [];
+  document.getElementById("cm-live-checks").innerHTML = liveChecks.map(c => `
+    <div class="live-check">
+      <span class="status-pill status-${c.status}">${c.status}</span>
+      <span style="color:#e2e8f0">${escHtml(c.id)}</span>
+      <span>${escHtml(c.detail)}</span>
+    </div>
+  `).join("") || '<div style="color:#475569">No live signals available</div>';
+
   repoSel.innerHTML = '<option value="all">All repos</option>';
   typeSel.innerHTML = '<option value="all">All contract types</option>';
   [...new Set(rows.map(r => r.repo))].sort().forEach(repo => {

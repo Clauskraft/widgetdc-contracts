@@ -144,7 +144,13 @@ interface ComplianceMatrixRow {
   remediation: string;
 }
 
-function buildComplianceMatrix() {
+interface ComplianceLiveCheck {
+  id: string;
+  status: ComplianceStatus;
+  detail: string;
+}
+
+async function buildComplianceMatrix() {
   const rows: ComplianceMatrixRow[] = [
     {
       endpoint_tool: "backend:/api/contracts",
@@ -256,6 +262,68 @@ function buildComplianceMatrix() {
     }
   ];
 
+  const live_checks: ComplianceLiveCheck[] = [];
+
+  // Derive some statuses from live architecture analysis.
+  loadGraph();
+  if (analysisResult) {
+    const hasCritical = analysisResult.summary.criticalCount > 0;
+    const hasCycles = analysisResult.summary.cycleCount > 0;
+    const dynamicStatus: ComplianceStatus = hasCritical || hasCycles ? "warn" : "pass";
+    const dynamicCheck = `Live analysis: critical=${analysisResult.summary.criticalCount}, cycles=${analysisResult.summary.cycleCount}`;
+    live_checks.push({
+      id: "analysis-health-signal",
+      status: dynamicStatus,
+      detail: dynamicCheck,
+    });
+
+    const archAnalysisRow = rows.find((r) => r.endpoint_tool === "arch:/api/analysis");
+    if (archAnalysisRow && dynamicStatus === "pass") {
+      archAnalysisRow.current_status = "pass";
+      archAnalysisRow.evidence.check = dynamicCheck;
+      archAnalysisRow.remediation = "Maintain zero-critical and zero-cycle posture with continuous scans.";
+    }
+  }
+
+  // Use GitHub data when available to provide live freshness/backlog signals.
+  try {
+    const [changes, changelog] = await Promise.all([
+      fetchAllOpenChanges(),
+      fetchAllChangelog(undefined, 200),
+    ]);
+
+    const staleBranches = changes.branches.filter((b) => b.isStale).length;
+    live_checks.push({
+      id: "github-branch-hygiene",
+      status: staleBranches > 0 ? "warn" : "pass",
+      detail: `Open PRs=${changes.prs.length}, branches=${changes.branches.length}, stale=${staleBranches}`,
+    });
+
+    const now = Date.now();
+    const maxAgeDays = 7;
+    const repoAge: Record<string, number> = {};
+    for (const repo of ["backend", "frontend", "rlm", "contracts"]) {
+      const latest = changelog.commits
+        .filter((c) => c.repo === repo)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latest?.date) {
+        repoAge[repo] = Math.floor((now - new Date(latest.date).getTime()) / (24 * 60 * 60 * 1000));
+      }
+    }
+    const staleRepos = Object.entries(repoAge).filter(([_, days]) => days > maxAgeDays);
+    live_checks.push({
+      id: "github-changelog-freshness",
+      status: staleRepos.length > 0 ? "warn" : "pass",
+      detail: `Repo commit age(days): ${Object.entries(repoAge).map(([k, v]) => `${k}=${v}`).join(", ") || "n/a"}`,
+    });
+  } catch (e: any) {
+    live_checks.push({
+      id: "github-signals",
+      status: "warn",
+      detail: `Live GitHub signals unavailable: ${e?.message || "unknown error"}`,
+    });
+  }
+
   const repos = [...new Set(rows.map((r) => r.repo))];
   const statuses: ComplianceStatus[] = ["pass", "warn"];
   const contract_types = [...new Set(rows.map((r) => r.contract_type))];
@@ -285,6 +353,7 @@ function buildComplianceMatrix() {
       statuses,
       contract_types,
     },
+    live_checks,
     rows,
   };
 }
@@ -1292,9 +1361,9 @@ app.get("/api/branches", async (_req, res) => {
   }
 });
 
-app.get("/api/compliance-matrix", (_req, res) => {
+app.get("/api/compliance-matrix", async (_req, res) => {
   try {
-    res.json(buildComplianceMatrix());
+    res.json(await buildComplianceMatrix());
   } catch (e: any) {
     res.status(500).json({ error: "Failed to build compliance matrix", message: e.message });
   }
