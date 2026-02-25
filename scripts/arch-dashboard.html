@@ -326,22 +326,30 @@ let complianceData = null;
 // ============================================================
 async function loadAnalysis() {
   try {
-    const [analysisRes, complianceRes] = await Promise.all([
-      fetch("/api/analysis"),
-      fetch("/api/compliance-matrix"),
-    ]);
+    const analysisRes = await fetch("/api/analysis");
     if (!analysisRes.ok) throw new Error("Failed to load analysis");
     analysisData = await analysisRes.json();
-    complianceData = complianceRes.ok ? await complianceRes.json() : null;
     // Build index
     moduleIndex = {};
     for (const m of analysisData.modules) moduleIndex[m.id] = m;
     renderOverview();
     populateFilters();
     populateModuleLists();
-    renderCompliance();
+    // Load compliance data independently (slow endpoint)
+    loadComplianceAsync();
   } catch(e) {
     document.getElementById("summary-cards").innerHTML = `<div class="card" style="grid-column:1/-1;color:#ef4444;text-align:center;padding:20px">Failed to load analysis data: ${e.message}</div>`;
+  }
+}
+
+async function loadComplianceAsync() {
+  try {
+    const complianceRes = await fetch("/api/compliance-matrix");
+    complianceData = complianceRes.ok ? await complianceRes.json() : null;
+    renderCompliance();
+  } catch(e) {
+    console.warn("Failed to load compliance data:", e);
+    document.getElementById("cm-body").innerHTML = '<tr><td colspan="6" style="color:#ef4444">Failed to load compliance data</td></tr>';
   }
 }
 

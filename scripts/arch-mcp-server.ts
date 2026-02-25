@@ -277,12 +277,6 @@ async function buildComplianceMatrix() {
       detail: dynamicCheck,
     });
 
-    const archAnalysisRow = rows.find((r) => r.endpoint_tool === "arch:/api/analysis");
-    if (archAnalysisRow && dynamicStatus === "pass") {
-      archAnalysisRow.current_status = "pass";
-      archAnalysisRow.evidence.check = dynamicCheck;
-      archAnalysisRow.remediation = "Maintain zero-critical and zero-cycle posture with continuous scans.";
-    }
   }
 
   // Use GitHub data when available to provide live freshness/backlog signals.
