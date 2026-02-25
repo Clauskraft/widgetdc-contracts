@@ -115,6 +115,34 @@
   .impact-search button { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 500; }
   .impact-search button:hover { background: #5558e6; }
 
+  /* Compliance */
+  .compliance-filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .compliance-filters.sticky { position: sticky; top: 0; z-index: 3; background: #0f1219; padding: 10px 0; border-bottom: 1px solid #1a1f2e; }
+  .compliance-filters select, .compliance-filters input { padding: 6px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; font-family: inherit; }
+  .compliance-filters select:focus, .compliance-filters input:focus { border-color: #6366f1; }
+  .compliance-filters button { padding: 7px 12px; border: 1px solid #2a3350; border-radius: 5px; background: #1a2238; color: #dbe7ff; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .compliance-filters button:hover { background: #232e4b; }
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .status-pass { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .status-warn { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .live-check { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #1a1f2e; font-size: 12px; color: #94a3b8; }
+  .cm-pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 11px; color: #64748b; }
+  .cm-pager button { padding: 6px 10px; border: 1px solid #2a3350; border-radius: 5px; background: #1a2238; color: #dbe7ff; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .cm-pager button:disabled { opacity: 0.4; cursor: default; }
+  .repo-badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .repo-backend { background: rgba(59,130,246,0.2); color: #93c5fd; }
+  .repo-frontend { background: rgba(34,197,94,0.2); color: #86efac; }
+  .repo-rlm { background: rgba(249,115,22,0.2); color: #fdba74; }
+  .repo-contracts { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+  .repo-other { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+  .cm-drawer { position: fixed; top: 0; right: -520px; width: 520px; max-width: 95vw; height: 100vh; background: #0f1219; border-left: 1px solid #1a1f2e; z-index: 12; transition: right 0.2s ease; padding: 16px; overflow-y: auto; }
+  .cm-drawer.open { right: 0; }
+  .cm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; z-index: 11; }
+  .cm-overlay.open { display: block; }
+  .cm-section-toggle { margin-top: 8px; }
+  .cm-section-toggle summary { cursor: pointer; color: #cbd5e1; font-size: 12px; }
+  .cm-section-toggle pre { white-space: pre-wrap; color: #94a3b8; font-size: 11px; margin-top: 8px; }
+
   /* Scatter plot */
   .scatter-wrap { position: relative; width: 100%; height: 280px; }
   .scatter-wrap canvas { width: 100%; height: 100%; }
@@ -165,6 +193,7 @@
     <button class="tab-btn" data-tab="antipatterns" aria-selected="false" role="tab">Anti-Patterns</button>
     <button class="tab-btn" data-tab="detail" aria-selected="false" role="tab">Module Detail</button>
     <button class="tab-btn" data-tab="impact" aria-selected="false" role="tab">Impact Explorer</button>
+    <button class="tab-btn" data-tab="compliance" aria-selected="false" role="tab">Compliance Matrix</button>
   </div>
 </div>
 
@@ -234,6 +263,95 @@
       <div class="card" style="text-align:center;padding:40px;color:#475569">Enter a module ID and click Analyze to see its blast radius</div>
     </div>
   </div>
+
+  <!-- TAB 5: Compliance Matrix -->
+  <div id="tab-compliance" class="tab-content">
+    <div class="grid grid-4" style="margin-bottom:16px" id="compliance-scorecard">
+      <div class="card card-sm"><div class="card-title">Compliance Score</div><div class="card-value">--</div></div>
+      <div class="card card-sm"><div class="card-title">Grade</div><div class="card-value">--</div></div>
+      <div class="card card-sm"><div class="card-title">Last Updated</div><div class="card-value sm">--</div></div>
+      <div class="card card-sm"><div class="card-title">Auto Refresh</div><div class="card-sub" id="cm-refresh-state">off</div></div>
+    </div>
+    <div class="grid grid-4" style="margin-bottom:16px" id="compliance-summary-cards">
+      <div class="card card-sm"><div class="card-title">Total Checks</div><div class="card-value">--</div></div>
+      <div class="card card-sm"><div class="card-title">Pass</div><div class="card-value" style="color:#22c55e">--</div></div>
+      <div class="card card-sm"><div class="card-title">Warn</div><div class="card-value" style="color:#f59e0b">--</div></div>
+      <div class="card card-sm"><div class="card-title">Coverage</div><div class="card-value">--</div></div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:16px" id="cm-domain-cards"></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Live Signals</div>
+      <div id="cm-live-checks"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Audit Log</div>
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Updated By</th><th>Updated At</th><th>Note</th></tr></thead>
+        <tbody id="cm-audit-log"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="compliance-filters sticky">
+        <select id="cm-repo-filter" multiple size="4"></select>
+        <select id="cm-status-filter"><option value="all">All status</option><option value="pass">pass</option><option value="warn">warn</option></select>
+        <select id="cm-type-filter" multiple size="4"></select>
+        <select id="cm-domain-filter" multiple size="4"></select>
+        <select id="cm-sort">
+          <option value="endpoint_asc">Sort: endpoint A-Z</option>
+          <option value="endpoint_desc">Sort: endpoint Z-A</option>
+          <option value="repo_asc">Sort: repo A-Z</option>
+          <option value="repo_desc">Sort: repo Z-A</option>
+          <option value="status">Sort: status (warn first)</option>
+        </select>
+        <select id="cm-page-size">
+          <option value="10">10 / page</option>
+          <option value="20" selected>20 / page</option>
+          <option value="50">50 / page</option>
+        </select>
+        <input id="cm-search" type="text" placeholder="Search endpoint / evidence...">
+        <button id="cm-failed-only" type="button">Warn Only</button>
+        <button id="cm-group-repo" type="button">Group by Repo</button>
+        <label class="toggle"><input type="checkbox" id="cm-auto-refresh"> Auto</label>
+        <button id="cm-reset" type="button">Reset</button>
+        <button id="cm-export-csv" type="button">Export CSV</button>
+        <button id="cm-export-json" type="button">Export JSON</button>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th><button id="cm-th-endpoint" type="button">Endpoint/Tool</button></th>
+            <th><button id="cm-th-repo" type="button">Repo</button></th>
+            <th>Domain/Contract</th>
+            <th><button id="cm-th-status" type="button">Status</button></th>
+            <th><button id="cm-th-severity" type="button">Severity</button></th>
+            <th>Evidence</th>
+            <th>Remediation</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="cm-body"></tbody>
+      </table>
+      <details class="cm-section-toggle">
+        <summary>Sections: Routes / Agents / Memory</summary>
+        <pre id="cm-sections-json"></pre>
+      </details>
+      <div class="cm-pager">
+        <div id="cm-page-info"></div>
+        <div style="display:flex;gap:8px">
+          <button id="cm-prev" type="button">Prev</button>
+          <button id="cm-next" type="button">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="cm-overlay" class="cm-overlay"></div>
+<div id="cm-drawer" class="cm-drawer">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <strong>Compliance Detail</strong>
+    <button id="cm-drawer-close" type="button">Close</button>
+  </div>
+  <div id="cm-drawer-content"></div>
 </div>
 
 <script>
@@ -249,21 +367,53 @@ const AP_LABELS = {
 
 let analysisData = null;
 let moduleIndex = {};
+let complianceData = null;
+let complianceUiState = {
+  repos: [],
+  types: [],
+  domains: [],
+  status: "all",
+  sort: "severity_desc",
+  pageSize: 20,
+  search: "",
+  failedOnly: false,
+  groupByRepo: false,
+  page: 1,
+  autoRefresh: false,
+};
+let complianceAutoTimer = null;
 
 // ============================================================
 // Data loading
 // ============================================================
 async function loadAnalysis() {
   try {
-    const r = await fetch("/api/analysis");
-    if (!r.ok) throw new Error("Failed to load analysis");
-    analysisData = await r.json();
+    loadComplianceState();
+    const cmParams = new URLSearchParams();
+    if (complianceUiState.repos.length) cmParams.set("repo", complianceUiState.repos.join(","));
+    if (complianceUiState.types.length) cmParams.set("type", complianceUiState.types.join(","));
+    if (complianceUiState.domains.length) cmParams.set("domain", complianceUiState.domains.join(","));
+    if (complianceUiState.status !== "all") cmParams.set("status", complianceUiState.status);
+    if (complianceUiState.search) cmParams.set("search", complianceUiState.search);
+    cmParams.set("sort", complianceUiState.sort);
+    cmParams.set("page", String(complianceUiState.page));
+    cmParams.set("pageSize", String(complianceUiState.pageSize));
+    if (complianceUiState.failedOnly) cmParams.set("failedOnly", "true");
+    if (complianceUiState.groupByRepo) cmParams.set("groupByRepo", "true");
+    const [analysisRes, complianceRes] = await Promise.all([
+      fetch("/api/analysis"),
+      fetch("/api/compliance-matrix?" + cmParams.toString()),
+    ]);
+    if (!analysisRes.ok) throw new Error("Failed to load analysis");
+    analysisData = await analysisRes.json();
+    complianceData = complianceRes.ok ? await complianceRes.json() : null;
     // Build index
     moduleIndex = {};
     for (const m of analysisData.modules) moduleIndex[m.id] = m;
     renderOverview();
     populateFilters();
     populateModuleLists();
+    renderCompliance();
   } catch(e) {
     document.getElementById("summary-cards").innerHTML = `<div class="card" style="grid-column:1/-1;color:#ef4444;text-align:center;padding:20px">Failed to load analysis data: ${e.message}</div>`;
   }
@@ -886,10 +1036,377 @@ function drawBlastRadius(impact) {
 }
 
 // ============================================================
+// Compliance matrix tab
+// ============================================================
+function renderCompliance() {
+  if (!complianceData || !Array.isArray(complianceData.rows)) {
+    document.getElementById("cm-body").innerHTML = '<tr><td colspan="8" style="color:#ef4444">Compliance matrix unavailable</td></tr>';
+    return;
+  }
+
+  const rows = complianceData.rows || [];
+  const summary = complianceData.summary || {};
+  const scorecard = complianceData.scorecard || {};
+  const pagination = complianceData.pagination || { page: 1, totalPages: 1, total: rows.length, totalFiltered: rows.length };
+  const pass = summary.pass ?? rows.filter((r) => r.current_status === "pass").length;
+  const warn = summary.warn ?? rows.filter((r) => r.current_status === "warn").length;
+  const total = summary.total ?? rows.length;
+  const coverage = total ? Math.round((pass / total) * 100) : 0;
+
+  document.getElementById("compliance-summary-cards").innerHTML = `
+    <div class="card card-sm"><div class="card-title">Total Checks</div><div class="card-value">${total}</div></div>
+    <div class="card card-sm"><div class="card-title">Pass</div><div class="card-value" style="color:#22c55e">${pass}</div></div>
+    <div class="card card-sm"><div class="card-title">Warn</div><div class="card-value" style="color:#f59e0b">${warn}</div></div>
+    <div class="card card-sm"><div class="card-title">Coverage</div><div class="card-value">${coverage}%</div></div>
+  `;
+
+  document.getElementById("compliance-scorecard").innerHTML = `
+    <div class="card card-sm"><div class="card-title">Compliance Score</div><div class="card-value">${scorecard.compliance_score ?? "--"}</div></div>
+    <div class="card card-sm"><div class="card-title">Grade</div><div class="card-value">${scorecard.grade ?? "--"}</div></div>
+    <div class="card card-sm"><div class="card-title">Last Updated</div><div class="card-value sm">${(complianceData.generated_at || "").slice(0, 19).replace("T", " ") || "--"}</div></div>
+    <div class="card card-sm"><div class="card-title">Auto Refresh</div><div class="card-sub" id="cm-refresh-state">${complianceUiState.autoRefresh ? "on (60s)" : "off"}</div></div>
+  `;
+
+  const byDomain = summary.by_domain || {};
+  const domainOrder = ["routes", "agents", "memory", "contracts", "platform"];
+  document.getElementById("cm-domain-cards").innerHTML = domainOrder.map((d) => {
+    const m = byDomain[d] || { total: 0, pass: 0, warn: 0 };
+    return `<div class="card card-sm"><div class="card-title">${d}</div><div class="card-value sm">${m.total}</div><div class="card-sub">${m.pass} pass · ${m.warn} warn</div></div>`;
+  }).join("");
+
+  const repoSel = document.getElementById("cm-repo-filter");
+  const typeSel = document.getElementById("cm-type-filter");
+  const domainSel = document.getElementById("cm-domain-filter");
+  const sortSel = document.getElementById("cm-sort");
+  const pageSizeSel = document.getElementById("cm-page-size");
+  const searchInput = document.getElementById("cm-search");
+  const statusSel = document.getElementById("cm-status-filter");
+  const failedOnlyBtn = document.getElementById("cm-failed-only");
+  const groupRepoBtn = document.getElementById("cm-group-repo");
+  const resetBtn = document.getElementById("cm-reset");
+  const autoRefreshCb = document.getElementById("cm-auto-refresh");
+  const exportBtn = document.getElementById("cm-export-csv");
+  const exportJsonBtn = document.getElementById("cm-export-json");
+  const prevBtn = document.getElementById("cm-prev");
+  const nextBtn = document.getElementById("cm-next");
+  const pageInfo = document.getElementById("cm-page-info");
+  const auditLog = document.getElementById("cm-audit-log");
+  const sectionsJson = document.getElementById("cm-sections-json");
+  const drawer = document.getElementById("cm-drawer");
+  const drawerContent = document.getElementById("cm-drawer-content");
+  const drawerClose = document.getElementById("cm-drawer-close");
+  const overlay = document.getElementById("cm-overlay");
+
+  const liveChecks = Array.isArray(complianceData.live_checks) ? complianceData.live_checks : [];
+  document.getElementById("cm-live-checks").innerHTML = liveChecks.map(c => `
+    <div class="live-check">
+      <span class="status-pill status-${c.status}">${c.status}</span>
+      <span style="color:#e2e8f0">${escHtml(c.id)}</span>
+      <span>${escHtml(c.detail)}</span>
+    </div>
+  `).join("") || '<div style="color:#475569">No live signals available</div>';
+
+  const setMulti = (el, values, selected) => {
+    el.innerHTML = "";
+    values.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v;
+      o.textContent = v;
+      o.selected = selected.includes(v);
+      el.appendChild(o);
+    });
+  };
+
+  const selectedMulti = (el) => [...el.selectedOptions].map((o) => o.value);
+  setMulti(repoSel, complianceData.filters?.repos || [], complianceUiState.repos);
+  setMulti(typeSel, complianceData.filters?.contract_types || [], complianceUiState.types);
+  setMulti(domainSel, complianceData.filters?.domains || ["routes", "agents", "memory", "contracts", "platform"], complianceUiState.domains);
+
+  statusSel.value = complianceUiState.status;
+  sortSel.value = complianceUiState.sort;
+  pageSizeSel.value = String(complianceUiState.pageSize);
+  searchInput.value = complianceUiState.search;
+  autoRefreshCb.checked = complianceUiState.autoRefresh;
+  failedOnlyBtn.style.opacity = complianceUiState.failedOnly ? "1" : "0.75";
+  groupRepoBtn.style.opacity = complianceUiState.groupByRepo ? "1" : "0.75";
+
+  auditLog.innerHTML = (complianceData.audit_log || []).map((a) => `
+    <tr><td>${escHtml(a.id)}</td><td>${escHtml(a.updated_by)}</td><td>${escHtml((a.updated_at || "").slice(0, 19).replace("T", " "))}</td><td>${escHtml(a.note || "")}</td></tr>
+  `).join("") || '<tr><td colspan="4" style="color:#475569">No audit records</td></tr>';
+  sectionsJson.textContent = JSON.stringify(complianceData.sections || {}, null, 2);
+
+  const repoBadge = (repo) => {
+    const klass = repo.includes("WidgeTDC") ? "repo-backend"
+      : repo.includes("frontend") ? "repo-frontend"
+      : repo.includes("rlm") ? "repo-rlm"
+      : repo.includes("contracts") ? "repo-contracts"
+      : "repo-other";
+    return `<span class="repo-badge ${klass}">${escHtml(repo)}</span>`;
+  };
+
+  const closeDetail = () => {
+    drawer.classList.remove("open");
+    overlay.classList.remove("open");
+  };
+
+  const openDetail = (row) => {
+    drawerContent.innerHTML = `
+      <div style="font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:6px">${escHtml(row.endpoint_tool)}</div>
+      <div style="margin-bottom:8px">${repoBadge(row.repo)} <span style="color:#94a3b8">${escHtml(row.domain)} / ${escHtml(row.contract_type)}</span></div>
+      <div style="font-size:12px;color:#cbd5e1;margin-bottom:8px"><b>Expected:</b> ${escHtml(row.expected_format || "")}</div>
+      <div style="font-size:12px;color:#cbd5e1;margin-bottom:8px"><b>Evidence:</b> ${escHtml(row.evidence?.source || "")} — ${escHtml(row.evidence?.check || "")}</div>
+      <div style="font-size:12px;color:#cbd5e1;margin-bottom:8px"><b>Remediation:</b> ${escHtml(row.remediation?.action || "")}</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:8px"><b>Owner:</b> ${escHtml(row.remediation?.owner || "")} · <b>Target:</b> ${escHtml(row.remediation?.target_date || "")}</div>
+      <div style="font-size:12px;color:#94a3b8"><b>Audit:</b> ${escHtml(row.audit?.updated_by || "")} @ ${escHtml((row.audit?.updated_at || "").slice(0,19).replace("T"," "))}</div>
+    `;
+    drawer.classList.add("open");
+    overlay.classList.add("open");
+  };
+  drawerClose.onclick = closeDetail;
+  overlay.onclick = closeDetail;
+
+  const renderRows = () => {
+    const grouped = complianceUiState.groupByRepo && Array.isArray(complianceData.grouped_by_repo) ? complianceData.grouped_by_repo : null;
+    if (grouped && grouped.length > 0) {
+      document.getElementById("cm-body").innerHTML = grouped.map((g) => `
+      <tr><td colspan="8" style="background:#141824;color:#dbe7ff;font-weight:600">${repoBadge(g.repo)} (${g.rows.length})</td></tr>
+      ${g.rows.map((r) => `
+      <tr>
+        <td>${escHtml(r.endpoint_tool)}</td>
+        <td>${repoBadge(r.repo)}</td>
+        <td>${escHtml(r.domain)} / ${escHtml(r.contract_type)}</td>
+        <td><span class="status-pill status-${r.current_status}">${r.current_status}</span></td>
+        <td>${r.severity_score}</td>
+        <td style="max-width:320px"><div>${escHtml(r.evidence?.source || "")}</div><div style="color:#64748b;font-size:11px">${escHtml(r.evidence?.check || "")}</div></td>
+        <td style="max-width:320px"><div>${escHtml(r.remediation?.action || "")}</div><div style="color:#64748b;font-size:11px">${escHtml(r.remediation?.owner || "")} · ${escHtml(r.remediation?.target_date || "")}</div></td>
+        <td><button data-cm-copy="${escHtml(r.id)}" type="button">Copy</button> <button data-cm-detail="${escHtml(r.id)}" type="button">Detail</button></td>
+      </tr>`).join("")}
+      `).join("");
+    } else {
+      document.getElementById("cm-body").innerHTML = rows.map(r => `
+      <tr>
+        <td>${escHtml(r.endpoint_tool)}</td>
+        <td>${repoBadge(r.repo)}</td>
+        <td>${escHtml(r.domain)} / ${escHtml(r.contract_type)}</td>
+        <td><span class="status-pill status-${r.current_status}">${r.current_status}</span></td>
+        <td>${r.severity_score} <span style="color:#64748b">(${escHtml(r.trend || "flat")})</span></td>
+        <td style="max-width:320px"><div>${escHtml(r.evidence.source)}</div><div style="color:#64748b;font-size:11px">${escHtml(r.evidence.check)}</div></td>
+        <td style="max-width:320px"><div>${escHtml(r.remediation?.action || "")}</div><div style="color:#64748b;font-size:11px">${escHtml(r.remediation?.owner || "")} · ${escHtml(r.remediation?.target_date || "")}</div></td>
+        <td><button data-cm-copy="${escHtml(r.id)}" type="button">Copy</button> <button data-cm-detail="${escHtml(r.id)}" type="button">Detail</button></td>
+      </tr>
+    `).join("") || '<tr><td colspan="8" style="color:#475569">No rows match current filters</td></tr>';
+    }
+
+    document.querySelectorAll("[data-cm-copy]").forEach((btn) => {
+      btn.onclick = async () => {
+        const id = btn.getAttribute("data-cm-copy");
+        const row = rows.find((r) => r.id === id);
+        if (row) await navigator.clipboard.writeText(JSON.stringify(row, null, 2));
+      };
+    });
+    document.querySelectorAll("[data-cm-detail]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-cm-detail");
+        const row = rows.find((r) => r.id === id);
+        if (row) openDetail(row);
+      };
+    });
+
+    pageInfo.textContent = `Page ${pagination.page}/${pagination.totalPages} · filtered ${pagination.totalFiltered} / total ${pagination.total}`;
+    prevBtn.disabled = pagination.page <= 1;
+    nextBtn.disabled = pagination.page >= pagination.totalPages;
+  };
+
+  const saveState = () => {
+    localStorage.setItem("archComplianceStateV2", JSON.stringify(complianceUiState));
+  };
+
+  const fetchWithState = async () => {
+    const params = new URLSearchParams();
+    if (complianceUiState.repos.length) params.set("repo", complianceUiState.repos.join(","));
+    if (complianceUiState.types.length) params.set("type", complianceUiState.types.join(","));
+    if (complianceUiState.domains.length) params.set("domain", complianceUiState.domains.join(","));
+    if (complianceUiState.status !== "all") params.set("status", complianceUiState.status);
+    if (complianceUiState.search) params.set("search", complianceUiState.search);
+    params.set("sort", complianceUiState.sort);
+    params.set("page", String(complianceUiState.page));
+    params.set("pageSize", String(complianceUiState.pageSize));
+    if (complianceUiState.failedOnly) params.set("failedOnly", "true");
+    if (complianceUiState.groupByRepo) params.set("groupByRepo", "true");
+    const r = await fetch("/api/compliance-matrix?" + params.toString());
+    if (!r.ok) throw new Error("Failed to refresh compliance matrix");
+    complianceData = await r.json();
+    saveState();
+    renderCompliance();
+  };
+  const refreshDebounced = debounce(fetchWithState, 250);
+
+  const syncStateFromControls = () => {
+    complianceUiState.repos = selectedMulti(repoSel);
+    complianceUiState.types = selectedMulti(typeSel);
+    complianceUiState.domains = selectedMulti(domainSel);
+    complianceUiState.status = statusSel.value;
+    complianceUiState.sort = sortSel.value;
+    complianceUiState.pageSize = Math.max(1, Number(pageSizeSel.value) || 20);
+    complianceUiState.search = searchInput.value.trim();
+  };
+
+  [repoSel, typeSel, domainSel, statusSel, sortSel, pageSizeSel].forEach((el) => {
+    el.onchange = () => {
+      syncStateFromControls();
+      complianceUiState.page = 1;
+      fetchWithState();
+    };
+  });
+  searchInput.oninput = () => {
+    syncStateFromControls();
+    complianceUiState.page = 1;
+    refreshDebounced();
+  };
+  prevBtn.onclick = () => {
+    if (complianceUiState.page > 1) {
+      complianceUiState.page--;
+      fetchWithState();
+    }
+  };
+  nextBtn.onclick = () => {
+    complianceUiState.page++;
+    fetchWithState();
+  };
+  failedOnlyBtn.onclick = () => {
+    complianceUiState.failedOnly = !complianceUiState.failedOnly;
+    complianceUiState.page = 1;
+    failedOnlyBtn.style.opacity = complianceUiState.failedOnly ? "1" : "0.75";
+    fetchWithState();
+  };
+  groupRepoBtn.onclick = () => {
+    complianceUiState.groupByRepo = !complianceUiState.groupByRepo;
+    complianceUiState.page = 1;
+    groupRepoBtn.style.opacity = complianceUiState.groupByRepo ? "1" : "0.75";
+    fetchWithState();
+  };
+  resetBtn.onclick = () => {
+    complianceUiState = {
+      repos: [],
+      types: [],
+      domains: [],
+      status: "all",
+      sort: "severity_desc",
+      pageSize: 20,
+      search: "",
+      failedOnly: false,
+      groupByRepo: false,
+      page: 1,
+      autoRefresh: complianceUiState.autoRefresh,
+    };
+    fetchWithState();
+  };
+  autoRefreshCb.onchange = () => {
+    complianceUiState.autoRefresh = autoRefreshCb.checked;
+    saveState();
+    if (complianceAutoTimer) clearInterval(complianceAutoTimer);
+    if (complianceUiState.autoRefresh) complianceAutoTimer = setInterval(() => fetchWithState(), 60000);
+    document.getElementById("cm-refresh-state").textContent = complianceUiState.autoRefresh ? "on (60s)" : "off";
+  };
+  if (complianceUiState.autoRefresh && !complianceAutoTimer) {
+    complianceAutoTimer = setInterval(() => fetchWithState(), 60000);
+  }
+
+  const exportRows = async () => {
+    const params = new URLSearchParams();
+    if (complianceUiState.repos.length) params.set("repo", complianceUiState.repos.join(","));
+    if (complianceUiState.types.length) params.set("type", complianceUiState.types.join(","));
+    if (complianceUiState.domains.length) params.set("domain", complianceUiState.domains.join(","));
+    if (complianceUiState.status !== "all") params.set("status", complianceUiState.status);
+    if (complianceUiState.search) params.set("search", complianceUiState.search);
+    params.set("sort", complianceUiState.sort);
+    params.set("page", "1");
+    params.set("pageSize", "5000");
+    if (complianceUiState.failedOnly) params.set("failedOnly", "true");
+    const r = await fetch("/api/compliance-matrix?" + params.toString());
+    if (!r.ok) return rows;
+    const payload = await r.json();
+    return payload.rows || rows;
+  };
+
+  exportBtn.onclick = async () => {
+    const exportData = await exportRows();
+    const header = ["id", "endpoint_tool", "domain", "repo", "contract_type", "status", "severity", "evidence_source", "evidence_check", "remediation", "owner", "target_date"];
+    const csvRows = [header.join(",")];
+    for (const r of exportData) {
+      const vals = [
+        r.id,
+        r.endpoint_tool,
+        r.domain,
+        r.repo,
+        r.contract_type,
+        r.current_status,
+        r.evidence.source,
+        r.evidence.check,
+        r.remediation?.action || "",
+        r.remediation?.owner || "",
+        r.remediation?.target_date || "",
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+      csvRows.push(vals.join(","));
+    }
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "compliance-matrix.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  exportJsonBtn.onclick = () => {
+    const blob = new Blob([JSON.stringify(complianceData, null, 2)], { type: "application/json;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "compliance-matrix.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+  document.getElementById("cm-th-endpoint").onclick = () => { complianceUiState.sort = complianceUiState.sort === "endpoint_asc" ? "endpoint_desc" : "endpoint_asc"; fetchWithState(); };
+  document.getElementById("cm-th-repo").onclick = () => { complianceUiState.sort = complianceUiState.sort === "repo_asc" ? "repo_desc" : "repo_asc"; fetchWithState(); };
+  document.getElementById("cm-th-status").onclick = () => { complianceUiState.sort = "status"; fetchWithState(); };
+  document.getElementById("cm-th-severity").onclick = () => { complianceUiState.sort = complianceUiState.sort === "severity_desc" ? "severity_asc" : "severity_desc"; fetchWithState(); };
+
+  renderRows();
+}
+
+// ============================================================
 // Utility
 // ============================================================
 function escHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function debounce(fn, waitMs) {
+  let t = null;
+  return (...args) => {
+    if (t) clearTimeout(t);
+    t = setTimeout(() => fn(...args), waitMs);
+  };
+}
+
+function loadComplianceState() {
+  try {
+    const raw = localStorage.getItem("archComplianceStateV2");
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    complianceUiState = {
+      ...complianceUiState,
+      ...saved,
+      page: Number(saved.page || 1) || 1,
+      pageSize: Number(saved.pageSize || 20) || 20,
+    };
+  } catch {
+    // ignore corrupted browser state
+  }
 }
 
 // ============================================================

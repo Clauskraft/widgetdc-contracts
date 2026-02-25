@@ -81,6 +81,10 @@ npm run validate     # Verify schemas match source
 npm run python       # Generate Python models (requires datamodel-code-generator)
 ```
 
+## Architecture
+
+- [Ecosystem architecture map (2026-02)](arch/ARCHITECTURE_REPO_MAP_2026-02.md) — repos, services, contracts, API paths
+
 ## Adding a new type
 
 1. Add TypeBox schema in `src/<module>/` with `$id` property

@@ -27,7 +27,7 @@ import { z } from "zod";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import express from "express";
 import cors from "cors";
 
@@ -128,6 +128,485 @@ interface UnmergedBranch {
 }
 
 let branchesCache: { data: { prs: OpenPR[]; branches: UnmergedBranch[] }; ts: number } | null = null;
+
+type ComplianceStatus = "pass" | "warn";
+type ComplianceDomain = "routes" | "agents" | "memory" | "contracts" | "platform";
+
+interface ComplianceMatrixRow {
+  id: string;
+  endpoint_tool: string;
+  domain: ComplianceDomain;
+  repo: "WidgeTDC" | "widgetdc-consulting-frontend" | "widgetdc-rlm-engine" | "widgetdc-contracts" | "openclaw-railway-template";
+  contract_type: "http-envelope" | "error-envelope" | "cognitive-request" | "health-pulse" | "mcp-tooling" | "cron-output-contract" | "tool-policy";
+  expected_format: string;
+  current_status: ComplianceStatus;
+  severity_score: number;
+  trend: "up" | "flat" | "down";
+  evidence: {
+    source: string;
+    check: string;
+  };
+  remediation: {
+    action: string;
+    owner: string;
+    target_date: string;
+    links?: string[];
+  };
+  audit: {
+    updated_by: string;
+    updated_at: string;
+    note: string;
+  };
+}
+
+interface ComplianceLiveCheck {
+  id: string;
+  status: ComplianceStatus;
+  detail: string;
+}
+
+interface ComplianceMatrixOptions {
+  repos: string[];
+  statuses: ComplianceStatus[];
+  contractTypes: string[];
+  domains: ComplianceDomain[];
+  search: string;
+  sort: string;
+  page: number;
+  pageSize: number;
+  failedOnly: boolean;
+  groupByRepo: boolean;
+}
+
+function parseListParam(value: unknown): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(String).flatMap((v) => v.split(",")).map((v) => v.trim()).filter(Boolean);
+  return String(value).split(",").map((v) => v.trim()).filter(Boolean);
+}
+
+function parseComplianceOptions(query: Record<string, unknown>): ComplianceMatrixOptions {
+  const page = Math.max(1, parseInt(String(query.page || "1"), 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(String(query.pageSize || "20"), 10) || 20));
+  return {
+    repos: parseListParam(query.repo),
+    statuses: parseListParam(query.status).filter((s): s is ComplianceStatus => s === "pass" || s === "warn"),
+    contractTypes: parseListParam(query.type),
+    domains: parseListParam(query.domain).filter((d): d is ComplianceDomain => ["routes", "agents", "memory", "contracts", "platform"].includes(d)),
+    search: String(query.search || "").trim().toLowerCase(),
+    sort: String(query.sort || "severity_desc"),
+    page,
+    pageSize,
+    failedOnly: String(query.failedOnly || "").toLowerCase() === "true",
+    groupByRepo: String(query.groupByRepo || "").toLowerCase() === "true",
+  };
+}
+
+async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
+  const auditNow = new Date().toISOString();
+  const rows: ComplianceMatrixRow[] = [
+    {
+      id: "route-contracts-catalog",
+      endpoint_tool: "backend:/api/contracts",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Contract discovery payload for HTTP/MCP surface",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "flat",
+      evidence: { source: "apps/backend/src/routes/contractsRoutes.ts", check: "Route exposes canonical contract catalog" },
+      remediation: { action: "Keep as source-of-truth and add schema version field.", owner: "backend", target_date: "2026-03-10", links: ["https://github.com/Clauskraft/WidgeTDC"] },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "seeded baseline" },
+    },
+    {
+      id: "route-error-envelope",
+      endpoint_tool: "backend:error middleware",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "error-envelope",
+      expected_format: "ApiResponse.error with code/status_code/correlation_id",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "flat",
+      evidence: { source: "apps/backend/src/middleware/apiErrorMiddleware.ts", check: "Centralized error mapping for common HTTP statuses" },
+      remediation: { action: "Keep regression tests for 400/413/429/500 mappings.", owner: "backend", target_date: "2026-03-05" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "verified envelope pattern" },
+    },
+    {
+      id: "route-mcp-route",
+      endpoint_tool: "backend:/api/mcp/route",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Validated route request with structured errors",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "up",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Schema validation and unknown-tool handling" },
+      remediation: { action: "Expose formal request schema in docs endpoint.", owner: "backend", target_date: "2026-03-12" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "recently hardened" },
+    },
+    {
+      id: "route-mcp-tools",
+      endpoint_tool: "backend:/api/mcp/tools",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "http-envelope",
+      expected_format: "ApiResponse envelope for list payload",
+      current_status: "warn",
+      severity_score: 4,
+      trend: "flat",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Plain JSON list response (no envelope parity)" },
+      remediation: { action: "Wrap success payload in shared HTTP envelope contract.", owner: "backend", target_date: "2026-03-18", links: ["https://github.com/Clauskraft/WidgeTDC/issues"] },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "needs parity change" },
+    },
+    {
+      id: "route-mcp-status",
+      endpoint_tool: "backend:/api/mcp/status",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "http-envelope",
+      expected_format: "ApiResponse envelope for status payload",
+      current_status: "warn",
+      severity_score: 3,
+      trend: "flat",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Status response bypasses common HTTP envelope" },
+      remediation: { action: "Return typed envelope with metadata timestamp.", owner: "backend", target_date: "2026-03-18" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "awaiting owner capacity" },
+    },
+    {
+      id: "route-rlm-health",
+      endpoint_tool: "rlm:/health",
+      domain: "routes",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "health-pulse",
+      expected_format: "Shared health schema parity across services",
+      current_status: "warn",
+      severity_score: 4,
+      trend: "flat",
+      evidence: { source: "src/routes/health.py", check: "Route returns raw dict shape" },
+      remediation: { action: "Adopt shared health response adapter for wire parity.", owner: "rlm", target_date: "2026-03-20" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "cross-service mismatch" },
+    },
+    {
+      id: "route-rlm-errors",
+      endpoint_tool: "rlm:exception handler",
+      domain: "routes",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "error-envelope",
+      expected_format: "ApiError-compatible fields",
+      current_status: "warn",
+      severity_score: 4,
+      trend: "flat",
+      evidence: { source: "src/main.py", check: "Error payload differs from backend envelope" },
+      remediation: { action: "Map exceptions to canonical ApiError fields and code taxonomy.", owner: "rlm", target_date: "2026-03-25" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "taxonomy drift" },
+    },
+    {
+      id: "agent-rlm-cognitive-map",
+      endpoint_tool: "rlm:cognitive request mapping",
+      domain: "agents",
+      repo: "widgetdc-rlm-engine",
+      contract_type: "cognitive-request",
+      expected_format: "Canonical CognitiveRequest wire mapping",
+      current_status: "warn",
+      severity_score: 5,
+      trend: "down",
+      evidence: { source: "src/models/requests.py", check: "Service-local request DTO diverges from shared wire model" },
+      remediation: { action: "Add explicit mapper + tests for exact wire compatibility.", owner: "rlm", target_date: "2026-03-22", links: ["https://github.com/Clauskraft/widgetdc-rlm-engine"] },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "high impact for agent interoperability" },
+    },
+    {
+      id: "contracts-package-exports",
+      endpoint_tool: "contracts:package exports",
+      domain: "contracts",
+      repo: "widgetdc-contracts",
+      contract_type: "mcp-tooling",
+      expected_format: "Canonical TS exports + JSON schemas",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "up",
+      evidence: { source: "package.json", check: "Exports for cognitive/health/http/consulting/agent/graph present" },
+      remediation: { action: "Maintain strict semver and synchronized consumer versions.", owner: "contracts", target_date: "2026-03-31" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "contract backbone healthy" },
+    },
+    {
+      id: "platform-arch-analysis-envelope",
+      endpoint_tool: "arch:/api/analysis",
+      domain: "platform",
+      repo: "widgetdc-contracts",
+      contract_type: "http-envelope",
+      expected_format: "Consistent envelope with metadata",
+      current_status: "warn",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "scripts/arch-mcp-server.ts", check: "Returns raw analysis object for dashboard speed" },
+      remediation: { action: "Add optional envelope mode for contract consistency.", owner: "contracts", target_date: "2026-03-28" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "tradeoff accepted short-term" },
+    },
+    {
+      id: "agent-openclaw-tool-policy",
+      endpoint_tool: "openclaw:tool policy profile",
+      domain: "agents",
+      repo: "openclaw-railway-template",
+      contract_type: "tool-policy",
+      expected_format: "Allowed tool policy + shell deny constraints",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "flat",
+      evidence: { source: "docs/CRON_ROUTING_PROFILE.json", check: "Tool allow-list and policy constraints declared" },
+      remediation: { action: "Add deny-event audit stream for blocked tool attempts.", owner: "automation", target_date: "2026-03-30" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "policy in place" },
+    },
+    {
+      id: "agent-openclaw-output-contract",
+      endpoint_tool: "openclaw:cron output contracts",
+      domain: "agents",
+      repo: "openclaw-railway-template",
+      contract_type: "cron-output-contract",
+      expected_format: "Prompt output shape validated against schema",
+      current_status: "warn",
+      severity_score: 4,
+      trend: "flat",
+      evidence: { source: "docs/CRON_PROMPTS.md", check: "Output shape in prompts; runtime schema validator not explicit" },
+      remediation: { action: "Validate cron output JSON against schema before notifications.", owner: "automation", target_date: "2026-03-26" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "validation hook missing" },
+    },
+    {
+      id: "memory-correlation-chain",
+      endpoint_tool: "memory:correlation-id propagation",
+      domain: "memory",
+      repo: "WidgeTDC",
+      contract_type: "error-envelope",
+      expected_format: "correlation_id preserved through route→agent→reasoning chain",
+      current_status: "pass",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "apps/backend/src/middleware", check: "Correlation is present in structured errors" },
+      remediation: { action: "Extend correlation propagation to all async worker callbacks.", owner: "backend", target_date: "2026-03-27" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "good baseline" },
+    },
+    {
+      id: "memory-agent-state-schema",
+      endpoint_tool: "memory:agent-state snapshots",
+      domain: "memory",
+      repo: "openclaw-railway-template",
+      contract_type: "cron-output-contract",
+      expected_format: "agent memory snapshots validated and versioned",
+      current_status: "warn",
+      severity_score: 3,
+      trend: "flat",
+      evidence: { source: "configs/openclaw", check: "Prompt contracts exist but state schema enforcement is partial" },
+      remediation: { action: "Add schema version + migration handling for memory snapshots.", owner: "automation", target_date: "2026-04-02" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "partial compliance" },
+    },
+    {
+      id: "routes-compute-guardrails",
+      endpoint_tool: "backend:/api/compute/*",
+      domain: "routes",
+      repo: "WidgeTDC",
+      contract_type: "tool-policy",
+      expected_format: "sandbox policy with forbidden patterns and language allow-list",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "flat",
+      evidence: { source: "apps/backend/src/services/compute/ComputeSecurity.ts", check: "Security guardrails enforce execution policy" },
+      remediation: { action: "Add periodic policy drift checks.", owner: "backend", target_date: "2026-04-05" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "secure-by-default" },
+    },
+    {
+      id: "agents-cortex-orchestration",
+      endpoint_tool: "agent:cortex orchestration",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "cognitive-request",
+      expected_format: "agent orchestration emits contract-aligned events",
+      current_status: "warn",
+      severity_score: 4,
+      trend: "down",
+      evidence: { source: "apps/backend/src/routes/cortex.ts", check: "Orchestration surface is rich but contract conformance checks are incomplete" },
+      remediation: { action: "Add event contract validators in orchestration pipeline.", owner: "backend", target_date: "2026-03-29" },
+      audit: { updated_by: "arch-bot", updated_at: auditNow, note: "needs stronger runtime validation" },
+    },
+  ];
+
+  const live_checks: ComplianceLiveCheck[] = [];
+
+  // Derive some statuses from live architecture analysis.
+  loadGraph();
+  if (analysisResult) {
+    const hasCritical = analysisResult.summary.criticalCount > 0;
+    const hasCycles = analysisResult.summary.cycleCount > 0;
+    const dynamicStatus: ComplianceStatus = hasCritical || hasCycles ? "warn" : "pass";
+    const dynamicCheck = `Live analysis: critical=${analysisResult.summary.criticalCount}, cycles=${analysisResult.summary.cycleCount}`;
+    live_checks.push({
+      id: "analysis-health-signal",
+      status: dynamicStatus,
+      detail: dynamicCheck,
+    });
+
+    const archAnalysisRow = rows.find((r) => r.endpoint_tool === "arch:/api/analysis");
+    if (archAnalysisRow && dynamicStatus === "pass") {
+      archAnalysisRow.current_status = "pass";
+      archAnalysisRow.evidence.check = dynamicCheck;
+      archAnalysisRow.remediation.action = "Maintain zero-critical and zero-cycle posture with continuous scans.";
+      archAnalysisRow.trend = "up";
+    }
+  }
+
+  // Use GitHub data when available to provide live freshness/backlog signals.
+  try {
+    const [changes, changelog] = await Promise.all([
+      fetchAllOpenChanges(),
+      fetchAllChangelog(undefined, 200),
+    ]);
+
+    const staleBranches = changes.branches.filter((b) => b.isStale).length;
+    live_checks.push({
+      id: "github-branch-hygiene",
+      status: staleBranches > 0 ? "warn" : "pass",
+      detail: `Open PRs=${changes.prs.length}, branches=${changes.branches.length}, stale=${staleBranches}`,
+    });
+
+    const now = Date.now();
+    const maxAgeDays = 7;
+    const repoAge: Record<string, number> = {};
+    for (const repo of ["backend", "frontend", "rlm", "contracts"]) {
+      const latest = changelog.commits
+        .filter((c) => c.repo === repo)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latest?.date) {
+        repoAge[repo] = Math.floor((now - new Date(latest.date).getTime()) / (24 * 60 * 60 * 1000));
+      }
+    }
+    const staleRepos = Object.entries(repoAge).filter(([_, days]) => days > maxAgeDays);
+    live_checks.push({
+      id: "github-changelog-freshness",
+      status: staleRepos.length > 0 ? "warn" : "pass",
+      detail: `Repo commit age(days): ${Object.entries(repoAge).map(([k, v]) => `${k}=${v}`).join(", ") || "n/a"}`,
+    });
+  } catch (e: any) {
+    live_checks.push({
+      id: "github-signals",
+      status: "warn",
+      detail: `Live GitHub signals unavailable: ${e?.message || "unknown error"}`,
+    });
+  }
+
+  let filtered = rows.slice();
+  if (options.repos.length) filtered = filtered.filter((r) => options.repos.includes(r.repo));
+  if (options.statuses.length) filtered = filtered.filter((r) => options.statuses.includes(r.current_status));
+  if (options.contractTypes.length) filtered = filtered.filter((r) => options.contractTypes.includes(r.contract_type));
+  if (options.domains.length) filtered = filtered.filter((r) => options.domains.includes(r.domain));
+  if (options.failedOnly) filtered = filtered.filter((r) => r.current_status === "warn");
+  if (options.search) {
+    filtered = filtered.filter((r) =>
+      r.endpoint_tool.toLowerCase().includes(options.search) ||
+      r.repo.toLowerCase().includes(options.search) ||
+      r.contract_type.toLowerCase().includes(options.search) ||
+      r.domain.toLowerCase().includes(options.search) ||
+      r.evidence.source.toLowerCase().includes(options.search) ||
+      r.evidence.check.toLowerCase().includes(options.search) ||
+      r.remediation.action.toLowerCase().includes(options.search) ||
+      r.remediation.owner.toLowerCase().includes(options.search)
+    );
+  }
+
+  const sorters: Record<string, (a: ComplianceMatrixRow, b: ComplianceMatrixRow) => number> = {
+    endpoint_asc: (a, b) => a.endpoint_tool.localeCompare(b.endpoint_tool),
+    endpoint_desc: (a, b) => b.endpoint_tool.localeCompare(a.endpoint_tool),
+    repo_asc: (a, b) => a.repo.localeCompare(b.repo),
+    repo_desc: (a, b) => b.repo.localeCompare(a.repo),
+    status: (a, b) => (a.current_status === b.current_status ? a.endpoint_tool.localeCompare(b.endpoint_tool) : a.current_status === "warn" ? -1 : 1),
+    severity_desc: (a, b) => b.severity_score - a.severity_score || a.endpoint_tool.localeCompare(b.endpoint_tool),
+    severity_asc: (a, b) => a.severity_score - b.severity_score || a.endpoint_tool.localeCompare(b.endpoint_tool),
+  };
+  filtered.sort(sorters[options.sort] || sorters.severity_desc);
+
+  const total_filtered = filtered.length;
+  const pageStart = (options.page - 1) * options.pageSize;
+  const pagedRows = filtered.slice(pageStart, pageStart + options.pageSize);
+
+  const repos = [...new Set(rows.map((r) => r.repo))];
+  const statuses: ComplianceStatus[] = ["pass", "warn"];
+  const contract_types = [...new Set(rows.map((r) => r.contract_type))];
+  const domains: ComplianceDomain[] = ["routes", "agents", "memory", "contracts", "platform"];
+  const pass = rows.filter((r) => r.current_status === "pass").length;
+  const warn = rows.filter((r) => r.current_status === "warn").length;
+
+  const by_repo = repos.reduce<Record<string, { pass: number; warn: number }>>((acc, repo) => {
+    const repoRows = rows.filter((r) => r.repo === repo);
+    acc[repo] = {
+      pass: repoRows.filter((r) => r.current_status === "pass").length,
+      warn: repoRows.filter((r) => r.current_status === "warn").length,
+    };
+    return acc;
+  }, {});
+
+  const by_domain = domains.reduce<Record<string, { pass: number; warn: number; total: number }>>((acc, d) => {
+    const domainRows = rows.filter((r) => r.domain === d);
+    acc[d] = {
+      pass: domainRows.filter((r) => r.current_status === "pass").length,
+      warn: domainRows.filter((r) => r.current_status === "warn").length,
+      total: domainRows.length,
+    };
+    return acc;
+  }, {});
+
+  const score = Math.max(0, Math.min(100, Math.round((pass / Math.max(1, rows.length)) * 100 - warn * 1.5)));
+  const grouped_by_repo = options.groupByRepo
+    ? repos.map((repo) => ({
+        repo,
+        rows: pagedRows.filter((r) => r.repo === repo),
+      })).filter((g) => g.rows.length > 0)
+    : [];
+
+  return {
+    generated_at: new Date().toISOString(),
+    matrix_version: "v1",
+    scorecard: {
+      compliance_score: score,
+      grade: score >= 90 ? "A" : score >= 80 ? "B" : score >= 70 ? "C" : score >= 60 ? "D" : "F",
+      top_actions: rows
+        .filter((r) => r.current_status === "warn")
+        .sort((a, b) => b.severity_score - a.severity_score)
+        .slice(0, 3)
+        .map((r) => ({ id: r.id, endpoint_tool: r.endpoint_tool, action: r.remediation.action })),
+    },
+    summary: {
+      total: rows.length,
+      pass,
+      warn,
+      by_repo,
+      by_domain,
+    },
+    filters: {
+      repos,
+      statuses,
+      contract_types,
+      domains,
+    },
+    audit_log: rows
+      .map((r) => ({ id: r.id, ...r.audit }))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, 15),
+    live_checks,
+    pagination: {
+      page: options.page,
+      pageSize: options.pageSize,
+      total: rows.length,
+      totalFiltered: total_filtered,
+      totalPages: Math.max(1, Math.ceil(total_filtered / options.pageSize)),
+    },
+    sections: {
+      routes: rows.filter((r) => r.domain === "routes"),
+      agents: rows.filter((r) => r.domain === "agents"),
+      memory: rows.filter((r) => r.domain === "memory"),
+    },
+    grouped_by_repo,
+    rows: pagedRows,
+  };
+}
 
 async function fetchRepoCommits(
   owner: string,
@@ -1129,6 +1608,23 @@ app.get("/api/branches", async (_req, res) => {
     } else {
       res.status(500).json({ error: "Failed to fetch branches", message: e.message });
     }
+  }
+});
+
+app.get("/api/compliance-matrix", async (_req, res) => {
+  try {
+    const options = parseComplianceOptions(_req.query as Record<string, unknown>);
+    const payload = await buildComplianceMatrix(options);
+    const etag = createHash("sha1").update(JSON.stringify(payload)).digest("hex");
+    if (_req.headers["if-none-match"] === etag) {
+      res.status(304).end();
+      return;
+    }
+    res.setHeader("ETag", etag);
+    res.setHeader("Cache-Control", "public, max-age=30");
+    res.json(payload);
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to build compliance matrix", message: e.message });
   }
 });
 
