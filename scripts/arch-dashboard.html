@@ -119,10 +119,15 @@
   .compliance-filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
   .compliance-filters select, .compliance-filters input { padding: 6px 10px; border: 1px solid #232940; border-radius: 5px; background: #141824; color: #e2e8f0; font-size: 12px; outline: none; font-family: inherit; }
   .compliance-filters select:focus, .compliance-filters input:focus { border-color: #6366f1; }
+  .compliance-filters button { padding: 7px 12px; border: 1px solid #2a3350; border-radius: 5px; background: #1a2238; color: #dbe7ff; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .compliance-filters button:hover { background: #232e4b; }
   .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
   .status-pass { background: rgba(34,197,94,0.15); color: #22c55e; }
   .status-warn { background: rgba(245,158,11,0.15); color: #f59e0b; }
   .live-check { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #1a1f2e; font-size: 12px; color: #94a3b8; }
+  .cm-pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 11px; color: #64748b; }
+  .cm-pager button { padding: 6px 10px; border: 1px solid #2a3350; border-radius: 5px; background: #1a2238; color: #dbe7ff; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .cm-pager button:disabled { opacity: 0.4; cursor: default; }
 
   /* Scatter plot */
   .scatter-wrap { position: relative; width: 100%; height: 280px; }
@@ -262,7 +267,20 @@
         <select id="cm-repo-filter"><option value="all">All repos</option></select>
         <select id="cm-status-filter"><option value="all">All status</option><option value="pass">pass</option><option value="warn">warn</option></select>
         <select id="cm-type-filter"><option value="all">All contract types</option></select>
+        <select id="cm-sort">
+          <option value="endpoint_asc">Sort: endpoint A-Z</option>
+          <option value="endpoint_desc">Sort: endpoint Z-A</option>
+          <option value="repo_asc">Sort: repo A-Z</option>
+          <option value="repo_desc">Sort: repo Z-A</option>
+          <option value="status">Sort: status (warn first)</option>
+        </select>
+        <select id="cm-page-size">
+          <option value="10">10 / page</option>
+          <option value="20" selected>20 / page</option>
+          <option value="50">50 / page</option>
+        </select>
         <input id="cm-search" type="text" placeholder="Search endpoint / evidence...">
+        <button id="cm-export-csv" type="button">Export CSV</button>
       </div>
       <table class="tbl">
         <thead>
@@ -277,6 +295,13 @@
         </thead>
         <tbody id="cm-body"></tbody>
       </table>
+      <div class="cm-pager">
+        <div id="cm-page-info"></div>
+        <div style="display:flex;gap:8px">
+          <button id="cm-prev" type="button">Prev</button>
+          <button id="cm-next" type="button">Next</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -958,6 +983,16 @@ function renderCompliance() {
 
   const repoSel = document.getElementById("cm-repo-filter");
   const typeSel = document.getElementById("cm-type-filter");
+  const sortSel = document.getElementById("cm-sort");
+  const pageSizeSel = document.getElementById("cm-page-size");
+  const searchInput = document.getElementById("cm-search");
+  const statusSel = document.getElementById("cm-status-filter");
+  const exportBtn = document.getElementById("cm-export-csv");
+  const prevBtn = document.getElementById("cm-prev");
+  const nextBtn = document.getElementById("cm-next");
+  const pageInfo = document.getElementById("cm-page-info");
+  let currentPage = 1;
+
   const liveChecks = Array.isArray(complianceData.live_checks) ? complianceData.live_checks : [];
   document.getElementById("cm-live-checks").innerHTML = liveChecks.map(c => `
     <div class="live-check">
@@ -976,11 +1011,12 @@ function renderCompliance() {
     const o = document.createElement("option"); o.value = type; o.textContent = type; typeSel.appendChild(o);
   });
 
-  const renderRows = () => {
+  const applyFiltersAndSort = () => {
     const repo = repoSel.value;
-    const status = document.getElementById("cm-status-filter").value;
+    const status = statusSel.value;
     const type = typeSel.value;
-    const search = document.getElementById("cm-search").value.toLowerCase().trim();
+    const sort = sortSel.value;
+    const search = searchInput.value.toLowerCase().trim();
     let filtered = rows;
     if (repo !== "all") filtered = filtered.filter(r => r.repo === repo);
     if (status !== "all") filtered = filtered.filter(r => r.current_status === status);
@@ -993,8 +1029,26 @@ function renderCompliance() {
         r.remediation.toLowerCase().includes(search)
       );
     }
+    if (sort === "endpoint_asc") filtered = filtered.slice().sort((a, b) => a.endpoint_tool.localeCompare(b.endpoint_tool));
+    if (sort === "endpoint_desc") filtered = filtered.slice().sort((a, b) => b.endpoint_tool.localeCompare(a.endpoint_tool));
+    if (sort === "repo_asc") filtered = filtered.slice().sort((a, b) => a.repo.localeCompare(b.repo));
+    if (sort === "repo_desc") filtered = filtered.slice().sort((a, b) => b.repo.localeCompare(a.repo));
+    if (sort === "status") {
+      const order = { warn: 0, pass: 1 };
+      filtered = filtered.slice().sort((a, b) => order[a.current_status] - order[b.current_status] || a.endpoint_tool.localeCompare(b.endpoint_tool));
+    }
+    return filtered;
+  };
 
-    document.getElementById("cm-body").innerHTML = filtered.map(r => `
+  const renderRows = () => {
+    const filtered = applyFiltersAndSort();
+    const pageSize = Math.max(1, Number(pageSizeSel.value) || 20);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * pageSize;
+    const pageRows = filtered.slice(start, start + pageSize);
+
+    document.getElementById("cm-body").innerHTML = pageRows.map(r => `
       <tr>
         <td>${escHtml(r.endpoint_tool)}</td>
         <td>${escHtml(r.repo)}</td>
@@ -1004,12 +1058,51 @@ function renderCompliance() {
         <td style="max-width:320px">${escHtml(r.remediation)}</td>
       </tr>
     `).join("") || '<tr><td colspan="6" style="color:#475569">No rows match current filters</td></tr>';
+
+    pageInfo.textContent = filtered.length === 0
+      ? "0 rows"
+      : `Showing ${start + 1}-${Math.min(start + pageSize, filtered.length)} of ${filtered.length} rows (page ${currentPage}/${totalPages})`;
+    prevBtn.disabled = currentPage <= 1 || filtered.length === 0;
+    nextBtn.disabled = currentPage >= totalPages || filtered.length === 0;
   };
 
-  ["cm-repo-filter", "cm-status-filter", "cm-type-filter"].forEach(id => {
-    document.getElementById(id).addEventListener("change", renderRows);
+  const resetAndRender = () => {
+    currentPage = 1;
+    renderRows();
+  };
+
+  ["cm-repo-filter", "cm-status-filter", "cm-type-filter", "cm-sort", "cm-page-size"].forEach(id => {
+    document.getElementById(id).addEventListener("change", resetAndRender);
   });
-  document.getElementById("cm-search").addEventListener("input", renderRows);
+  searchInput.addEventListener("input", resetAndRender);
+  prevBtn.addEventListener("click", () => { if (currentPage > 1) { currentPage--; renderRows(); } });
+  nextBtn.addEventListener("click", () => { currentPage++; renderRows(); });
+  exportBtn.addEventListener("click", () => {
+    const filtered = applyFiltersAndSort();
+    const header = ["endpoint_tool", "repo", "contract_type", "status", "evidence_source", "evidence_check", "remediation"];
+    const csvRows = [header.join(",")];
+    for (const r of filtered) {
+      const vals = [
+        r.endpoint_tool,
+        r.repo,
+        r.contract_type,
+        r.current_status,
+        r.evidence.source,
+        r.evidence.check,
+        r.remediation,
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
+      csvRows.push(vals.join(","));
+    }
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "compliance-matrix.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
   renderRows();
 }
 
