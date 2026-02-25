@@ -228,9 +228,6 @@ export async function fetchUsage(projectId: string): Promise<CostEntry[]> {
               }
             }
           }
-          estimatedUsage {
-            estimatedValue
-          }
         }
       }`,
       { id: projectId }
@@ -239,9 +236,7 @@ export async function fetchUsage(projectId: string): Promise<CostEntry[]> {
     const project = data.project;
     if (!project) return [];
 
-    const totalEstimate = project.estimatedUsage?.estimatedValue ?? 0;
     const services = project.services?.edges ?? [];
-    const perService = services.length > 0 ? totalEstimate / services.length : 0;
     const today = new Date().toISOString().slice(0, 10);
 
     return services.map((e: any) => ({
@@ -249,7 +244,7 @@ export async function fetchUsage(projectId: string): Promise<CostEntry[]> {
       projectId,
       serviceId: e.node.id,
       serviceName: e.node.name,
-      amount: Math.round(perService * 100) / 100,
+      amount: 0,
     }));
   } catch (err: any) {
     console.error(`[monitoring] Usage fetch for ${projectId}: ${err.message}`);
