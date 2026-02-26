@@ -1615,7 +1615,15 @@ app.get("/api/compliance-matrix", async (_req, res) => {
   try {
     const options = parseComplianceOptions(_req.query as Record<string, unknown>);
     const payload = await buildComplianceMatrix(options);
-    const etag = createHash("sha1").update(JSON.stringify(payload)).digest("hex");
+    const payloadForHash = {
+      ...payload,
+      generated_at: undefined,
+      rows: payload.rows?.map((r: any) => ({
+        ...r,
+        audit: r.audit ? { ...r.audit, updated_at: undefined } : r.audit,
+      })),
+    };
+    const etag = createHash("sha1").update(JSON.stringify(payloadForHash)).digest("hex");
     if (_req.headers["if-none-match"] === etag) {
       res.status(304).end();
       return;
