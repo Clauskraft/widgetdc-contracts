@@ -297,6 +297,8 @@
         <select id="cm-type-filter" multiple size="4"></select>
         <select id="cm-domain-filter" multiple size="4"></select>
         <select id="cm-sort">
+          <option value="severity_desc">Sort: severity (high first)</option>
+          <option value="severity_asc">Sort: severity (low first)</option>
           <option value="endpoint_asc">Sort: endpoint A-Z</option>
           <option value="endpoint_desc">Sort: endpoint Z-A</option>
           <option value="repo_asc">Sort: repo A-Z</option>
@@ -1341,6 +1343,7 @@ function renderCompliance() {
         r.repo,
         r.contract_type,
         r.current_status,
+        r.severity_score,
         r.evidence.source,
         r.evidence.check,
         r.remediation?.action || "",
@@ -1358,7 +1361,7 @@ function renderCompliance() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  });
+  };
   exportJsonBtn.onclick = () => {
     const blob = new Blob([JSON.stringify(complianceData, null, 2)], { type: "application/json;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
