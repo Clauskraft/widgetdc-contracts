@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WidgeTDC Integrity Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #0b0e14; color: #e2e8f0; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 600; color: #f1f5f9; white-space: nowrap; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+  #refresh-btn { margin-left: auto; padding: 5px 14px; font-size: 11px; border-radius: 4px; border: 1px solid #1a1f2e; background: #141824; color: #94a3b8; cursor: pointer; font-weight: 500; }
+  #refresh-btn:hover { background: #1e2740; color: #e2e8f0; }
+  #status { font-size: 10px; color: #475569; }
+
+  /* Main */
+  #main { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* Cards */
+  .grid { display: grid; gap: 16px; margin-bottom: 20px; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .card { background: #0f1219; border: 1px solid #1a1f2e; border-radius: 10px; padding: 20px; }
+  .card-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 700; color: #f1f5f9; line-height: 1; }
+  .card-value.sm { font-size: 22px; }
+  .card-sub { font-size: 11px; color: #475569; margin-top: 4px; }
+
+  /* Score colors */
+  .score-green { color: #22c55e; }
+  .score-yellow { color: #eab308; }
+  .score-red { color: #ef4444; }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; padding: 8px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; border-bottom: 1px solid #1a1f2e; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #0f1219; vertical-align: middle; }
+  tr:hover td { background: #141824; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .badge-pass { background: #052e16; color: #22c55e; }
+  .badge-warn { background: #422006; color: #f59e0b; }
+  .badge-degraded { background: #450a0a; color: #ef4444; }
+
+  /* Bar */
+  .bar-bg { width: 100%; height: 8px; background: #1a1f2e; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+  /* Sections */
+  .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #1a1f2e; }
+
+  /* Tool list */
+  .tool-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #0f1219; }
+  .tool-name { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #6366f1; font-weight: 600; min-width: 160px; }
+  .tool-desc { font-size: 11px; color: #64748b; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 40px; color: #475569; font-size: 13px; }
+
+  @media (max-width: 900px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>InsightIntegrityGuard</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Architecture</a>
+    <a href="/data">DataPulse</a>
+    <a href="/infra">Infrastructure</a>
+    <a href="/integrity" class="active">Integrity</a>
+    <a href="/graph">Graph</a>
+  </div>
+  <button id="refresh-btn" onclick="loadData()">Refresh</button>
+  <span id="status"></span>
+</div>
+
+<div id="main">
+  <div id="content"><div class="loading">Loading integrity data...</div></div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+function scoreColor(score) {
+  if (score >= 70) return 'score-green';
+  if (score >= 40) return 'score-yellow';
+  return 'score-red';
+}
+function scoreBadge(score) {
+  if (score >= 70) return 'badge-pass';
+  if (score >= 40) return 'badge-warn';
+  return 'badge-degraded';
+}
+function scoreLabel(score) {
+  if (score >= 70) return 'HEALTHY';
+  if (score >= 40) return 'WARNING';
+  return 'DEGRADED';
+}
+function barColor(score) {
+  if (score >= 70) return '#22c55e';
+  if (score >= 40) return '#eab308';
+  return '#ef4444';
+}
+
+async function loadData() {
+  const status = document.getElementById('status');
+  status.textContent = 'Loading...';
+  try {
+    const resp = await fetch(API + '/api/integrity');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    render(data);
+    status.textContent = `Updated ${new Date(data.generated_at).toLocaleTimeString()}`;
+  } catch (e) {
+    status.textContent = `Error: ${e.message}`;
+    document.getElementById('content').innerHTML = `<div class="card" style="color:#ef4444">Failed to load: ${e.message}</div>`;
+  }
+}
+
+function render(data) {
+  const agents = data.agents || [];
+  const tools = data.tools || [];
+  const compliance = data.compliance || {};
+  const arch = data.architecture || {};
+
+  // Calculate aggregates
+  const totalAgents = agents.length;
+  const avgScore = totalAgents > 0 ? Math.round(agents.reduce((a, b) => a + (b.IntegrityScore || 50), 0) / totalAgents) : 50;
+  const degradedCount = agents.filter(a => (a.IntegrityScore || 50) < 40).length;
+  const totalViolations = agents.reduce((a, b) => a + (b.Violations || 0), 0);
+  const totalSynergies = agents.reduce((a, b) => a + (b.Synergies || 0), 0);
+
+  let html = '';
+
+  // Summary cards
+  html += `<div class="grid grid-4">
+    <div class="card">
+      <div class="card-title">Avg Integrity Score</div>
+      <div class="card-value ${scoreColor(avgScore)}">${avgScore}%</div>
+      <div class="card-sub">${totalAgents} agents monitored</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Degraded Agents</div>
+      <div class="card-value ${degradedCount > 0 ? 'score-red' : 'score-green'}">${degradedCount}</div>
+      <div class="card-sub">${degradedCount > 0 ? 'Require architect review' : 'All agents healthy'}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Total Violations</div>
+      <div class="card-value sm">${totalViolations}</div>
+      <div class="card-sub">FailureMemory (INTEGRITY_VIOLATION)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Insight Synergies</div>
+      <div class="card-value sm score-green">${totalSynergies}</div>
+      <div class="card-sub">StrategicInsight references</div>
+    </div>
+  </div>`;
+
+  // Agent table
+  html += `<div class="section-title">Agent Integrity Matrix</div>`;
+  if (agents.length > 0) {
+    html += `<div class="card" style="padding:0;overflow:hidden"><table>
+      <thead><tr><th>Agent</th><th>Score</th><th>Violations</th><th>Synergies</th><th>Domains</th><th>Status</th></tr></thead>
+      <tbody>`;
+    for (const a of agents) {
+      const s = a.IntegrityScore || 50;
+      html += `<tr>
+        <td style="font-weight:600;color:#e2e8f0">${a.AgentID || 'unknown'}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="${scoreColor(s)}" style="font-weight:700;min-width:32px">${s}%</span>
+            <div class="bar-bg" style="width:80px"><div class="bar-fill" style="width:${s}%;background:${barColor(s)}"></div></div>
+          </div>
+        </td>
+        <td>${a.Violations || 0}</td>
+        <td>${a.Synergies || 0}</td>
+        <td style="font-size:10px;color:#64748b">${(a.ActiveDomains || []).join(', ') || '—'}</td>
+        <td><span class="badge ${scoreBadge(s)}">${scoreLabel(s)}</span></td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+  } else {
+    html += `<div class="card" style="color:#475569;font-size:12px">No agent data available. Backend may be unreachable or audit.dashboard returned empty. Agents will appear once InsightIntegrityGuard processes audits.</div>`;
+  }
+
+  // Compliance rows
+  const auditRows = compliance.audit_rows || [];
+  if (auditRows.length > 0) {
+    html += `<div class="section-title">Compliance Matrix (Audit Rows)</div>`;
+    html += `<div class="card" style="padding:0;overflow:hidden"><table>
+      <thead><tr><th>ID</th><th>Endpoint</th><th>Status</th><th>Evidence</th></tr></thead>
+      <tbody>`;
+    for (const r of auditRows) {
+      html += `<tr>
+        <td style="font-family:monospace;font-size:11px;color:#6366f1">${r.id}</td>
+        <td style="font-size:11px">${r.endpoint_tool}</td>
+        <td><span class="badge badge-${r.current_status}">${r.current_status.toUpperCase()}</span></td>
+        <td style="font-size:10px;color:#64748b">${r.evidence?.check || ''}</td>
+      </tr>`;
+    }
+    html += `</tbody></table></div>`;
+  }
+
+  // Tools
+  html += `<div class="grid grid-2" style="margin-top:20px">
+    <div>
+      <div class="section-title">Audit MCP Tools</div>
+      <div class="card">`;
+  for (const t of tools) {
+    html += `<div class="tool-item"><span class="tool-name">${t.name}</span><span class="tool-desc">${t.description}</span></div>`;
+  }
+  html += `</div></div>
+    <div>
+      <div class="section-title">Architecture Files</div>
+      <div class="card">
+        <div class="tool-item"><span class="tool-name">Guard</span><span class="tool-desc">${arch.guard || '—'}</span></div>
+        <div class="tool-item"><span class="tool-name">Loop</span><span class="tool-desc">${arch.loop || '—'}</span></div>
+        <div class="tool-item"><span class="tool-name">Hook</span><span class="tool-desc">${arch.hook || '—'}</span></div>
+        <div class="tool-item"><span class="tool-name">Bootstrap</span><span class="tool-desc">${arch.bootstrap_mcp || '—'}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('content').innerHTML = html;
+}
+
+loadData();
+setInterval(loadData, 60000); // Auto-refresh every 60s
+</script>
+</body>
+</html>

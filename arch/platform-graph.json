@@ -9785,6 +9785,20 @@
       "layer": "core",
       "path": "src/system_prompt.py",
       "label": "system_prompt"
+    },
+    {
+      "id": "backend.services.audit.InsightIntegrityGuard",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/audit/InsightIntegrityGuard.ts",
+      "label": "InsightIntegrityGuard"
+    },
+    {
+      "id": "backend.services.audit.AgentLearningLoop",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/audit/AgentLearningLoop.ts",
+      "label": "AgentLearningLoop"
     }
   ],
   "edges": [
@@ -27057,12 +27071,37 @@
       "source": "frontend.types.chat",
       "target": "contracts.index",
       "type": "contract"
+    },
+    {
+      "source": "backend.services.audit.InsightIntegrityGuard",
+      "target": "backend.config.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.audit.InsightIntegrityGuard",
+      "target": "backend.adapters.Neo4jAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.audit.AgentLearningLoop",
+      "target": "backend.config.logger",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.audit.AgentLearningLoop",
+      "target": "backend.adapters.Neo4jAdapter",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.audit.InsightIntegrityGuard",
+      "target": "backend.services.audit.AgentLearningLoop",
+      "type": "import"
     }
   ],
   "meta": {
-    "generated": "2026-02-24T11:14:33.422Z",
+    "generated": "2026-03-03T12:00:00.000Z",
     "repos": 4,
-    "nodes": 1398,
-    "edges": 3454
+    "nodes": 1400,
+    "edges": 3459
   }
 }

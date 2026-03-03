@@ -428,6 +428,63 @@ async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
       remediation: { action: "Add event contract validators in orchestration pipeline.", owner: "backend", target_date: "2026-03-29" },
       audit: { updated_by: "arch-bot", updated_at: auditNow, note: "needs stronger runtime validation" },
     },
+    // --- InsightIntegrityGuard & AgentLearningLoop ---
+    {
+      id: "agents-integrity-guard",
+      endpoint_tool: "audit:InsightIntegrityGuard",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "audit.run/status/dashboard/lessons/acknowledge — 5 MCP tools for agent output integrity",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "up",
+      evidence: { source: "apps/backend/src/services/audit/InsightIntegrityGuard.ts", check: "Verifies citations ([Source: CODE-ID]), contract compliance ($id + snake_case), graph consistency (FailureMemory)" },
+      remediation: { action: "Monitor IntegrityScore trends via audit.dashboard. Alert if avg < 40%.", owner: "backend", target_date: "2026-03-15" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "deployed with 5 audit tools" },
+    },
+    {
+      id: "agents-learning-loop",
+      endpoint_tool: "audit:AgentLearningLoop",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Teacher/Student cross-agent learning — Lesson nodes with SHOULD_AWARE_OF propagation",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "up",
+      evidence: { source: "apps/backend/src/services/audit/AgentLearningLoop.ts", check: "Creates Lesson nodes in Neo4j, propagates via SHOULD_AWARE_OF to all agents" },
+      remediation: { action: "Track lesson acknowledgement rate. Ensure all agents run audit.lessons at boot.", owner: "backend", target_date: "2026-03-15" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "teacher/student loop active" },
+    },
+    {
+      id: "agents-audit-mcp-hook",
+      endpoint_tool: "backend:/api/mcp/route (audit hook)",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "Async post-execution audit on all MCP tool outputs > 100 chars",
+      current_status: "pass",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "apps/backend/src/mcp/mcpRouter.ts", check: "Fire-and-forget audit hook after tool execution, triggers AgentLearningLoop on violations" },
+      remediation: { action: "Add audit latency metrics. Ensure audit does not block MCP response.", owner: "backend", target_date: "2026-03-20" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "non-blocking audit wired into MCP pipeline" },
+    },
+    {
+      id: "agents-lesson-check-protocol",
+      endpoint_tool: "agent:Lesson Check (all 12+26 agents)",
+      domain: "agents",
+      repo: "openclaw-railway-template",
+      contract_type: "tool-policy",
+      expected_format: "MANDATORY boot step: audit.lessons → integrate → audit.acknowledge before mission start",
+      current_status: "pass",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "entrypoint.sh + CLAUDE.md", check: "Lesson Check is step 0 in Operational Protocol for all OpenClaw agents and step in CLAUDE.md for WidgeTDC agents" },
+      remediation: { action: "Verify lesson acknowledgement compliance rate via Neo4j: MATCH (a:Agent)-[:ACKNOWLEDGED]->(l:Lesson) RETURN count(l).", owner: "automation", target_date: "2026-03-18" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "12 OpenClaw + 26 WidgeTDC agents covered" },
+    },
   ];
 
   const live_checks: ComplianceLiveCheck[] = [];
@@ -1670,6 +1727,10 @@ app.get("/data-lineage.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "
 app.get("/infra", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "infra-dashboard.html")));
 app.get("/infra-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "infra-dashboard.html")));
 
+// Integrity Dashboard views
+app.get("/integrity", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "integrity-dashboard.html")));
+app.get("/integrity-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "integrity-dashboard.html")));
+
 // --- Monitoring REST API ---
 app.get("/api/monitoring/infrastructure", (_req, res) => {
   try {
@@ -1864,6 +1925,68 @@ app.delete("/api/monitoring/rules/:id", async (req, res) => {
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ error: "Failed to delete rule", message: e.message });
+  }
+});
+
+// --- Integrity Dashboard API ---
+// Proxies to the backend's audit tools and provides aggregated integrity data.
+const BACKEND_URL = process.env.BACKEND_URL || "https://backend-production-d3da.up.railway.app";
+const BACKEND_API_KEY = process.env.WIDGETDC_API_KEY || process.env.API_KEY || "";
+
+app.get("/api/integrity", async (_req, res) => {
+  try {
+    // Fetch audit dashboard from backend (if reachable)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let agents: unknown[] = [];
+    try {
+      const resp = await fetch(`${BACKEND_URL}/api/mcp/route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(BACKEND_API_KEY ? { Authorization: `Bearer ${BACKEND_API_KEY}` } : {}),
+        },
+        body: JSON.stringify({ tool: "audit.dashboard", args: {} }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (resp.ok) {
+        const data = await resp.json() as any;
+        if (data?.result?.agents) agents = data.result.agents;
+        else if (data?.agents) agents = data.agents;
+      }
+    } catch {
+      clearTimeout(timeout);
+      // Backend unreachable — return static compliance data only
+    }
+
+    // Build integrity summary from compliance matrix
+    const matrixOpts = parseComplianceOptions({ domain: "agents", search: "audit" });
+    const matrix = await buildComplianceMatrix(matrixOpts);
+
+    res.json({
+      generated_at: new Date().toISOString(),
+      agents,
+      compliance: {
+        audit_rows: (matrix as any).rows?.filter((r: any) => r.id?.startsWith("agents-integrity") || r.id?.startsWith("agents-learning") || r.id?.startsWith("agents-audit") || r.id?.startsWith("agents-lesson")) || [],
+        total_agent_rows: (matrix as any).rows?.length || 0,
+      },
+      tools: [
+        { name: "audit.run", description: "Manually audit agent output for citations, contract compliance, graph consistency" },
+        { name: "audit.status", description: "Get latest integrity score for an agent" },
+        { name: "audit.dashboard", description: "Full integrity matrix across all agents" },
+        { name: "audit.lessons", description: "Get pending lessons for agent (Lesson Check)" },
+        { name: "audit.acknowledge", description: "Mark lessons as read by agent" },
+      ],
+      architecture: {
+        guard: "apps/backend/src/services/audit/InsightIntegrityGuard.ts",
+        loop: "apps/backend/src/services/audit/AgentLearningLoop.ts",
+        hook: "apps/backend/src/mcp/mcpRouter.ts (async post-execution audit)",
+        bootstrap_mcp: "apps/backend/src/bootstrap/mcp.ts (registerAuditToolsGroup)",
+      },
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to build integrity data", message: e.message });
   }
 });
 
