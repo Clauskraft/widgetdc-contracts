@@ -513,6 +513,20 @@ async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
       remediation: { action: "Add approval SLA metrics (time-to-resolve). Auto-reject votes pending >48h.", owner: "automation", target_date: "2026-03-25" },
       audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "Democratic S1-S4 governance in place" },
     },
+    {
+      id: "agents-slack-slash-commands",
+      endpoint_tool: "/omega:SlackCommandHandler",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "tool-policy",
+      expected_format: "Slash command /omega with patrol, chaos, status, lessons, vote subcommands. HMAC-SHA256 verified. Interactive button callbacks at /api/slack/interactions.",
+      current_status: "pass",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "apps/backend/src/services/notifications/SlackCommandHandler.ts + routes/slackCommandRoutes.ts", check: "Slack signing secret verification + slash commands + interactive message handler" },
+      remediation: { action: "Add rate limiting per Slack user. Log all slash commands to Neo4j audit trail.", owner: "omega-sentinel", target_date: "2026-03-25" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "Commander-level Slack remote control for agent ecosystem" },
+    },
   ];
 
   const live_checks: ComplianceLiveCheck[] = [];

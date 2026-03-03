@@ -9827,6 +9827,20 @@
       "layer": "services",
       "path": "apps/backend/src/services/agents/CustodianSafetyNet.ts",
       "label": "CustodianSafetyNet"
+    },
+    {
+      "id": "backend.services.notifications.SlackCommandHandler",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/notifications/SlackCommandHandler.ts",
+      "label": "SlackCommandHandler"
+    },
+    {
+      "id": "backend.routes.slackCommandRoutes",
+      "repo": "backend",
+      "layer": "routes",
+      "path": "apps/backend/src/routes/slackCommandRoutes.ts",
+      "label": "slackCommandRoutes"
     }
   ],
   "edges": [
@@ -27164,12 +27178,32 @@
       "source": "backend.services.agents.CustodianSafetyNet",
       "target": "backend.config.logger",
       "type": "import"
+    },
+    {
+      "source": "backend.routes.slackCommandRoutes",
+      "target": "backend.services.notifications.SlackCommandHandler",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.notifications.SlackCommandHandler",
+      "target": "backend.services.agents.CustodianSafetyNet",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.notifications.SlackCommandHandler",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.notifications.SlackCommandHandler",
+      "target": "backend.config.logger",
+      "type": "import"
     }
   ],
   "meta": {
     "generated": "2026-03-03T16:00:00.000Z",
     "repos": 4,
-    "nodes": 1404,
-    "edges": 3467
+    "nodes": 1406,
+    "edges": 3471
   }
 }
