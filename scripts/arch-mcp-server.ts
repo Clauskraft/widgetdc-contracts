@@ -485,6 +485,34 @@ async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
       remediation: { action: "Verify lesson acknowledgement compliance rate via Neo4j: MATCH (a:Agent)-[:ACKNOWLEDGED]->(l:Lesson) RETURN count(l).", owner: "automation", target_date: "2026-03-18" },
       audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "12 OpenClaw + 26 WidgeTDC agents covered" },
     },
+    {
+      id: "agents-custodian-safety-net",
+      endpoint_tool: "custodian:CustodianSafetyNet (ATFA-01)",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "mcp-tooling",
+      expected_format: "6 MCP tools: custodian.chaos, custodian.patrol, custodian.status, custodian.vote.create, custodian.vote, custodian.votes.pending",
+      current_status: "pass",
+      severity_score: 1,
+      trend: "up",
+      evidence: { source: "apps/backend/src/services/agents/CustodianSafetyNet.ts", check: "Chaos Monkey + self-healing rollback + Slack governance votes + victory timeline" },
+      remediation: { action: "Monitor chaos test pass rate. Alert if >2 guard bypasses in 24h.", owner: "omega-sentinel", target_date: "2026-03-25" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "Proactive arch safety net with S1-S4 governance" },
+    },
+    {
+      id: "agents-slack-governance",
+      endpoint_tool: "custodian:Slack Governance Vote",
+      domain: "agents",
+      repo: "WidgeTDC",
+      contract_type: "tool-policy",
+      expected_format: "S1-S4 injections require Slack approval. GovernanceVote nodes in Neo4j. Approve/Reject via MCP or dashboard.",
+      current_status: "pass",
+      severity_score: 2,
+      trend: "up",
+      evidence: { source: "apps/backend/src/services/agents/CustodianSafetyNet.ts + SlackWebhookService.ts", check: "Interactive Slack messages + custodian.vote MCP tool + StrategicAuditDashboard approve/reject UI" },
+      remediation: { action: "Add approval SLA metrics (time-to-resolve). Auto-reject votes pending >48h.", owner: "automation", target_date: "2026-03-25" },
+      audit: { updated_by: "omega-sentinel", updated_at: auditNow, note: "Democratic S1-S4 governance in place" },
+    },
   ];
 
   const live_checks: ComplianceLiveCheck[] = [];
@@ -2058,10 +2086,32 @@ app.get("/api/strategic-audit", async (_req, res) => {
       }
     } catch { /* non-critical */ }
 
+    // Fetch governance data (custodian pending votes + victories)
+    let governance: Record<string, unknown> = {};
+    try {
+      const govCtrl = new AbortController();
+      const govTimeout = setTimeout(() => govCtrl.abort(), 5000);
+      const govResp = await fetch(`${BACKEND_URL}/api/mcp/route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(BACKEND_API_KEY ? { Authorization: `Bearer ${BACKEND_API_KEY}` } : {}),
+        },
+        body: JSON.stringify({ tool: "custodian.status", payload: {} }),
+        signal: govCtrl.signal,
+      });
+      clearTimeout(govTimeout);
+      if (govResp.ok) {
+        const govData = await govResp.json() as any;
+        governance = govData?.result || {};
+      }
+    } catch { /* non-critical */ }
+
     res.json({
       generated_at: new Date().toISOString(),
       modules,
       neo4j_stats: neo4jStats,
+      governance,
       kpis: {
         integrity_score: "Aggregated ratio of StrategicInsight / (FailureMemory + StrategicInsight) per module",
         knowledge_void_gap: "Modules with 0 StrategicInsight references (weakest architectural links)",

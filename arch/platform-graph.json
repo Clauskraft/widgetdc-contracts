@@ -9820,6 +9820,13 @@
       "layer": "services",
       "path": "apps/backend/src/services/telemetry/neo4jTracing.ts",
       "label": "Neo4jOTelTracing"
+    },
+    {
+      "id": "backend.services.agents.CustodianSafetyNet",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/agents/CustodianSafetyNet.ts",
+      "label": "CustodianSafetyNet"
     }
   ],
   "edges": [
@@ -27137,12 +27144,32 @@
       "source": "backend.services.telemetry.neo4jTracing",
       "target": "backend.services.Neo4jService",
       "type": "import"
+    },
+    {
+      "source": "backend.services.agents.CustodianSafetyNet",
+      "target": "backend.services.audit.InsightIntegrityGuard",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.agents.CustodianSafetyNet",
+      "target": "backend.services.audit.AgentLearningLoop",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.agents.CustodianSafetyNet",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.agents.CustodianSafetyNet",
+      "target": "backend.config.logger",
+      "type": "import"
     }
   ],
   "meta": {
-    "generated": "2026-03-03T14:00:00.000Z",
+    "generated": "2026-03-03T16:00:00.000Z",
     "repos": 4,
-    "nodes": 1403,
-    "edges": 3463
+    "nodes": 1404,
+    "edges": 3467
   }
 }

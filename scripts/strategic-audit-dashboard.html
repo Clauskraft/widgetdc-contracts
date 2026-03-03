@@ -205,6 +205,44 @@ function render(data) {
     html += `<div style="color:#475569;font-size:12px;padding:20px;background:#0f1219;border:1px solid #1a1f2e;border-radius:8px">No module-level integrity data available. Neo4j may not have FailureMemory or StrategicInsight nodes linked to File nodes yet.</div>`;
   }
 
+  // Governance Votes
+  const votes = data.governance?.pendingVotes || [];
+  if (votes.length > 0) {
+    html += `<div class="section-title">Pending Governance Votes</div>`;
+    html += `<div style="background:#451a03;border:1px solid rgba(245,158,11,0.3);padding:16px;margin-bottom:16px">`;
+    html += `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#f59e0b;margin-bottom:8px">PENDING S1-S4 APPROVAL</div>`;
+    for (const v of votes) {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(245,158,11,0.15);font-size:11px">
+        <span><b style="color:#e2e8f0">${v.module}</b> <span style="color:#64748b">from ${v.source || 'unknown'}</span></span>
+        <span style="display:flex;gap:8px">
+          <button class="fix-btn" style="padding:4px 10px" onclick="resolveVote('${v.id}','approved')">Approve</button>
+          <button class="fix-btn" style="padding:4px 10px;border-color:#ef4444" onclick="resolveVote('${v.id}','rejected')">Reject</button>
+        </span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Victory Timeline
+  const victories = data.governance?.victories || [];
+  const chaosTests = data.governance?.recentChaosTests || [];
+  if (victories.length > 0 || chaosTests.length > 0) {
+    html += `<div class="section-title">Custodian Victory Timeline</div>`;
+    html += `<div style="display:grid;gap:4px">`;
+    for (const v of [...victories, ...chaosTests].slice(0, 8)) {
+      const isVictory = v.action === 'VICTORY' || v.detected;
+      const icon = isVictory ? '&#x2705;' : '&#x1F6A8;';
+      html += `<div style="background:#0f1219;border:1px solid #1a1f2e;padding:8px 12px;font-size:11px;display:flex;gap:8px;align-items:center">
+        <span>${icon}</span>
+        <span style="color:#e2e8f0;font-weight:600;min-width:100px">${v.testId || 'test'}</span>
+        <span style="color:#64748b;flex:1">${v.targetPath || v.target || ''}</span>
+        <span style="color:${isVictory ? '#22c55e' : '#ef4444'};font-weight:700;font-size:10px">${v.action || (isVictory ? 'VICTORY' : 'ROLLBACK')}</span>
+        <span style="color:#475569;font-size:10px">${v.detectionTimeMs ? v.detectionTimeMs + 'ms' : ''}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
   document.getElementById('content').innerHTML = html;
 }
 
@@ -244,6 +282,25 @@ async function triggerS1S4(modulePath) {
     showToast('Connection error: ' + e.message, true);
   } finally {
     document.querySelectorAll('.fix-btn').forEach(b => b.disabled = false);
+  }
+}
+
+async function resolveVote(voteId, decision) {
+  showToast('Resolving vote ' + voteId + ' as ' + decision + '...');
+  try {
+    const resp = await fetch(BACKEND + '/api/mcp/route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer Heravej_22' },
+      body: JSON.stringify({ tool: 'custodian.vote', payload: { voteId, decision, resolvedBy: 'dashboard-user' } })
+    });
+    if (resp.ok) {
+      showToast('Vote ' + voteId + ' ' + decision);
+      loadData();
+    } else {
+      showToast('Failed to resolve vote', true);
+    }
+  } catch (e) {
+    showToast('Connection error: ' + e.message, true);
   }
 }
 
