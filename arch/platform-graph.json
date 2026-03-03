@@ -9799,6 +9799,27 @@
       "layer": "services",
       "path": "apps/backend/src/services/audit/AgentLearningLoop.ts",
       "label": "AgentLearningLoop"
+    },
+    {
+      "id": "contracts.scripts.StrategicAuditDashboard",
+      "repo": "widgetdc-contracts",
+      "layer": "dashboard",
+      "path": "scripts/strategic-audit-dashboard.html",
+      "label": "StrategicAuditDashboard"
+    },
+    {
+      "id": "backend.services.telemetry.instrumentation",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/telemetry/instrumentation.ts",
+      "label": "OpenTelemetryInstrumentation"
+    },
+    {
+      "id": "backend.services.telemetry.neo4jTracing",
+      "repo": "backend",
+      "layer": "services",
+      "path": "apps/backend/src/services/telemetry/neo4jTracing.ts",
+      "label": "Neo4jOTelTracing"
     }
   ],
   "edges": [
@@ -27096,12 +27117,32 @@
       "source": "backend.services.audit.InsightIntegrityGuard",
       "target": "backend.services.audit.AgentLearningLoop",
       "type": "import"
+    },
+    {
+      "source": "contracts.scripts.StrategicAuditDashboard",
+      "target": "backend.services.audit.InsightIntegrityGuard",
+      "type": "api-call"
+    },
+    {
+      "source": "contracts.scripts.StrategicAuditDashboard",
+      "target": "backend.adapters.Neo4jAdapter",
+      "type": "api-call"
+    },
+    {
+      "source": "backend.services.telemetry.instrumentation",
+      "target": "backend.index",
+      "type": "import"
+    },
+    {
+      "source": "backend.services.telemetry.neo4jTracing",
+      "target": "backend.services.Neo4jService",
+      "type": "import"
     }
   ],
   "meta": {
-    "generated": "2026-03-03T12:00:00.000Z",
+    "generated": "2026-03-03T14:00:00.000Z",
     "repos": 4,
-    "nodes": 1400,
-    "edges": 3459
+    "nodes": 1403,
+    "edges": 3463
   }
 }

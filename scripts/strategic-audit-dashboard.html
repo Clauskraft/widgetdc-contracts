@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omega Sentinel — Strategic Audit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace; background: #0a0a0c; color: #cbd5e1; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  #topbar { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #1a1f2e; background: #0f1219; flex-shrink: 0; }
+  #topbar h1 { font-size: 14px; font-weight: 700; color: #22d3ee; white-space: nowrap; letter-spacing: -0.02em; }
+  .view-toggle { display: flex; gap: 2px; background: #141824; border-radius: 6px; padding: 2px; }
+  .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
+  .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
+  .view-toggle a:hover:not(.active) { color: #94a3b8; }
+  #refresh-btn { margin-left: auto; padding: 5px 14px; font-size: 11px; border-radius: 4px; border: 1px solid #1a1f2e; background: #141824; color: #94a3b8; cursor: pointer; font-weight: 500; }
+  #refresh-btn:hover { background: #1e2740; color: #e2e8f0; }
+  #status { font-size: 10px; color: #475569; }
+
+  /* Main */
+  #main { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* Header */
+  .dash-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #1a1f2e; padding-bottom: 16px; margin-bottom: 24px; }
+  .dash-header h2 { font-size: 24px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.04em; }
+  .dash-header p { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; margin-top: 4px; }
+  .neo4j-stat { text-align: right; }
+  .neo4j-stat .label { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 0.06em; }
+  .neo4j-stat .value { font-size: 14px; font-weight: 700; color: #22d3ee; }
+
+  /* KPI cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .kpi-card { background: #0f1219; border: 1px solid #1a1f2e; border-radius: 8px; padding: 16px; }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; font-weight: 600; }
+  .kpi-value { font-size: 28px; font-weight: 800; margin-top: 4px; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: #475569; margin-top: 4px; }
+
+  /* Module rows */
+  .module-row { background: #121216; border: 1px solid #1a1f2e; padding: 16px 20px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; position: relative; overflow: hidden; }
+  .module-row:hover { background: #16161c; border-color: #334155; }
+  .module-info { flex: 1; }
+  .module-path { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .module-path .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .module-path .name { font-size: 12px; font-weight: 700; color: #f1f5f9; }
+  .module-metrics { display: flex; gap: 24px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #475569; }
+  .module-metrics b { font-weight: 700; }
+  .module-metrics .vio { color: #ef4444; }
+  .module-metrics .ins { color: #22d3ee; }
+
+  /* Health bar */
+  .health-bar { position: absolute; bottom: 0; left: 0; height: 2px; background: #164e63; transition: width 0.6s ease; }
+
+  /* Fix button */
+  .fix-btn { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; padding: 8px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-family: inherit; }
+  .fix-btn:hover { background: #22d3ee; color: #0a0a0c; border-color: #22d3ee; }
+  .fix-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .fix-btn svg { width: 12px; height: 12px; }
+
+  /* Toast */
+  #toast { position: fixed; top: 16px; right: 16px; background: #164e63; border-left: 4px solid #22d3ee; padding: 12px 20px; font-size: 11px; color: #e2e8f0; display: none; z-index: 999; max-width: 400px; animation: fadeIn 0.2s; }
+  #toast.error { background: #450a0a; border-color: #ef4444; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Section title */
+  .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; margin: 20px 0 8px; padding-bottom: 6px; border-bottom: 1px solid #1a1f2e; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 60px; color: #475569; font-size: 12px; }
+
+  @media (max-width: 768px) { .kpi-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <h1>OMEGA SENTINEL</h1>
+  <div class="view-toggle">
+    <a href="/dashboard">Architecture</a>
+    <a href="/data">DataPulse</a>
+    <a href="/infra">Infrastructure</a>
+    <a href="/integrity">Integrity</a>
+    <a href="/strategic-audit" class="active">Strategic Audit</a>
+    <a href="/graph">Graph</a>
+  </div>
+  <button id="refresh-btn" onclick="loadData()">Refresh</button>
+  <span id="status"></span>
+</div>
+
+<div id="main">
+  <div id="content"><div class="loading">Querying Neo4j for module integrity...</div></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = window.location.origin;
+const BACKEND = 'https://backend-production-d3da.up.railway.app';
+
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isError ? 'error' : '';
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 6000);
+}
+
+function dotColor(score) {
+  if (score < 0.4) return '#ef4444';
+  if (score < 0.7) return '#eab308';
+  return '#22d3ee';
+}
+
+function scoreClass(score) {
+  if (score < 0.4) return 'color:#ef4444';
+  if (score < 0.7) return 'color:#eab308';
+  return 'color:#22d3ee';
+}
+
+async function loadData() {
+  const status = document.getElementById('status');
+  status.textContent = 'Loading...';
+  try {
+    const resp = await fetch(API + '/api/strategic-audit');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    render(data);
+    status.textContent = `Updated ${new Date(data.generated_at).toLocaleTimeString()}`;
+  } catch (e) {
+    status.textContent = `Error: ${e.message}`;
+    document.getElementById('content').innerHTML = `<div style="color:#ef4444;padding:20px">Failed to load: ${e.message}</div>`;
+  }
+}
+
+function render(data) {
+  const modules = data.modules || [];
+  const stats = data.neo4j_stats || {};
+
+  // KPIs
+  const totalModules = modules.length;
+  const avgScore = totalModules > 0 ? modules.reduce((a, m) => a + (m.integrityScore || 0), 0) / totalModules : 0;
+  const voidCount = modules.filter(m => (m.insights || 0) === 0).length;
+  const totalViolations = modules.reduce((a, m) => a + (m.violations || 0), 0);
+
+  let html = '';
+
+  // Header
+  html += `<div class="dash-header">
+    <div>
+      <h2>Strategic Audit</h2>
+      <p>Architectural Integrity Monitor &bull; Module-level Violation/Insight Analysis</p>
+    </div>
+    <div class="neo4j-stat">
+      <div class="label">Neo4j Status</div>
+      <div class="value">${stats.nodeCount ? stats.nodeCount.toLocaleString() + ' nodes' : 'Connected'}</div>
+    </div>
+  </div>`;
+
+  // KPI cards
+  html += `<div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Avg Integrity Score</div>
+      <div class="kpi-value" style="${scoreClass(avgScore)}">${(avgScore * 100).toFixed(0)}%</div>
+      <div class="kpi-sub">${totalModules} modules scanned</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Knowledge Void Gaps</div>
+      <div class="kpi-value" style="color:${voidCount > 0 ? '#ef4444' : '#22c55e'}">${voidCount}</div>
+      <div class="kpi-sub">Modules with 0 StrategicInsight coverage</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Violations</div>
+      <div class="kpi-value" style="color:#eab308">${totalViolations}</div>
+      <div class="kpi-sub">FailureMemory references across modules</div>
+    </div>
+  </div>`;
+
+  // Module list
+  html += `<div class="section-title">Module Integrity Matrix (sorted by weakest first)</div>`;
+  for (const mod of modules) {
+    const score = mod.integrityScore || 0;
+    const pct = (score * 100).toFixed(0);
+    html += `<div class="module-row">
+      <div class="module-info">
+        <div class="module-path">
+          <span class="dot" style="background:${dotColor(score)}"></span>
+          <span class="name">${mod.path}</span>
+        </div>
+        <div class="module-metrics">
+          <span>Violations: <b class="vio">${mod.violations || 0}</b></span>
+          <span>Insights: <b class="ins">${mod.insights || 0}</b></span>
+          <span>Integrity: <b style="${scoreClass(score)}">${pct}%</b></span>
+        </div>
+      </div>
+      <button class="fix-btn" onclick="triggerS1S4('${mod.path.replace(/'/g, "\\'")}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        S1-S4 Research
+      </button>
+      <div class="health-bar" style="width:${pct}%"></div>
+    </div>`;
+  }
+
+  if (modules.length === 0) {
+    html += `<div style="color:#475569;font-size:12px;padding:20px;background:#0f1219;border:1px solid #1a1f2e;border-radius:8px">No module-level integrity data available. Neo4j may not have FailureMemory or StrategicInsight nodes linked to File nodes yet.</div>`;
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+async function triggerS1S4(modulePath) {
+  // Disable all fix buttons during processing
+  document.querySelectorAll('.fix-btn').forEach(b => b.disabled = true);
+  showToast('S1: Analyzing FailureMemory for ' + modulePath + '...');
+
+  try {
+    const resp = await fetch(BACKEND + '/api/mcp/route', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer Heravej_22' },
+      body: JSON.stringify({
+        tool: 'integration.source.ingest',
+        payload: {
+          target_module: modulePath,
+          flow: 'S1-4',
+          search_depth: 'EXTENSIVE',
+          sources: ['github', 'npm', 'huggingface'],
+          audit_required: true,
+          metadata: {
+            context: 'Fixing integrity violations and improving StrategicInsight coverage',
+            system_role: 'PARTNER::Strategy',
+            initiator: 'omega-sentinel'
+          }
+        }
+      })
+    });
+
+    if (resp.ok) {
+      showToast('S1-S4 Mission deployed for ' + modulePath + '. Check Slack for updates.');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      showToast('S1-S4 failed: ' + (err.error || resp.status), true);
+    }
+  } catch (e) {
+    showToast('Connection error: ' + e.message, true);
+  } finally {
+    document.querySelectorAll('.fix-btn').forEach(b => b.disabled = false);
+  }
+}
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>

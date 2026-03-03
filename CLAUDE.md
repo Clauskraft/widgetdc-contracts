@@ -234,3 +234,77 @@ All migrated error paths return `{ success: false, error: { code, message, statu
 
 ### 2026-02-23 — Agent access guide added to CLAUDE.md
 Appended full MCP/REST/SSE access documentation (335 tools, 3 transports, discovery endpoints, rate limits, error format, Neo4j graph access).
+
+## Agent Compliance Rules (ALL agents MUST follow)
+
+> **Master data**: Neo4j AuraDB + arch-mcp-server. These local rules are synced FROM graph truth.
+> Canonical file source: `WidgeTDC/CLAUDE.md` — update there first, then propagate.
+
+These rules apply to **every** `.claude/commands/` agent, persona, and future agent in the entire WidgeTDC ecosystem. Identical rules apply regardless of which repo the agent is invoked from.
+
+### Lesson Check (MANDATORY at boot)
+Before starting any mission, run `audit.lessons` with your agentId. Integrate all pending lessons. Acknowledge with `audit.acknowledge`. Lessons contain corrections from other agents' failures — immediate wisdom.
+
+### Integrity Audit
+All agent output is audited by `InsightIntegrityGuard`. Ensure:
+- **Citations**: Use `[Source: CODE-ID]` for StrategicInsight references
+- **Contract Law**: JSON payloads must include `$id` and use `snake_case` keys (widgetdc-contracts)
+- **Graph Consistency**: No contradictions with FailureMemory nodes in Neo4j
+
+### Audit MCP Tools (audit.* namespace)
+| Tool | Purpose |
+|------|---------|
+| `audit.lessons` | Get pending lessons for agent (Lesson Check) |
+| `audit.acknowledge` | Mark lessons as read |
+| `audit.status` | Get latest integrity score for agent |
+| `audit.run` | Manually audit output text |
+| `audit.dashboard` | Full integrity matrix across all agents |
+
+### Cross-Agent Learning (Teacher/Student)
+- Failures → `AgentLearningLoop` creates `Lesson` nodes in Neo4j
+- Lessons propagated to all agents via `SHOULD_AWARE_OF` relationships
+- Agents fetch via `audit.lessons`, acknowledge via `audit.acknowledge`
+
+### External Discovery (S1-4 Research-First Mandate)
+When Neo4j has no match: **S1** Extract (max 50 lines) → **S2** Map to widgetdc-contracts → **S3** Inject as `:ExternalKnowledge` node → **S4** Verify with `audit.run`.
+
+### DO's (ALWAYS)
+- Include `Authorization: Bearer ${API_KEY}` on all backend calls
+- Use params in Cypher (never string interpolation)
+- Use production URLs (backend-production-d3da, rlm-engine-production, AuraDB)
+- Cite sources with `[Source: CODE-ID]` format
+- Run `audit.lessons` before starting a mission
+- Run `audit.run` after major code generation
+- Search externally (GitHub, NPM, HuggingFace) when Neo4j has no match
+- Store learnings as `AgentMemory` nodes
+
+### DON'Ts (NEVER)
+- Call backend without auth header
+- Use `require()` — only ESM imports
+- Write to local Neo4j — only AuraDB
+- Ignore lessons from `audit.lessons`
+- Assume errors are isolated — search for `SYNAPTIC_LINK` between errors and FailureMemory first
+- Write >50 lines custom logic when an NPM module solves it
+- Architect in isolation — consult external sources (S1-4 flow)
+- Change architecture without SwarmControl consensus
+
+## Cross-Repo Sync Protocol
+
+This repo is part of the **WidgeTDC 6-repo ecosystem**. The **graph** (Neo4j + arch-mcp-server) owns the master data:
+
+| Layer | Owner | What it governs |
+|-------|-------|-----------------|
+| **Neo4j AuraDB** | Master data | Agent nodes, Lesson nodes, FailureMemory, StrategicInsight, compliance state |
+| **arch-mcp-server** | Dashboards + API | `/integrity`, `/strategic-audit`, `/api/compliance-matrix` — live views into graph |
+| **widgetdc-contracts** | Type contracts | JSON schemas, wire format, `$id` + `snake_case` rules |
+| **CLAUDE.md (each repo)** | Local agent rules | Boot-time rules that agents read; synced FROM graph truth |
+
+**Master data flow**: Graph (Neo4j) → arch-mcp-server dashboards → CLAUDE.md files (local copies).
+**Update flow**: Change rules in graph (via `graph.write_cypher` / Lesson nodes) → update `WidgeTDC/CLAUDE.md` → propagate to satellite repos.
+**Verification**: `arch-mcp-server-production.up.railway.app/integrity` + `/strategic-audit`
+
+Agents in ANY repo query the graph directly for the latest rules:
+```
+POST https://backend-production-d3da.up.railway.app/api/mcp/route
+{"tool":"audit.lessons","payload":{"agentId":"YOUR_AGENT_ID"}}
+```

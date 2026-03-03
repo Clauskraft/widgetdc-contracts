@@ -1990,6 +1990,121 @@ app.get("/api/integrity", async (_req, res) => {
   }
 });
 
+// --- Strategic Audit Dashboard ---
+// Server-side rendered module-level integrity visualization with S1-S4 triggers.
+
+app.get("/strategic-audit", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "strategic-audit-dashboard.html")));
+app.get("/strategic-audit-dashboard.html", (_req, res) => res.sendFile(resolve(SCRIPTS_DIR, "strategic-audit-dashboard.html")));
+
+app.get("/api/strategic-audit", async (_req, res) => {
+  try {
+    // Query backend Neo4j via graph.read_cypher for module-level integrity
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let modules: unknown[] = [];
+    let neo4jStats: Record<string, unknown> = {};
+
+    try {
+      // Fetch module integrity from Neo4j via backend MCP route
+      const cypherQuery = `
+        MATCH (f:File)
+        OPTIONAL MATCH (f)<-[:REFERS_TO]-(fm:FailureMemory)
+        OPTIONAL MATCH (f)<-[:REFERS_TO]-(m)-[:REFERS_TO]->(si:StrategicInsight)
+        WITH f.path AS path, count(DISTINCT fm) AS violations, count(DISTINCT si) AS insights
+        WHERE violations > 0 OR insights > 0
+        RETURN path, violations, insights,
+               ((insights * 1.0) / (violations + insights + 0.1)) AS integrityScore
+        ORDER BY integrityScore ASC LIMIT 20
+      `;
+
+      const resp = await fetch(`${BACKEND_URL}/api/mcp/route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(BACKEND_API_KEY ? { Authorization: `Bearer ${BACKEND_API_KEY}` } : {}),
+        },
+        body: JSON.stringify({ tool: "graph.read_cypher", payload: { query: cypherQuery } }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (resp.ok) {
+        const data = await resp.json() as any;
+        if (data?.result?.results) modules = data.result.results;
+        else if (data?.result?.rows) modules = data.result.rows;
+        else if (Array.isArray(data?.result)) modules = data.result;
+      }
+    } catch {
+      clearTimeout(timeout);
+    }
+
+    // Also fetch Neo4j stats for the header
+    try {
+      const statsCtrl = new AbortController();
+      const statsTimeout = setTimeout(() => statsCtrl.abort(), 5000);
+      const statsResp = await fetch(`${BACKEND_URL}/api/mcp/route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(BACKEND_API_KEY ? { Authorization: `Bearer ${BACKEND_API_KEY}` } : {}),
+        },
+        body: JSON.stringify({ tool: "graph.stats", payload: {} }),
+        signal: statsCtrl.signal,
+      });
+      clearTimeout(statsTimeout);
+      if (statsResp.ok) {
+        const statsData = await statsResp.json() as any;
+        neo4jStats = statsData?.result || {};
+      }
+    } catch { /* non-critical */ }
+
+    res.json({
+      generated_at: new Date().toISOString(),
+      modules,
+      neo4j_stats: neo4jStats,
+      kpis: {
+        integrity_score: "Aggregated ratio of StrategicInsight / (FailureMemory + StrategicInsight) per module",
+        knowledge_void_gap: "Modules with 0 StrategicInsight references (weakest architectural links)",
+        ingestion_velocity: "Track S1-S4 usage to measure how fast system learns from external sources",
+      },
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: "Failed to build strategic audit data", message: e.message });
+  }
+});
+
+// Proxy endpoint for direct MCP Cypher queries from dashboards
+app.post("/api/mcp/query", async (req, res) => {
+  try {
+    const { tool, query, payload } = req.body;
+    const mpcTool = tool || "graph.read_cypher";
+    const mpcPayload = payload || (query ? { query } : {});
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const resp = await fetch(`${BACKEND_URL}/api/mcp/route`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(BACKEND_API_KEY ? { Authorization: `Bearer ${BACKEND_API_KEY}` } : {}),
+      },
+      body: JSON.stringify({ tool: mpcTool, payload: mpcPayload }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (resp.ok) {
+      const data = await resp.json();
+      res.json(data);
+    } else {
+      const errText = await resp.text();
+      res.status(resp.status).json({ error: errText });
+    }
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Store active transports
 const transports: Record<string, SSEServerTransport | StreamableHTTPServerTransport> = {};
 
