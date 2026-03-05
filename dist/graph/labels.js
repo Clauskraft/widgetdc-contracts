@@ -45,5 +45,13 @@ export const NodeLabel = Type.Union([
     Type.Literal('AIPattern'),
     // Memory
     Type.Literal('Memory'),
+    // Legal & regulatory
+    Type.Literal('LegalAct'),
+    Type.Literal('LegalConstraint'),
+    Type.Literal('LegalUpdate'),
+    Type.Literal('DanishAuthority'),
+    // Financial
+    Type.Literal('AnnualReport'),
+    Type.Literal('FinancialStatement'),
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' });
 //# sourceMappingURL=labels.js.map

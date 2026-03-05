@@ -42,6 +42,15 @@ export const RelationshipType = Type.Union([
   // Expansion
   Type.Literal('HAS_EXPANSION_SIGNAL'),
   Type.Literal('DETECTED_AT'),
+  // Legal & regulatory
+  Type.Literal('GOVERNED_BY'),
+  Type.Literal('CONSTRAINS'),
+  Type.Literal('AMENDS'),
+  Type.Literal('PUBLISHED_BY'),
+  Type.Literal('VETOED_BY'),
+  // Financial
+  Type.Literal('REPORTS'),
+  Type.Literal('EXTRACTED_FROM'),
 ], { $id: 'RelationshipType', description: 'Canonical Neo4j relationship types' })
 
 export type RelationshipType = Static<typeof RelationshipType>
