@@ -11,7 +11,7 @@
  * Wire format: snake_case JSON
  */
 import { Type, Static } from '@sinclair/typebox'
-import { AgentId, AgentMessageSource } from './agent-message.js'
+import { AgentMessageSource } from './agent-message.js'
 
 export const AgentCapability = Type.Union([
   Type.Literal('graph_read'),         // Can read Neo4j via graph.read_cypher
@@ -24,6 +24,7 @@ export const AgentCapability = Type.Union([
   Type.Literal('ingestion'),          // Can trigger data ingestion
   Type.Literal('git_operations'),     // Can use git.* tools
   Type.Literal('audit'),              // Can use audit.* tools
+  Type.String(),                      // Extensible: custom capabilities allowed
 ], {
   $id: 'AgentCapability',
   description: 'Capability flags declaring what an agent is authorized to do',
@@ -49,11 +50,15 @@ export const AgentHandshake = Type.Object({
     description: 'Canonical agent identifier (e.g. CAPTAIN_CLAUDE, GEMINI_ARCHITECT)',
   }),
 
-  /** Display name (human-readable) */
-  display_name: AgentId,
+  /** Display name (human-readable, free-form) */
+  display_name: Type.String({
+    description: 'Human-readable display name (e.g. "Consulting Frontend", "Captain Claude")',
+  }),
 
-  /** Technical source key */
-  source: AgentMessageSource,
+  /** Technical source key (known agents or custom) */
+  source: Type.Union([AgentMessageSource, Type.String()], {
+    description: 'Technical source identifier (e.g. "claude", "browser", "custom-agent")',
+  }),
 
   /** Agent version or build identifier */
   version: Type.Optional(Type.String({

@@ -11,23 +11,23 @@
  * Wire format: snake_case JSON
  */
 import { Static } from '@sinclair/typebox';
-export declare const AgentCapability: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">]>;
+export declare const AgentCapability: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">, import("@sinclair/typebox").TString]>;
 export type AgentCapability = Static<typeof AgentCapability>;
 export declare const AgentHandshakeStatus: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"online">, import("@sinclair/typebox").TLiteral<"standby">, import("@sinclair/typebox").TLiteral<"offline">, import("@sinclair/typebox").TLiteral<"degraded">]>;
 export type AgentHandshakeStatus = Static<typeof AgentHandshakeStatus>;
 export declare const AgentHandshake: import("@sinclair/typebox").TObject<{
     /** Canonical agent ID */
     agent_id: import("@sinclair/typebox").TString;
-    /** Display name (human-readable) */
-    display_name: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Claude">, import("@sinclair/typebox").TLiteral<"Gemini">, import("@sinclair/typebox").TLiteral<"DeepSeek">, import("@sinclair/typebox").TLiteral<"Grok">, import("@sinclair/typebox").TLiteral<"RLM">, import("@sinclair/typebox").TLiteral<"User">, import("@sinclair/typebox").TLiteral<"System">, import("@sinclair/typebox").TLiteral<"Orchestrator">]>;
-    /** Technical source key */
-    source: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"claude">, import("@sinclair/typebox").TLiteral<"gemini">, import("@sinclair/typebox").TLiteral<"deepseek">, import("@sinclair/typebox").TLiteral<"grok">, import("@sinclair/typebox").TLiteral<"rlm">, import("@sinclair/typebox").TLiteral<"user">, import("@sinclair/typebox").TLiteral<"system">, import("@sinclair/typebox").TLiteral<"orchestrator">]>;
+    /** Display name (human-readable, free-form) */
+    display_name: import("@sinclair/typebox").TString;
+    /** Technical source key (known agents or custom) */
+    source: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"claude">, import("@sinclair/typebox").TLiteral<"gemini">, import("@sinclair/typebox").TLiteral<"deepseek">, import("@sinclair/typebox").TLiteral<"grok">, import("@sinclair/typebox").TLiteral<"rlm">, import("@sinclair/typebox").TLiteral<"user">, import("@sinclair/typebox").TLiteral<"system">, import("@sinclair/typebox").TLiteral<"orchestrator">]>, import("@sinclair/typebox").TString]>;
     /** Agent version or build identifier */
     version: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     /** Current availability status */
     status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"online">, import("@sinclair/typebox").TLiteral<"standby">, import("@sinclair/typebox").TLiteral<"offline">, import("@sinclair/typebox").TLiteral<"degraded">]>;
     /** Declared capabilities — Orchestrator enforces these as ACL */
-    capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">]>>;
+    capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">, import("@sinclair/typebox").TString]>>;
     /**
      * Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
      * Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).

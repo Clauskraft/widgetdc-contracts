@@ -63,16 +63,20 @@ export const AgentMessage = Type.Object({
     description: 'Unique message identifier (assigned by storage layer)',
   })),
 
-  /** Who sent this message */
-  from: AgentId,
+  /** Who sent this message (known agent or custom ID) */
+  from: Type.Union([AgentId, Type.String()], {
+    description: 'Sender agent ID',
+  }),
 
   /** Who should receive it (or "All" for broadcast) */
-  to: Type.Union([AgentId, Type.Literal('All')], {
+  to: Type.Union([AgentId, Type.Literal('All'), Type.String()], {
     description: 'Target recipient or All for broadcast',
   }),
 
-  /** Technical source identifier (lowercase) */
-  source: AgentMessageSource,
+  /** Technical source identifier (known or custom) */
+  source: Type.Union([AgentMessageSource, Type.String()], {
+    description: 'Technical source identifier (e.g. "claude", "browser")',
+  }),
 
   /** Conversation thread identifier (groups related messages) */
   thread: Type.Optional(Type.String({
