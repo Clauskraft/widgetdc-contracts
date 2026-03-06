@@ -65,6 +65,7 @@ ls schemas/cognitive/
 | `@widgetdc/contracts/consulting` | DomainId, ProcessStatus, DOMAIN_SHORT_IDS | All services |
 | `@widgetdc/contracts/agent` | AgentTier, AgentPersona, SignalType | All services |
 | `@widgetdc/contracts/graph` | NodeLabel, RelationshipType | All services |
+| `@widgetdc/contracts/orchestrator` | OrchestratorToolCall, OrchestratorToolResult, AgentMessage, AgentHandshake | Orchestrator ↔ All agents |
 
 ## Wire Format
 

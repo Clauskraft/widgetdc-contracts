@@ -1,0 +1,189 @@
+{
+  "$id": "AgentMessage",
+  "description": "Shared message format for agent↔agent and agent↔user communication. Matches Notion Global Chat schema.",
+  "type": "object",
+  "required": [
+    "from",
+    "to",
+    "source",
+    "type",
+    "message"
+  ],
+  "properties": {
+    "message_id": {
+      "description": "Unique message identifier (assigned by storage layer)",
+      "type": "string"
+    },
+    "from": {
+      "$id": "AgentId",
+      "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+      "anyOf": [
+        {
+          "const": "Claude",
+          "type": "string"
+        },
+        {
+          "const": "Gemini",
+          "type": "string"
+        },
+        {
+          "const": "DeepSeek",
+          "type": "string"
+        },
+        {
+          "const": "Grok",
+          "type": "string"
+        },
+        {
+          "const": "RLM",
+          "type": "string"
+        },
+        {
+          "const": "User",
+          "type": "string"
+        },
+        {
+          "const": "System",
+          "type": "string"
+        },
+        {
+          "const": "Orchestrator",
+          "type": "string"
+        }
+      ]
+    },
+    "to": {
+      "description": "Target recipient or All for broadcast",
+      "anyOf": [
+        {
+          "$id": "AgentId",
+          "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+          "anyOf": [
+            {
+              "const": "Claude",
+              "type": "string"
+            },
+            {
+              "const": "Gemini",
+              "type": "string"
+            },
+            {
+              "const": "DeepSeek",
+              "type": "string"
+            },
+            {
+              "const": "Grok",
+              "type": "string"
+            },
+            {
+              "const": "RLM",
+              "type": "string"
+            },
+            {
+              "const": "User",
+              "type": "string"
+            },
+            {
+              "const": "System",
+              "type": "string"
+            },
+            {
+              "const": "Orchestrator",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "const": "All",
+          "type": "string"
+        }
+      ]
+    },
+    "source": {
+      "$id": "AgentMessageSource",
+      "description": "Lowercase source identifier for technical routing",
+      "anyOf": [
+        {
+          "const": "claude",
+          "type": "string"
+        },
+        {
+          "const": "gemini",
+          "type": "string"
+        },
+        {
+          "const": "deepseek",
+          "type": "string"
+        },
+        {
+          "const": "grok",
+          "type": "string"
+        },
+        {
+          "const": "rlm",
+          "type": "string"
+        },
+        {
+          "const": "user",
+          "type": "string"
+        },
+        {
+          "const": "system",
+          "type": "string"
+        },
+        {
+          "const": "orchestrator",
+          "type": "string"
+        }
+      ]
+    },
+    "thread": {
+      "description": "Thread ID for grouping related messages (e.g. \"widgetdc-sprint-march26\")",
+      "type": "string"
+    },
+    "type": {
+      "$id": "AgentMessageType",
+      "description": "Classification of the message purpose",
+      "anyOf": [
+        {
+          "const": "Message",
+          "type": "string"
+        },
+        {
+          "const": "Command",
+          "type": "string"
+        },
+        {
+          "const": "Answer",
+          "type": "string"
+        },
+        {
+          "const": "Handover",
+          "type": "string"
+        },
+        {
+          "const": "Alert",
+          "type": "string"
+        },
+        {
+          "const": "ToolResult",
+          "type": "string"
+        }
+      ]
+    },
+    "message": {
+      "minLength": 1,
+      "description": "Message text content (markdown supported)",
+      "type": "string"
+    },
+    "call_id": {
+      "description": "Links this message to a specific tool call (for ToolResult messages)",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "description": "When this message was created",
+      "type": "string"
+    }
+  }
+}

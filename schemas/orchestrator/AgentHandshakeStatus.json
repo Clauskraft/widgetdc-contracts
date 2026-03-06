@@ -1,0 +1,22 @@
+{
+  "$id": "AgentHandshakeStatus",
+  "description": "Agent availability status",
+  "anyOf": [
+    {
+      "const": "online",
+      "type": "string"
+    },
+    {
+      "const": "standby",
+      "type": "string"
+    },
+    {
+      "const": "offline",
+      "type": "string"
+    },
+    {
+      "const": "degraded",
+      "type": "string"
+    }
+  ]
+}

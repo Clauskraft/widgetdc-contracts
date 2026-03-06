@@ -1,0 +1,38 @@
+{
+  "$id": "AgentMessageSource",
+  "description": "Lowercase source identifier for technical routing",
+  "anyOf": [
+    {
+      "const": "claude",
+      "type": "string"
+    },
+    {
+      "const": "gemini",
+      "type": "string"
+    },
+    {
+      "const": "deepseek",
+      "type": "string"
+    },
+    {
+      "const": "grok",
+      "type": "string"
+    },
+    {
+      "const": "rlm",
+      "type": "string"
+    },
+    {
+      "const": "user",
+      "type": "string"
+    },
+    {
+      "const": "system",
+      "type": "string"
+    },
+    {
+      "const": "orchestrator",
+      "type": "string"
+    }
+  ]
+}

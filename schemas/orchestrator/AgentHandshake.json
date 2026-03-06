@@ -1,0 +1,197 @@
+{
+  "$id": "AgentHandshake",
+  "description": "Agent registration payload. Sent to Orchestrator on boot to declare identity, capabilities, and tool permissions.",
+  "type": "object",
+  "required": [
+    "agent_id",
+    "display_name",
+    "source",
+    "status",
+    "capabilities",
+    "allowed_tool_namespaces"
+  ],
+  "properties": {
+    "agent_id": {
+      "description": "Canonical agent identifier (e.g. CAPTAIN_CLAUDE, GEMINI_ARCHITECT)",
+      "type": "string"
+    },
+    "display_name": {
+      "$id": "AgentId",
+      "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+      "anyOf": [
+        {
+          "const": "Claude",
+          "type": "string"
+        },
+        {
+          "const": "Gemini",
+          "type": "string"
+        },
+        {
+          "const": "DeepSeek",
+          "type": "string"
+        },
+        {
+          "const": "Grok",
+          "type": "string"
+        },
+        {
+          "const": "RLM",
+          "type": "string"
+        },
+        {
+          "const": "User",
+          "type": "string"
+        },
+        {
+          "const": "System",
+          "type": "string"
+        },
+        {
+          "const": "Orchestrator",
+          "type": "string"
+        }
+      ]
+    },
+    "source": {
+      "$id": "AgentMessageSource",
+      "description": "Lowercase source identifier for technical routing",
+      "anyOf": [
+        {
+          "const": "claude",
+          "type": "string"
+        },
+        {
+          "const": "gemini",
+          "type": "string"
+        },
+        {
+          "const": "deepseek",
+          "type": "string"
+        },
+        {
+          "const": "grok",
+          "type": "string"
+        },
+        {
+          "const": "rlm",
+          "type": "string"
+        },
+        {
+          "const": "user",
+          "type": "string"
+        },
+        {
+          "const": "system",
+          "type": "string"
+        },
+        {
+          "const": "orchestrator",
+          "type": "string"
+        }
+      ]
+    },
+    "version": {
+      "description": "Agent version string (e.g. \"claude-sonnet-4-5\", \"gemini-2.0-flash\")",
+      "type": "string"
+    },
+    "status": {
+      "$id": "AgentHandshakeStatus",
+      "description": "Agent availability status",
+      "anyOf": [
+        {
+          "const": "online",
+          "type": "string"
+        },
+        {
+          "const": "standby",
+          "type": "string"
+        },
+        {
+          "const": "offline",
+          "type": "string"
+        },
+        {
+          "const": "degraded",
+          "type": "string"
+        }
+      ]
+    },
+    "capabilities": {
+      "description": "List of capabilities this agent is authorized to use",
+      "minItems": 0,
+      "type": "array",
+      "items": {
+        "$id": "AgentCapability",
+        "description": "Capability flags declaring what an agent is authorized to do",
+        "anyOf": [
+          {
+            "const": "graph_read",
+            "type": "string"
+          },
+          {
+            "const": "graph_write",
+            "type": "string"
+          },
+          {
+            "const": "mcp_tools",
+            "type": "string"
+          },
+          {
+            "const": "cognitive_reasoning",
+            "type": "string"
+          },
+          {
+            "const": "document_generation",
+            "type": "string"
+          },
+          {
+            "const": "osint",
+            "type": "string"
+          },
+          {
+            "const": "code_execution",
+            "type": "string"
+          },
+          {
+            "const": "ingestion",
+            "type": "string"
+          },
+          {
+            "const": "git_operations",
+            "type": "string"
+          },
+          {
+            "const": "audit",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "allowed_tool_namespaces": {
+      "description": "MCP tool namespaces this agent may invoke (e.g. [\"graph\", \"audit\"])",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "max_concurrent_calls": {
+      "minimum": 1,
+      "maximum": 20,
+      "default": 5,
+      "type": "integer"
+    },
+    "default_thread": {
+      "description": "Default Notion Global Chat thread for this agent",
+      "type": "string"
+    },
+    "registered_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

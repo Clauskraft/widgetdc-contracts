@@ -1,0 +1,115 @@
+{
+  "$id": "OrchestratorToolResult",
+  "description": "Orchestrator → Agent: result of an MCP tool invocation. Includes raw output or structured error.",
+  "type": "object",
+  "required": [
+    "call_id",
+    "status",
+    "result"
+  ],
+  "properties": {
+    "call_id": {
+      "format": "uuid",
+      "description": "Mirrors the call_id from the originating OrchestratorToolCall",
+      "type": "string"
+    },
+    "status": {
+      "$id": "OrchestratorToolStatus",
+      "description": "Outcome status of an Orchestrator tool call",
+      "anyOf": [
+        {
+          "const": "success",
+          "type": "string"
+        },
+        {
+          "const": "error",
+          "type": "string"
+        },
+        {
+          "const": "timeout",
+          "type": "string"
+        },
+        {
+          "const": "rate_limited",
+          "type": "string"
+        },
+        {
+          "const": "unauthorized",
+          "type": "string"
+        }
+      ]
+    },
+    "result": {
+      "description": "Parsed tool output — whatever the MCP tool returned",
+      "anyOf": [
+        {},
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "const": "TOOL_NOT_FOUND",
+          "type": "string"
+        },
+        {
+          "const": "VALIDATION_ERROR",
+          "type": "string"
+        },
+        {
+          "const": "BACKEND_ERROR",
+          "type": "string"
+        },
+        {
+          "const": "TIMEOUT",
+          "type": "string"
+        },
+        {
+          "const": "RATE_LIMITED",
+          "type": "string"
+        },
+        {
+          "const": "UNAUTHORIZED",
+          "type": "string"
+        },
+        {
+          "const": "SSE_PARSE_ERROR",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "duration_ms": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "trace_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$id": "OrchestratorToolStatus",
+  "description": "Outcome status of an Orchestrator tool call",
+  "anyOf": [
+    {
+      "const": "success",
+      "type": "string"
+    },
+    {
+      "const": "error",
+      "type": "string"
+    },
+    {
+      "const": "timeout",
+      "type": "string"
+    },
+    {
+      "const": "rate_limited",
+      "type": "string"
+    },
+    {
+      "const": "unauthorized",
+      "type": "string"
+    }
+  ]
+}

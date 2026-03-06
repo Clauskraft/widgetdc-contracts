@@ -1,0 +1,30 @@
+{
+  "$id": "AgentMessageType",
+  "description": "Classification of the message purpose",
+  "anyOf": [
+    {
+      "const": "Message",
+      "type": "string"
+    },
+    {
+      "const": "Command",
+      "type": "string"
+    },
+    {
+      "const": "Answer",
+      "type": "string"
+    },
+    {
+      "const": "Handover",
+      "type": "string"
+    },
+    {
+      "const": "Alert",
+      "type": "string"
+    },
+    {
+      "const": "ToolResult",
+      "type": "string"
+    }
+  ]
+}

@@ -18,4 +18,5 @@ export * from './http/index.js';
 export * from './consulting/index.js';
 export * from './agent/index.js';
 export * from './graph/index.js';
+export * from './orchestrator/index.js';
 //# sourceMappingURL=index.d.ts.map

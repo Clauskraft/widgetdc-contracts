@@ -1,0 +1,38 @@
+{
+  "$id": "AgentId",
+  "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+  "anyOf": [
+    {
+      "const": "Claude",
+      "type": "string"
+    },
+    {
+      "const": "Gemini",
+      "type": "string"
+    },
+    {
+      "const": "DeepSeek",
+      "type": "string"
+    },
+    {
+      "const": "Grok",
+      "type": "string"
+    },
+    {
+      "const": "RLM",
+      "type": "string"
+    },
+    {
+      "const": "User",
+      "type": "string"
+    },
+    {
+      "const": "System",
+      "type": "string"
+    },
+    {
+      "const": "Orchestrator",
+      "type": "string"
+    }
+  ]
+}
