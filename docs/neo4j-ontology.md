@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0
 **Owner**: widgetdc-contracts
-**Status**: Defined (pending migration in Fase 6)
+**Status**: Migrated (Fase 6 complete, 44,964 nodes, 2026-03-08)
 
 ## Abstract Types
 
@@ -93,14 +93,18 @@ NEW: asset_id  → generate UUID
 ADD LABEL: :KnowledgeAsset
 ```
 
-## Migration Plan
+## Migration Log (Fase 6, 2026-03-08)
 
-1. **Instance model** (50 nodes per label): Validate property mapping correctness
-2. **Batch 1**: StrategicInsight — add missing `asset_id`, `updated_at` (21,596 nodes, 22 batches of 1,000)
-3. **Batch 2**: Insight → add :StrategicInsight label + mapped properties (17,986 nodes, 18 batches)
-4. **Batch 3**: Knowledge + KnowledgeChunk + KnowledgeNode → :KnowledgeAsset (5,220 nodes, 6 batches)
-5. **Validation**: Run instance model queries on migrated data
-6. **CI check**: Add validation queries to CI pipeline
+| Step | Nodes | Batches | Failures |
+|------|-------|---------|----------|
+| StrategicInsight → +IntelligenceAsset | 21,596 | 22 | 0 |
+| Insight → +StrategicInsight +IntelligenceAsset | 17,993 | 18 | 0 |
+| Knowledge → +KnowledgeAsset +IntelligenceAsset | 3,362 | 5 | 0 |
+| KnowledgeChunk → +KnowledgeAsset +IntelligenceAsset | 2,168 | 3 | 0 |
+| KnowledgeNode → +KnowledgeAsset +IntelligenceAsset | 845 | 1 | 0 |
+| **Total** | **44,964** | **49** | **0** |
+
+Property mapping: `question→title`, `answer→content`, `id→asset_id`, `description→title` (Insight), `name→title` (KnowledgeNode), `hash→chunk_hash`. Defaults: `source='imported'`, `created_at=datetime()`, `updated_at=created_at`.
 
 ## Indexes and Constraints
 
