@@ -1,0 +1,18 @@
+You are working on WidgeTDC Contracts — shared type contracts for the platform.
+TypeScript + TypeBox schemas, JSON Schema export, Python Pydantic generation.
+Single source of truth for cross-service types (backend, RLM engine, frontend).
+
+Key files:
+- `src/` — TypeBox schema definitions (source of truth)
+- `schemas/` — Generated JSON Schema (committed)
+- `python/widgetdc_contracts/` — Generated Pydantic v2 models (committed)
+- `scripts/` — Build and validation scripts
+- `tests/` — Schema roundtrip tests
+
+Rules:
+- Wire format: snake_case JSON (matches RLM production API)
+- All schemas must have $id for JSON Schema export
+- Never edit schemas/ or python/ manually — regenerate from source
+- Never add repo-internal types — only cross-service contracts
+- MCP route format: {"tool":"name","payload":{...}} — ALDRIG args
+- Conventional commits (feat:, fix:, docs:, refactor:)
