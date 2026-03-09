@@ -1,8 +1,18 @@
 # CLAUDE.md — WidgeTDC Contracts
 
+<!-- BEGIN SHARED RULES -->
 ## Autonomi
 
 Når brugeren skriver "100% autonomt" kører agenten **fuldstændigt autonomt** indtil opgaven er udført. Ingen bekræftelser, ingen spørgsmål, ingen pauser. Agenten planlægger, implementerer, tester og verificerer selv. Eneste undtagelse: destruktive git-operationer (force push, reset --hard).
+
+## Shared Rules (synced from WidgeTDC)
+
+8. **MCP route format** — `{"tool":"name","payload":{...}}` — ALDRIG `args`, altid `payload`
+9. **Read before write** — ALDRIG opret nye filer under `services/`, `routes/`, `middleware/`, `src/` uden først at læse mindst 2 eksisterende filer i samme mappe
+10. **Plan before multi-file changes** — Brug Plan mode før tasks der berører >3 filer
+11. **Lesson check at boot** — Kald `audit.lessons` med agentId ved session start.
+12. **Contracts** — Cross-service types importeres fra `@widgetdc/contracts`. Wire format: snake_case JSON med `$id`.
+<!-- END SHARED RULES -->
 
 ## What is this
 Shared type contracts for the WidgeTDC platform. Single source of truth for cross-service types used by backend, RLM engine, and consulting frontend.
