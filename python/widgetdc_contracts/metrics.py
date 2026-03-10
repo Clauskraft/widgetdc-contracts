@@ -9,6 +9,9 @@ from typing import Literal
 from pydantic import AwareDatetime, BaseModel, Field
 
 
+RiskSeverity = Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL']
+
+
 class HealthMetrics(BaseModel):
     score: float = Field(
         ..., description='Aggregated health score (0-100)', ge=0.0, le=100.0
@@ -18,7 +21,7 @@ class HealthMetrics(BaseModel):
     )
     momentum: float = Field(..., description='Rate of change per day')
     resilience: float = Field(..., description='Ability to recover from health dips')
-    severity: Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL'] = Field(
+    severity: RiskSeverity = Field(
         ..., description='CIA 3-tier risk severity classification'
     )
     last_assessment: AwareDatetime = Field(
