@@ -1,0 +1,165 @@
+{
+  "$id": "DomainHealthProfile",
+  "description": "Combined domain identity and its intelligence status",
+  "type": "object",
+  "required": [
+    "domain_id",
+    "health",
+    "intelligence_assets_count",
+    "risk_rules_triggered",
+    "updated_at"
+  ],
+  "properties": {
+    "domain_id": {
+      "$id": "DomainId",
+      "description": "Canonical consulting domain identifier",
+      "anyOf": [
+        {
+          "const": "strategy_corp",
+          "type": "string"
+        },
+        {
+          "const": "deals_ma",
+          "type": "string"
+        },
+        {
+          "const": "financial_advisory",
+          "type": "string"
+        },
+        {
+          "const": "operations_supply_chain",
+          "type": "string"
+        },
+        {
+          "const": "technology_digital",
+          "type": "string"
+        },
+        {
+          "const": "ai_analytics",
+          "type": "string"
+        },
+        {
+          "const": "cybersecurity",
+          "type": "string"
+        },
+        {
+          "const": "risk_compliance_controls",
+          "type": "string"
+        },
+        {
+          "const": "tax_legal_adjacent",
+          "type": "string"
+        },
+        {
+          "const": "esg_sustainability",
+          "type": "string"
+        },
+        {
+          "const": "customer_marketing_sales",
+          "type": "string"
+        },
+        {
+          "const": "people_organization",
+          "type": "string"
+        },
+        {
+          "const": "pmo_change",
+          "type": "string"
+        },
+        {
+          "const": "industry_solutions",
+          "type": "string"
+        },
+        {
+          "const": "managed_services_operate",
+          "type": "string"
+        }
+      ]
+    },
+    "health": {
+      "$id": "HealthMetrics",
+      "description": "CIA Health Metrics for consulting domains and intelligence assets",
+      "type": "object",
+      "required": [
+        "score",
+        "trend",
+        "momentum",
+        "resilience",
+        "severity",
+        "last_assessment"
+      ],
+      "properties": {
+        "score": {
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Aggregated health score (0-100)",
+          "type": "number"
+        },
+        "trend": {
+          "description": "Directional health trend",
+          "anyOf": [
+            {
+              "const": "up",
+              "type": "string"
+            },
+            {
+              "const": "down",
+              "type": "string"
+            },
+            {
+              "const": "stable",
+              "type": "string"
+            }
+          ]
+        },
+        "momentum": {
+          "description": "Rate of change per day",
+          "type": "number"
+        },
+        "resilience": {
+          "description": "Ability to recover from health dips",
+          "type": "number"
+        },
+        "severity": {
+          "$id": "RiskSeverity",
+          "description": "CIA 3-tier risk severity classification",
+          "anyOf": [
+            {
+              "const": "CRITICAL",
+              "type": "string"
+            },
+            {
+              "const": "WARNING",
+              "type": "string"
+            },
+            {
+              "const": "INFO",
+              "type": "string"
+            },
+            {
+              "const": "OPTIMAL",
+              "type": "string"
+            }
+          ]
+        },
+        "last_assessment": {
+          "format": "date-time",
+          "description": "ISO-8601 timestamp of last analysis",
+          "type": "string"
+        }
+      }
+    },
+    "intelligence_assets_count": {
+      "description": "Number of linked intelligence assets",
+      "type": "integer"
+    },
+    "risk_rules_triggered": {
+      "description": "Count of active risk rules",
+      "type": "integer"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

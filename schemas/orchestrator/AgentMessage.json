@@ -15,39 +15,47 @@
       "type": "string"
     },
     "from": {
-      "$id": "AgentId",
-      "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+      "description": "Sender agent ID",
       "anyOf": [
         {
-          "const": "Claude",
-          "type": "string"
+          "$id": "AgentId",
+          "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+          "anyOf": [
+            {
+              "const": "Claude",
+              "type": "string"
+            },
+            {
+              "const": "Gemini",
+              "type": "string"
+            },
+            {
+              "const": "DeepSeek",
+              "type": "string"
+            },
+            {
+              "const": "Grok",
+              "type": "string"
+            },
+            {
+              "const": "RLM",
+              "type": "string"
+            },
+            {
+              "const": "User",
+              "type": "string"
+            },
+            {
+              "const": "System",
+              "type": "string"
+            },
+            {
+              "const": "Orchestrator",
+              "type": "string"
+            }
+          ]
         },
         {
-          "const": "Gemini",
-          "type": "string"
-        },
-        {
-          "const": "DeepSeek",
-          "type": "string"
-        },
-        {
-          "const": "Grok",
-          "type": "string"
-        },
-        {
-          "const": "RLM",
-          "type": "string"
-        },
-        {
-          "const": "User",
-          "type": "string"
-        },
-        {
-          "const": "System",
-          "type": "string"
-        },
-        {
-          "const": "Orchestrator",
           "type": "string"
         }
       ]
@@ -96,43 +104,54 @@
         {
           "const": "All",
           "type": "string"
+        },
+        {
+          "type": "string"
         }
       ]
     },
     "source": {
-      "$id": "AgentMessageSource",
-      "description": "Lowercase source identifier for technical routing",
+      "description": "Technical source identifier (e.g. \"claude\", \"browser\")",
       "anyOf": [
         {
-          "const": "claude",
-          "type": "string"
+          "$id": "AgentMessageSource",
+          "description": "Lowercase source identifier for technical routing",
+          "anyOf": [
+            {
+              "const": "claude",
+              "type": "string"
+            },
+            {
+              "const": "gemini",
+              "type": "string"
+            },
+            {
+              "const": "deepseek",
+              "type": "string"
+            },
+            {
+              "const": "grok",
+              "type": "string"
+            },
+            {
+              "const": "rlm",
+              "type": "string"
+            },
+            {
+              "const": "user",
+              "type": "string"
+            },
+            {
+              "const": "system",
+              "type": "string"
+            },
+            {
+              "const": "orchestrator",
+              "type": "string"
+            }
+          ]
         },
         {
-          "const": "gemini",
-          "type": "string"
-        },
-        {
-          "const": "deepseek",
-          "type": "string"
-        },
-        {
-          "const": "grok",
-          "type": "string"
-        },
-        {
-          "const": "rlm",
-          "type": "string"
-        },
-        {
-          "const": "user",
-          "type": "string"
-        },
-        {
-          "const": "system",
-          "type": "string"
-        },
-        {
-          "const": "orchestrator",
           "type": "string"
         }
       ]

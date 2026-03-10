@@ -50,5 +50,32 @@ export const RelationshipType = Type.Union([
     // Financial
     Type.Literal('REPORTS'),
     Type.Literal('EXTRACTED_FROM'),
+    // Artifacts & deliverables
+    Type.Literal('PRODUCED_BY'),
+    Type.Literal('DELIVERED_IN'),
+    // Execution planning
+    Type.Literal('CONTAINS_STEP'),
+    Type.Literal('STEP_DEPENDS_ON'),
+    // User preferences
+    Type.Literal('PREFERENCE_OF'),
+    // Events & audit
+    Type.Literal('EMITTED_BY'),
+    Type.Literal('OCCURRED_IN'),
+    // Code projects
+    Type.Literal('PROJECT_CONTAINS'),
+    // Agent configuration
+    Type.Literal('CONFIGURES'),
+    Type.Literal('TEMPLATE_FOR'),
+    // OSINT & security
+    Type.Literal('TARGETS'),
+    Type.Literal('DISCOVERED_BY'),
+    Type.Literal('CASE_CONTAINS'),
+    Type.Literal('DETECTS_IN'),
+    // Safety & governance
+    Type.Literal('GUARDS'),
+    Type.Literal('CLASSIFIED_AS'),
+    // Knowledge scoping
+    Type.Literal('SCOPED_TO'),
+    Type.Literal('CAPABILITY_OF'),
 ], { $id: 'RelationshipType', description: 'Canonical Neo4j relationship types' });
 //# sourceMappingURL=relationships.js.map

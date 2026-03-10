@@ -53,5 +53,34 @@ export const NodeLabel = Type.Union([
     // Financial
     Type.Literal('AnnualReport'),
     Type.Literal('FinancialStatement'),
+    // Artifacts & deliverables (P0 — from Claude Artifacts pattern)
+    Type.Literal('Artifact'),
+    // Execution planning (P1 — from Manus planner_module pattern)
+    Type.Literal('TaskPlan'),
+    Type.Literal('PlanStep'),
+    // User memory (P1 — from GPT-5 bio tool pattern)
+    Type.Literal('UserPreference'),
+    // Event audit (P1 — from Manus event_stream pattern)
+    Type.Literal('EventStreamEntry'),
+    // Code projects (P1 — from V0 CodeProject pattern)
+    Type.Literal('CodeProject'),
+    // Agent configuration (P1 — promoted from in-use AgentPersona)
+    Type.Literal('PersonaConfig'),
+    // LLM capabilities (P1 — from Claude 4 Opus capability mapping)
+    Type.Literal('ModelCapability'),
+    // Reusable agent templates (P1 — from GPTs collection pattern)
+    Type.Literal('AgentBlueprint'),
+    // OSINT & security intelligence (P2)
+    Type.Literal('SearchDork'),
+    Type.Literal('SecretPattern'),
+    Type.Literal('InvestigationCase'),
+    // Safety & governance (P2)
+    Type.Literal('GuardrailRule'),
+    Type.Literal('DataClassification'),
+    // Research & knowledge (P2)
+    Type.Literal('ResearchTask'),
+    Type.Literal('ScopedKnowledge'),
+    Type.Literal('DataSourceConfig'),
+    Type.Literal('ProjectTemplate'),
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' });
 //# sourceMappingURL=labels.js.map

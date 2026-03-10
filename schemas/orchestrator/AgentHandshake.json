@@ -16,77 +16,51 @@
       "type": "string"
     },
     "display_name": {
-      "$id": "AgentId",
-      "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
-      "anyOf": [
-        {
-          "const": "Claude",
-          "type": "string"
-        },
-        {
-          "const": "Gemini",
-          "type": "string"
-        },
-        {
-          "const": "DeepSeek",
-          "type": "string"
-        },
-        {
-          "const": "Grok",
-          "type": "string"
-        },
-        {
-          "const": "RLM",
-          "type": "string"
-        },
-        {
-          "const": "User",
-          "type": "string"
-        },
-        {
-          "const": "System",
-          "type": "string"
-        },
-        {
-          "const": "Orchestrator",
-          "type": "string"
-        }
-      ]
+      "description": "Human-readable display name (e.g. \"Consulting Frontend\", \"Captain Claude\")",
+      "type": "string"
     },
     "source": {
-      "$id": "AgentMessageSource",
-      "description": "Lowercase source identifier for technical routing",
+      "description": "Technical source identifier (e.g. \"claude\", \"browser\", \"custom-agent\")",
       "anyOf": [
         {
-          "const": "claude",
-          "type": "string"
+          "$id": "AgentMessageSource",
+          "description": "Lowercase source identifier for technical routing",
+          "anyOf": [
+            {
+              "const": "claude",
+              "type": "string"
+            },
+            {
+              "const": "gemini",
+              "type": "string"
+            },
+            {
+              "const": "deepseek",
+              "type": "string"
+            },
+            {
+              "const": "grok",
+              "type": "string"
+            },
+            {
+              "const": "rlm",
+              "type": "string"
+            },
+            {
+              "const": "user",
+              "type": "string"
+            },
+            {
+              "const": "system",
+              "type": "string"
+            },
+            {
+              "const": "orchestrator",
+              "type": "string"
+            }
+          ]
         },
         {
-          "const": "gemini",
-          "type": "string"
-        },
-        {
-          "const": "deepseek",
-          "type": "string"
-        },
-        {
-          "const": "grok",
-          "type": "string"
-        },
-        {
-          "const": "rlm",
-          "type": "string"
-        },
-        {
-          "const": "user",
-          "type": "string"
-        },
-        {
-          "const": "system",
-          "type": "string"
-        },
-        {
-          "const": "orchestrator",
           "type": "string"
         }
       ]

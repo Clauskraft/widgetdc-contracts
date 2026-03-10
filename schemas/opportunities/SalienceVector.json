@@ -1,0 +1,32 @@
+{
+  "$id": "SalienceVector",
+  "description": "Generic weighted score component based on CIA methodology",
+  "type": "object",
+  "required": [
+    "dimension",
+    "raw_value",
+    "weight",
+    "score"
+  ],
+  "properties": {
+    "dimension": {
+      "description": "e.g., DomainMatch, ResourceAvailability",
+      "type": "string"
+    },
+    "raw_value": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Raw calculated value",
+      "type": "number"
+    },
+    "weight": {
+      "minimum": 0,
+      "description": "Importance multiplier for this use-case",
+      "type": "number"
+    },
+    "score": {
+      "description": "raw_value * weight",
+      "type": "number"
+    }
+  }
+}

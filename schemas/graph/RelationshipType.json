@@ -117,6 +117,106 @@
     {
       "const": "DETECTED_AT",
       "type": "string"
+    },
+    {
+      "const": "GOVERNED_BY",
+      "type": "string"
+    },
+    {
+      "const": "CONSTRAINS",
+      "type": "string"
+    },
+    {
+      "const": "AMENDS",
+      "type": "string"
+    },
+    {
+      "const": "PUBLISHED_BY",
+      "type": "string"
+    },
+    {
+      "const": "VETOED_BY",
+      "type": "string"
+    },
+    {
+      "const": "REPORTS",
+      "type": "string"
+    },
+    {
+      "const": "EXTRACTED_FROM",
+      "type": "string"
+    },
+    {
+      "const": "PRODUCED_BY",
+      "type": "string"
+    },
+    {
+      "const": "DELIVERED_IN",
+      "type": "string"
+    },
+    {
+      "const": "CONTAINS_STEP",
+      "type": "string"
+    },
+    {
+      "const": "STEP_DEPENDS_ON",
+      "type": "string"
+    },
+    {
+      "const": "PREFERENCE_OF",
+      "type": "string"
+    },
+    {
+      "const": "EMITTED_BY",
+      "type": "string"
+    },
+    {
+      "const": "OCCURRED_IN",
+      "type": "string"
+    },
+    {
+      "const": "PROJECT_CONTAINS",
+      "type": "string"
+    },
+    {
+      "const": "CONFIGURES",
+      "type": "string"
+    },
+    {
+      "const": "TEMPLATE_FOR",
+      "type": "string"
+    },
+    {
+      "const": "TARGETS",
+      "type": "string"
+    },
+    {
+      "const": "DISCOVERED_BY",
+      "type": "string"
+    },
+    {
+      "const": "CASE_CONTAINS",
+      "type": "string"
+    },
+    {
+      "const": "DETECTS_IN",
+      "type": "string"
+    },
+    {
+      "const": "GUARDS",
+      "type": "string"
+    },
+    {
+      "const": "CLASSIFIED_AS",
+      "type": "string"
+    },
+    {
+      "const": "SCOPED_TO",
+      "type": "string"
+    },
+    {
+      "const": "CAPABILITY_OF",
+      "type": "string"
     }
   ]
 }

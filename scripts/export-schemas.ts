@@ -19,6 +19,7 @@ import * as consulting from '../src/consulting/index.js'
 import * as agent from '../src/agent/index.js'
 import * as graph from '../src/graph/index.js'
 import * as orchestrator from '../src/orchestrator/index.js'
+import * as opportunities from '../src/opportunities/index.js'
 
 const modules: Record<string, Record<string, unknown>> = {
   cognitive,
@@ -28,6 +29,7 @@ const modules: Record<string, Record<string, unknown>> = {
   agent,
   graph,
   orchestrator,
+  opportunities,
 }
 
 let exportedCount = 0

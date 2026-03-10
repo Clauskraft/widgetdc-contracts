@@ -13,8 +13,9 @@ from pydantic import BaseModel
 from pydantic import BaseModel, Field
 from pydantic import RootModel
 from typing import Literal
+from .metrics import HealthMetrics, RiskSeverity
 
-__all__ = ["ComponentHealth", "DomainProfile", "HealthPulse", "HealthStatus", "MetaLearningStats", "ModuleStatus", "ServiceResources", "ServiceStatus"]
+__all__ = ["ComponentHealth", "DomainProfile", "HealthPulse", "HealthStatus", "MetaLearningStats", "ModuleStatus", "ServiceResources", "ServiceStatus", "HealthMetrics", "RiskSeverity"]
 
 class ComponentHealth(BaseModel):
     status: str
@@ -110,4 +111,3 @@ class ServiceResources(BaseModel):
 
 class ServiceStatus(RootModel[Literal['healthy', 'degraded', 'unhealthy', 'starting']]):
     root: Literal['healthy', 'degraded', 'unhealthy', 'starting']
-

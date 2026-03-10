@@ -23,7 +23,6 @@ export const AgentCapability = Type.Union([
     Type.Literal('ingestion'), // Can trigger data ingestion
     Type.Literal('git_operations'), // Can use git.* tools
     Type.Literal('audit'), // Can use audit.* tools
-    Type.String(), // Extensible: custom capabilities allowed
 ], {
     $id: 'AgentCapability',
     description: 'Capability flags declaring what an agent is authorized to do',

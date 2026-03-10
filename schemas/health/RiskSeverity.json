@@ -1,0 +1,22 @@
+{
+  "$id": "RiskSeverity",
+  "description": "CIA 3-tier risk severity classification",
+  "anyOf": [
+    {
+      "const": "CRITICAL",
+      "type": "string"
+    },
+    {
+      "const": "WARNING",
+      "type": "string"
+    },
+    {
+      "const": "INFO",
+      "type": "string"
+    },
+    {
+      "const": "OPTIMAL",
+      "type": "string"
+    }
+  ]
+}

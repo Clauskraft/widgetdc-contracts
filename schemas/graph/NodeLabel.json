@@ -129,6 +129,102 @@
     {
       "const": "Memory",
       "type": "string"
+    },
+    {
+      "const": "LegalAct",
+      "type": "string"
+    },
+    {
+      "const": "LegalConstraint",
+      "type": "string"
+    },
+    {
+      "const": "LegalUpdate",
+      "type": "string"
+    },
+    {
+      "const": "DanishAuthority",
+      "type": "string"
+    },
+    {
+      "const": "AnnualReport",
+      "type": "string"
+    },
+    {
+      "const": "FinancialStatement",
+      "type": "string"
+    },
+    {
+      "const": "Artifact",
+      "type": "string"
+    },
+    {
+      "const": "TaskPlan",
+      "type": "string"
+    },
+    {
+      "const": "PlanStep",
+      "type": "string"
+    },
+    {
+      "const": "UserPreference",
+      "type": "string"
+    },
+    {
+      "const": "EventStreamEntry",
+      "type": "string"
+    },
+    {
+      "const": "CodeProject",
+      "type": "string"
+    },
+    {
+      "const": "PersonaConfig",
+      "type": "string"
+    },
+    {
+      "const": "ModelCapability",
+      "type": "string"
+    },
+    {
+      "const": "AgentBlueprint",
+      "type": "string"
+    },
+    {
+      "const": "SearchDork",
+      "type": "string"
+    },
+    {
+      "const": "SecretPattern",
+      "type": "string"
+    },
+    {
+      "const": "InvestigationCase",
+      "type": "string"
+    },
+    {
+      "const": "GuardrailRule",
+      "type": "string"
+    },
+    {
+      "const": "DataClassification",
+      "type": "string"
+    },
+    {
+      "const": "ResearchTask",
+      "type": "string"
+    },
+    {
+      "const": "ScopedKnowledge",
+      "type": "string"
+    },
+    {
+      "const": "DataSourceConfig",
+      "type": "string"
+    },
+    {
+      "const": "ProjectTemplate",
+      "type": "string"
     }
   ]
 }

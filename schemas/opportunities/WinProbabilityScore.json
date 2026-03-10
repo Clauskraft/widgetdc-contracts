@@ -1,0 +1,70 @@
+{
+  "$id": "WinProbabilityScore",
+  "description": "Aggregated intelligence assessment",
+  "type": "object",
+  "required": [
+    "overall_score",
+    "confidence",
+    "vectors",
+    "is_go",
+    "assessed_at"
+  ],
+  "properties": {
+    "overall_score": {
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Final aggregated 0-100 win probability",
+      "type": "number"
+    },
+    "confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Statistical confidence in the prediction",
+      "type": "number"
+    },
+    "vectors": {
+      "description": "The individual factors making up the score",
+      "type": "array",
+      "items": {
+        "$id": "SalienceVector",
+        "description": "Generic weighted score component based on CIA methodology",
+        "type": "object",
+        "required": [
+          "dimension",
+          "raw_value",
+          "weight",
+          "score"
+        ],
+        "properties": {
+          "dimension": {
+            "description": "e.g., DomainMatch, ResourceAvailability",
+            "type": "string"
+          },
+          "raw_value": {
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Raw calculated value",
+            "type": "number"
+          },
+          "weight": {
+            "minimum": 0,
+            "description": "Importance multiplier for this use-case",
+            "type": "number"
+          },
+          "score": {
+            "description": "raw_value * weight",
+            "type": "number"
+          }
+        }
+      }
+    },
+    "is_go": {
+      "description": "True if overall_score > threshold",
+      "type": "boolean"
+    },
+    "assessed_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
