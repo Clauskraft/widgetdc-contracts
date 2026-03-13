@@ -55,9 +55,11 @@ export const AgentHandshake = Type.Object({
     })),
     /** Current availability status */
     status: AgentHandshakeStatus,
-    /** Declared capabilities — Orchestrator enforces these as ACL */
-    capabilities: Type.Array(AgentCapability, {
-        description: 'List of capabilities this agent is authorized to use',
+    /** Declared capabilities — Orchestrator enforces these as ACL.
+     *  Accepts both known AgentCapability literals and free-form strings
+     *  for domain-specific capabilities (e.g. 'sitrep', 'threat_hunting'). */
+    capabilities: Type.Array(Type.Union([AgentCapability, Type.String()]), {
+        description: 'List of capabilities this agent is authorized to use (known + domain-specific)',
         minItems: 0,
     }),
     /**

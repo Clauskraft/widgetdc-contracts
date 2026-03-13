@@ -79,6 +79,30 @@ export const AgentMessage = Type.Object({
     call_id: Type.Optional(Type.String({
         description: 'Links this message to a specific tool call (for ToolResult messages)',
     })),
+    /** Storage-layer assigned message ID */
+    id: Type.Optional(Type.String({
+        description: 'Storage-layer assigned message ID (e.g. UUID or Redis-generated)',
+    })),
+    /** Thread grouping — groups related messages (alias for thread) */
+    thread_id: Type.Optional(Type.String({
+        description: 'Thread ID for grouping related messages',
+    })),
+    /** Direct reply-to message ID */
+    parent_id: Type.Optional(Type.String({
+        description: 'ID of the message this is a direct reply to',
+    })),
+    /** Attached files */
+    files: Type.Optional(Type.Array(Type.Object({
+        name: Type.String(),
+        size: Type.Number(),
+        type: Type.String(),
+    }), {
+        description: 'File attachments on this message',
+    })),
+    /** Arbitrary metadata (provider info, conversation_id, etc.) */
+    metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
+        description: 'Extensible metadata (e.g. provider, model, duration_ms, conversation_id)',
+    })),
     /** ISO timestamp */
     timestamp: Type.Optional(Type.String({
         format: 'date-time',

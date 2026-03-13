@@ -26,8 +26,10 @@ export declare const AgentHandshake: import("@sinclair/typebox").TObject<{
     version: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     /** Current availability status */
     status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"online">, import("@sinclair/typebox").TLiteral<"standby">, import("@sinclair/typebox").TLiteral<"offline">, import("@sinclair/typebox").TLiteral<"degraded">]>;
-    /** Declared capabilities — Orchestrator enforces these as ACL */
-    capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">]>>;
+    /** Declared capabilities — Orchestrator enforces these as ACL.
+     *  Accepts both known AgentCapability literals and free-form strings
+     *  for domain-specific capabilities (e.g. 'sitrep', 'threat_hunting'). */
+    capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">]>, import("@sinclair/typebox").TString]>>;
     /**
      * Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
      * Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).
