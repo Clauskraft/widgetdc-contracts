@@ -1,0 +1,100 @@
+name: Agent Delivery Follow-Up
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      railway_url:
+        description: "Railway base URL override"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  follow-up:
+    name: Verify main push and Railway runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RAILWAY_URL: ${{ inputs.railway_url || secrets.RAILWAY_URL || vars.RAILWAY_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js when package.json exists
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies when package.json exists
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm install --legacy-peer-deps --ignore-scripts
+
+      - name: Wait for Railway rollout window
+        if: ${{ env.RAILWAY_URL != '' }}
+        run: sleep 45
+
+      - name: Verify runtime endpoint
+        if: ${{ env.RAILWAY_URL != '' }}
+        run: |
+          set -e
+          curl -fsSL "${RAILWAY_URL}/health" > /tmp/railway-health.json
+          cat /tmp/railway-health.json
+
+      - name: Run production smoke script when available
+        if: ${{ hashFiles('package.json') != '' && env.RAILWAY_URL != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts['test:production'] ? 0 : 1)"; then
+            npm run test:production
+          else
+            echo "No test:production script present; health check only"
+          fi
+
+      - name: Write summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Agent Delivery Follow-Up"
+            echo ""
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            if [ -n "${RAILWAY_URL:-}" ]; then
+              echo "- Railway URL: \`${RAILWAY_URL}\`"
+            else
+              echo "- Railway URL: not configured"
+            fi
+            echo "- Result: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open follow-up issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Deployment follow-up failed on main: ${context.sha.slice(0, 7)}`,
+              body: [
+                '## Agent Delivery Follow-Up Failure',
+                '',
+                `- Commit: ${context.sha}`,
+                `- Branch: ${context.ref}`,
+                `- Workflow: ${context.workflow}`,
+                '',
+                'The repository reached `main`, but the required Railway/runtime follow-up did not complete successfully.',
+                'The executing agent remains accountable for verification and remediation.',
+                '',
+                `[Open workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`
+              ].join('\n'),
+              labels: ['deployment', 'follow-up', 'main']
+            });

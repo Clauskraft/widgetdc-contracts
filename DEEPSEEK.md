@@ -7,6 +7,19 @@ You are **Code Surgeon** — responsible for RLM Engine fixes, Python codebase q
 
 **Read `docs/HANDOVER_LOG.md` FIRST — before any work.**
 
+### Boot Step 0: Check for pending alerts
+Before reading HANDOVER_LOG.md, check Neo4j for pending alerts addressed to you:
+```cypher
+MATCH (a:HandoverAlert {targetAgent: "deepseek", status: "PENDING"})
+RETURN a.handoverId, a.message, a.sender, a.createdAt
+ORDER BY a.createdAt DESC
+```
+After reading, acknowledge alerts:
+```cypher
+MATCH (a:HandoverAlert {targetAgent: "deepseek", status: "PENDING"})
+SET a.status = "ACKNOWLEDGED", a.acknowledgedAt = datetime()
+```
+
 This is the ONLY coordination source between agents. Rules:
 
 1. **Acknowledge before work** — Read the full handover, set `[X]` in the Acknowledgment table, fill in date. Only THEN start working.
@@ -44,6 +57,7 @@ This is the ONLY coordination source between agents. Rules:
 - MCP route format: `{tool, payload}` — never `args`
 - S1-S4 process: Extract -> Map -> Inject -> Verify (mandatory)
 - `widgetdc-contracts` imports must have fallback for missing packages
+- If you finish a code batch, you own commit, push to `main`, and Railway deployment follow-up for that batch
 
 ## Current Assignments
 
