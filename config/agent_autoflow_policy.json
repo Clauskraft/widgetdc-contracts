@@ -1,0 +1,75 @@
+{
+  "version": "2026-03-14",
+  "policy_name": "canonical_agent_autoflow",
+  "principles": {
+    "linear_is_operational_truth": true,
+    "main_is_only_integration_branch": true,
+    "railway_and_aura_are_runtime_truth": true,
+    "qwen_qa_required_for_all_code": true
+  },
+  "roles": {
+    "builder": "codex",
+    "architecture_reviewer": "gemini",
+    "default_code_qa": "qwen3_5",
+    "code_qa_execution_fallback": "qwen_code_smith",
+    "deploy_test_gate": "claude"
+  },
+  "autoflow": {
+    "code_change_sequence": [
+      "implement",
+      "local_targeted_verification",
+      "post_linear_status",
+      "request_qwen_qa",
+      "handle_qwen_feedback",
+      "request_claude_gate_if_deploy_or_contract_sensitive",
+      "push_main",
+      "verify_runtime"
+    ],
+    "mandatory_qwen_qa_fields": [
+      "issue_identifier",
+      "repo",
+      "commit_or_diff_scope",
+      "contracts_touched",
+      "tests_run",
+      "risk_notes",
+      "requested_output"
+    ],
+    "required_qwen_output": [
+      "top_findings",
+      "keep_list",
+      "drift_risks",
+      "simplification_actions",
+      "phase2_deferrals"
+    ]
+  },
+  "routing_rules": [
+    {
+      "when": "task_requires_mcp_or_repo_reads_for_qwen",
+      "route_to": "qwen_code_smith"
+    },
+    {
+      "when": "task_is_code_qa_or_simplification_review",
+      "route_to": "qwen3_5"
+    },
+    {
+      "when": "task_is_deploy_or_runtime_gate",
+      "route_to": "claude"
+    },
+    {
+      "when": "task_is_architecture_or_topology_shift",
+      "route_to": "gemini"
+    }
+  ],
+  "completion_rules": {
+    "code_task_done_requires": [
+      "targeted_tests_green",
+      "qwen_qa_requested",
+      "qwen_feedback_addressed_or_triaged",
+      "main_pushed"
+    ],
+    "deploy_sensitive_task_done_requires": [
+      "claude_gate_requested",
+      "runtime_verified"
+    ]
+  }
+}
