@@ -1,0 +1,285 @@
+{
+  "$id": "StoredMessage",
+  "description": "Persisted agent message with storage-layer fields (id, reactions, pinned). Extends AgentMessage.",
+  "type": "object",
+  "allOf": [
+    {
+      "$id": "AgentMessage",
+      "description": "Shared message format for agent↔agent and agent↔user communication. Matches Notion Global Chat schema.",
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "source",
+        "type",
+        "message"
+      ],
+      "properties": {
+        "message_id": {
+          "description": "Unique message identifier (assigned by storage layer)",
+          "type": "string"
+        },
+        "from": {
+          "description": "Sender agent ID",
+          "anyOf": [
+            {
+              "$id": "AgentId",
+              "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+              "anyOf": [
+                {
+                  "const": "Claude",
+                  "type": "string"
+                },
+                {
+                  "const": "Gemini",
+                  "type": "string"
+                },
+                {
+                  "const": "DeepSeek",
+                  "type": "string"
+                },
+                {
+                  "const": "Grok",
+                  "type": "string"
+                },
+                {
+                  "const": "RLM",
+                  "type": "string"
+                },
+                {
+                  "const": "User",
+                  "type": "string"
+                },
+                {
+                  "const": "System",
+                  "type": "string"
+                },
+                {
+                  "const": "Orchestrator",
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "to": {
+          "description": "Target recipient or All for broadcast",
+          "anyOf": [
+            {
+              "$id": "AgentId",
+              "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+              "anyOf": [
+                {
+                  "const": "Claude",
+                  "type": "string"
+                },
+                {
+                  "const": "Gemini",
+                  "type": "string"
+                },
+                {
+                  "const": "DeepSeek",
+                  "type": "string"
+                },
+                {
+                  "const": "Grok",
+                  "type": "string"
+                },
+                {
+                  "const": "RLM",
+                  "type": "string"
+                },
+                {
+                  "const": "User",
+                  "type": "string"
+                },
+                {
+                  "const": "System",
+                  "type": "string"
+                },
+                {
+                  "const": "Orchestrator",
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "const": "All",
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "source": {
+          "description": "Technical source identifier (e.g. \"claude\", \"browser\")",
+          "anyOf": [
+            {
+              "$id": "AgentMessageSource",
+              "description": "Lowercase source identifier for technical routing",
+              "anyOf": [
+                {
+                  "const": "claude",
+                  "type": "string"
+                },
+                {
+                  "const": "gemini",
+                  "type": "string"
+                },
+                {
+                  "const": "deepseek",
+                  "type": "string"
+                },
+                {
+                  "const": "grok",
+                  "type": "string"
+                },
+                {
+                  "const": "rlm",
+                  "type": "string"
+                },
+                {
+                  "const": "user",
+                  "type": "string"
+                },
+                {
+                  "const": "system",
+                  "type": "string"
+                },
+                {
+                  "const": "orchestrator",
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "thread": {
+          "description": "Thread ID for grouping related messages (e.g. \"widgetdc-sprint-march26\")",
+          "type": "string"
+        },
+        "type": {
+          "$id": "AgentMessageType",
+          "description": "Classification of the message purpose",
+          "anyOf": [
+            {
+              "const": "Message",
+              "type": "string"
+            },
+            {
+              "const": "Command",
+              "type": "string"
+            },
+            {
+              "const": "Answer",
+              "type": "string"
+            },
+            {
+              "const": "Handover",
+              "type": "string"
+            },
+            {
+              "const": "Alert",
+              "type": "string"
+            },
+            {
+              "const": "ToolResult",
+              "type": "string"
+            }
+          ]
+        },
+        "message": {
+          "minLength": 1,
+          "description": "Message text content (markdown supported)",
+          "type": "string"
+        },
+        "call_id": {
+          "description": "Links this message to a specific tool call (for ToolResult messages)",
+          "type": "string"
+        },
+        "id": {
+          "description": "Storage-layer assigned message ID (e.g. UUID or Redis-generated)",
+          "type": "string"
+        },
+        "thread_id": {
+          "description": "Thread ID for grouping related messages",
+          "type": "string"
+        },
+        "parent_id": {
+          "description": "ID of the message this is a direct reply to",
+          "type": "string"
+        },
+        "files": {
+          "description": "File attachments on this message",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "size",
+              "type"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "size": {
+                "type": "number"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "description": "Extensible metadata (e.g. provider, model, duration_ms, conversation_id)",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {}
+          }
+        },
+        "timestamp": {
+          "format": "date-time",
+          "description": "When this message was created",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "Storage-assigned message ID",
+          "type": "string"
+        },
+        "reactions": {
+          "description": "Emoji reactions: emoji key → agent IDs who reacted",
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "pinned": {
+          "description": "Whether this message is pinned in the chat",
+          "type": "boolean"
+        }
+      }
+    }
+  ]
+}

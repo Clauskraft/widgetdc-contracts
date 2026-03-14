@@ -8,14 +8,15 @@ from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel
 from pydantic import AwareDatetime, BaseModel, constr
+from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
 from pydantic import BaseModel
 from pydantic import BaseModel, Field
+from pydantic import Field, RootModel
 from pydantic import RootModel
 from typing import Literal
-from .metrics import HealthMetrics, RiskSeverity
 
-__all__ = ["ComponentHealth", "DomainProfile", "HealthPulse", "HealthStatus", "MetaLearningStats", "ModuleStatus", "ServiceResources", "ServiceStatus", "HealthMetrics", "RiskSeverity"]
+__all__ = ["ComponentHealth", "DomainProfile", "HealthMetrics", "HealthPulse", "HealthStatus", "MetaLearningStats", "ModuleStatus", "RiskSeverity", "ServiceResources", "ServiceStatus"]
 
 class ComponentHealth(BaseModel):
     status: str
@@ -38,6 +39,22 @@ class DomainProfile(BaseModel):
     )
     strength: Literal['emerging', 'moderate', 'strong', 'expert'] | None = Field(
         None, description='Domain maturity level'
+    )
+
+class HealthMetrics(BaseModel):
+    score: float = Field(
+        ..., description='Aggregated health score (0-100)', ge=0.0, le=100.0
+    )
+    trend: Literal['up', 'down', 'stable'] = Field(
+        ..., description='Directional health trend'
+    )
+    momentum: float = Field(..., description='Rate of change per day')
+    resilience: float = Field(..., description='Ability to recover from health dips')
+    severity: Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL'] = Field(
+        ..., description='CIA 3-tier risk severity classification'
+    )
+    last_assessment: AwareDatetime = Field(
+        ..., description='ISO-8601 timestamp of last analysis'
     )
 
 class Resources(BaseModel):
@@ -102,6 +119,11 @@ class MetaLearningStats(BaseModel):
 class ModuleStatus(RootModel[Literal['active', 'degraded', 'inactive', 'error']]):
     root: Literal['active', 'degraded', 'inactive', 'error']
 
+class RiskSeverity(RootModel[Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL']]):
+    root: Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL'] = Field(
+        ..., description='CIA 3-tier risk severity classification'
+    )
+
 class ServiceResources(BaseModel):
     memory_mb: float | None = None
     cpu_percent: float | None = None
@@ -111,3 +133,4 @@ class ServiceResources(BaseModel):
 
 class ServiceStatus(RootModel[Literal['healthy', 'degraded', 'unhealthy', 'starting']]):
     root: Literal['healthy', 'degraded', 'unhealthy', 'starting']
+

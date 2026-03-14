@@ -6,10 +6,56 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import Field, RootModel
 from typing import Literal
 
-__all__ = ["DomainId", "ProcessStatus"]
+__all__ = ["DomainHealthProfile", "DomainId", "ProcessStatus"]
+
+class Health(BaseModel):
+    score: float = Field(
+        ..., description='Aggregated health score (0-100)', ge=0.0, le=100.0
+    )
+    trend: Literal['up', 'down', 'stable'] = Field(
+        ..., description='Directional health trend'
+    )
+    momentum: float = Field(..., description='Rate of change per day')
+    resilience: float = Field(..., description='Ability to recover from health dips')
+    severity: Literal['CRITICAL', 'WARNING', 'INFO', 'OPTIMAL'] = Field(
+        ..., description='CIA 3-tier risk severity classification'
+    )
+    last_assessment: AwareDatetime = Field(
+        ..., description='ISO-8601 timestamp of last analysis'
+    )
+
+
+class DomainHealthProfile(BaseModel):
+    domain_id: Literal[
+        'strategy_corp',
+        'deals_ma',
+        'financial_advisory',
+        'operations_supply_chain',
+        'technology_digital',
+        'ai_analytics',
+        'cybersecurity',
+        'risk_compliance_controls',
+        'tax_legal_adjacent',
+        'esg_sustainability',
+        'customer_marketing_sales',
+        'people_organization',
+        'pmo_change',
+        'industry_solutions',
+        'managed_services_operate',
+    ] = Field(..., description='Canonical consulting domain identifier')
+    health: Health = Field(
+        ...,
+        description='CIA Health Metrics for consulting domains and intelligence assets',
+    )
+    intelligence_assets_count: int = Field(
+        ..., description='Number of linked intelligence assets'
+    )
+    risk_rules_triggered: int = Field(..., description='Count of active risk rules')
+    updated_at: AwareDatetime
 
 class DomainId(
     RootModel[

@@ -92,51 +92,58 @@
       ]
     },
     "capabilities": {
-      "description": "List of capabilities this agent is authorized to use",
+      "description": "List of capabilities this agent is authorized to use (known + domain-specific)",
       "minItems": 0,
       "type": "array",
       "items": {
-        "$id": "AgentCapability",
-        "description": "Capability flags declaring what an agent is authorized to do",
         "anyOf": [
           {
-            "const": "graph_read",
-            "type": "string"
+            "$id": "AgentCapability",
+            "description": "Capability flags declaring what an agent is authorized to do",
+            "anyOf": [
+              {
+                "const": "graph_read",
+                "type": "string"
+              },
+              {
+                "const": "graph_write",
+                "type": "string"
+              },
+              {
+                "const": "mcp_tools",
+                "type": "string"
+              },
+              {
+                "const": "cognitive_reasoning",
+                "type": "string"
+              },
+              {
+                "const": "document_generation",
+                "type": "string"
+              },
+              {
+                "const": "osint",
+                "type": "string"
+              },
+              {
+                "const": "code_execution",
+                "type": "string"
+              },
+              {
+                "const": "ingestion",
+                "type": "string"
+              },
+              {
+                "const": "git_operations",
+                "type": "string"
+              },
+              {
+                "const": "audit",
+                "type": "string"
+              }
+            ]
           },
           {
-            "const": "graph_write",
-            "type": "string"
-          },
-          {
-            "const": "mcp_tools",
-            "type": "string"
-          },
-          {
-            "const": "cognitive_reasoning",
-            "type": "string"
-          },
-          {
-            "const": "document_generation",
-            "type": "string"
-          },
-          {
-            "const": "osint",
-            "type": "string"
-          },
-          {
-            "const": "code_execution",
-            "type": "string"
-          },
-          {
-            "const": "ingestion",
-            "type": "string"
-          },
-          {
-            "const": "git_operations",
-            "type": "string"
-          },
-          {
-            "const": "audit",
             "type": "string"
           }
         ]

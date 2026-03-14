@@ -11,6 +11,8 @@
  *   import { DomainId } from '@widgetdc/contracts/consulting'
  *   import { AgentTier } from '@widgetdc/contracts/agent'
  *   import { NodeLabel } from '@widgetdc/contracts/graph'
+ *   import { AgentHandshake } from '@widgetdc/contracts/orchestrator'
+ *   import { SalienceVector } from '@widgetdc/contracts/opportunities'
  */
 
 export * from './cognitive/index.js'

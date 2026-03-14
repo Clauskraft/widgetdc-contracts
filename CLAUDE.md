@@ -46,6 +46,8 @@ Shared type contracts for the WidgeTDC platform. Single source of truth for cros
 | `consulting/` | DomainId (15 domains), ProcessStatus — taxonomy enums |
 | `agent/` | AgentTier, AgentPersona, SignalType — agent hierarchy |
 | `graph/` | NodeLabel, RelationshipType — Neo4j schema registry |
+| `orchestrator/` | AgentHandshake, AgentMessage, ToolCall/Result — multi-agent orchestration |
+| `opportunities/` | SalienceVector, WinProbabilityScore, IntelligenceObservation — tender intelligence |
 
 ## Conventions
 - **Wire format**: snake_case JSON (matches RLM production API)

@@ -199,6 +199,48 @@
       "description": "Links this message to a specific tool call (for ToolResult messages)",
       "type": "string"
     },
+    "id": {
+      "description": "Storage-layer assigned message ID (e.g. UUID or Redis-generated)",
+      "type": "string"
+    },
+    "thread_id": {
+      "description": "Thread ID for grouping related messages",
+      "type": "string"
+    },
+    "parent_id": {
+      "description": "ID of the message this is a direct reply to",
+      "type": "string"
+    },
+    "files": {
+      "description": "File attachments on this message",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "size",
+          "type"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metadata": {
+      "description": "Extensible metadata (e.g. provider, model, duration_ms, conversation_id)",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
     "timestamp": {
       "format": "date-time",
       "description": "When this message was created",
