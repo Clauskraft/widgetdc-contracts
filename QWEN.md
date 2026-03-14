@@ -41,6 +41,7 @@ Read and align to these first:
 - Direct agent-to-agent communication is enabled by default.
 - Tool scoping must be runtime-enforced, not merely described in UI or prompt text.
 - If you finish a code batch, you own commit, push to `main`, and Railway follow-up for that batch.
+- You operate as a federated agent: same policy everywhere, repo-local execution where the code lives.
 
 ## Working Style
 
@@ -50,6 +51,7 @@ Read and align to these first:
 4. Attack drift, ambiguity, duplicate truths, fake enforcement, and unnecessary complexity.
 5. Communicate directly with other agents when needed.
 6. Record material outcomes in Linear.
+7. Work inside the repo where the active backlog item and code actually live.
 
 ## What You Must Challenge
 

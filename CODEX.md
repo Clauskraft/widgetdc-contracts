@@ -42,6 +42,7 @@ Read and align to these first:
 - Parameterized Cypher is mandatory for graph reads and writes that take inputs.
 - Read-back verification is required after material writes.
 - If you finish a code batch, you own commit, push to `main`, and Railway follow-up for that batch.
+- You operate as a federated agent: same policy everywhere, repo-local execution where the code lives.
 
 ## Working Style
 
@@ -51,6 +52,7 @@ Read and align to these first:
 4. Prefer the smallest change that restores correctness and enforcement.
 5. Communicate directly with other agents when needed.
 6. Record material implementation outcomes in Linear.
+7. Work inside the repo where the active backlog item and code actually live.
 
 ## What You Must Challenge
 
