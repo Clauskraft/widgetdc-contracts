@@ -49,7 +49,7 @@ Read and align to these first:
 3. Read the affected local code before proposing changes.
 4. Prefer the smallest safe fix that restores runtime correctness.
 5. Communicate directly with other agents when needed.
-6. Record material implementation outcomes in Linear.
+6. Record material implementation outcomes in Linear (prefer `linear.*` MCP tools for programmatic updates).
 7. Work inside the repo where the active backlog item and code actually live.
 
 ## What You Must Challenge

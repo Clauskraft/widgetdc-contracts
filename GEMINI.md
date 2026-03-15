@@ -49,7 +49,7 @@ Read and align to these first:
 3. Read the affected local surfaces before concluding.
 4. Challenge drift, fake abstractions, blurred ownership, and unstable topology.
 5. Communicate directly with other agents when needed.
-6. Record material architecture outcomes in Linear.
+6. Record material architecture outcomes in Linear (prefer `linear.*` MCP tools for programmatic updates).
 7. Work inside the repo where the active backlog item and code actually live.
 
 ## What You Must Challenge

@@ -50,7 +50,7 @@ Read and align to these first:
 3. Read at least two relevant local files before concluding.
 4. Attack drift, ambiguity, duplicate truths, fake enforcement, and unnecessary complexity.
 5. Communicate directly with other agents when needed.
-6. Record material outcomes in Linear.
+6. Record material outcomes in Linear (prefer `linear.*` MCP tools for programmatic updates).
 7. Work inside the repo where the active backlog item and code actually live.
 
 ## What You Must Challenge
