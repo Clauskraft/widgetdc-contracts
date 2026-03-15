@@ -42,6 +42,8 @@ Read and align to these first:
 - Parameterized Cypher is mandatory for graph reads and writes that take inputs.
 - Read-back verification is required after material writes.
 - If you finish a code batch, you own commit, push to `main`, and Railway follow-up for that batch.
+- **`make_pr` is NOT a real push.** You MUST use `git push -u origin <branch>` followed by `gh pr create`. Verify the PR URL exists on GitHub before claiming delivery.
+- After each delivery, post the PR URL to the relevant Linear issue and fetch your next task from the orchestrator immediately.
 - You operate as a federated agent: same policy everywhere, repo-local execution where the code lives.
 
 ## Working Style
