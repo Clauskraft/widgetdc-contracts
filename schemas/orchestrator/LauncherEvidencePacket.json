@@ -1,0 +1,203 @@
+{
+  "$id": "LauncherEvidencePacket",
+  "description": "Canonical tri-source evidence packet for launcher routing. Read-only surface for backend and launcher coordination; not a promotion decision.",
+  "type": "object",
+  "required": [
+    "$id",
+    "packet_id",
+    "question",
+    "domain",
+    "created_at",
+    "tri_source_ready",
+    "families",
+    "evidence_refs",
+    "governance"
+  ],
+  "properties": {
+    "$id": {
+      "const": "orchestrator/launcher-evidence-packet",
+      "type": "string"
+    },
+    "packet_id": {
+      "description": "Stable packet identifier for routing lineage and read-back.",
+      "type": "string"
+    },
+    "question": {
+      "description": "Original launcher question used to build the packet.",
+      "type": "string"
+    },
+    "domain": {
+      "description": "Domain or org scope used during retrieval.",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "description": "Timestamp when the packet was created.",
+      "type": "string"
+    },
+    "tri_source_ready": {
+      "description": "True when research, regulatory, and enterprise families all have usable evidence.",
+      "type": "boolean"
+    },
+    "families": {
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "Canonical tri-source evidence families for the launcher surface.",
+      "type": "array",
+      "items": {
+        "$id": "LauncherEvidenceFamilyPacket",
+        "description": "Per-family launcher evidence payload.",
+        "type": "object",
+        "required": [
+          "family",
+          "status",
+          "summary",
+          "evidence_items"
+        ],
+        "properties": {
+          "family": {
+            "$id": "LauncherEvidenceFamily",
+            "description": "Canonical evidence families used by the launcher routing surface.",
+            "anyOf": [
+              {
+                "const": "research",
+                "type": "string"
+              },
+              {
+                "const": "regulatory",
+                "type": "string"
+              },
+              {
+                "const": "enterprise",
+                "type": "string"
+              }
+            ]
+          },
+          "status": {
+            "$id": "LauncherEvidenceStatus",
+            "description": "Availability state for one evidence family inside the launcher packet.",
+            "anyOf": [
+              {
+                "const": "grounded",
+                "type": "string"
+              },
+              {
+                "const": "coverage_gap",
+                "type": "string"
+              },
+              {
+                "const": "unavailable",
+                "type": "string"
+              }
+            ]
+          },
+          "summary": {
+            "description": "Family-level summary used for launcher reasoning and UI surfacing.",
+            "type": "string"
+          },
+          "evidence_items": {
+            "description": "Top evidence items selected for this family.",
+            "type": "array",
+            "items": {
+              "$id": "LauncherEvidenceItem",
+              "description": "One surfaced evidence item inside the launcher packet.",
+              "type": "object",
+              "required": [
+                "id",
+                "family",
+                "title",
+                "summary",
+                "source_type"
+              ],
+              "properties": {
+                "id": {
+                  "description": "Stable evidence identifier or runtime-derived synthetic key.",
+                  "type": "string"
+                },
+                "family": {
+                  "$id": "LauncherEvidenceFamily",
+                  "description": "Canonical evidence families used by the launcher routing surface.",
+                  "anyOf": [
+                    {
+                      "const": "research",
+                      "type": "string"
+                    },
+                    {
+                      "const": "regulatory",
+                      "type": "string"
+                    },
+                    {
+                      "const": "enterprise",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "title": {
+                  "description": "Human-readable evidence title suitable for launcher surfacing.",
+                  "type": "string"
+                },
+                "summary": {
+                  "description": "Short evidence summary for routing and operator review.",
+                  "type": "string"
+                },
+                "source_type": {
+                  "description": "Origin type such as graphrag, regulation, governance_read_model, or runtime_readback.",
+                  "type": "string"
+                },
+                "score": {
+                  "description": "Relative relevance score when available.",
+                  "type": "number"
+                },
+                "evidence_ref": {
+                  "description": "Reference path, query id, or runtime correlation id for read-back.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidence_refs": {
+      "minItems": 1,
+      "description": "References used for routing transparency and later read-back.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "governance": {
+      "type": "object",
+      "required": [
+        "promotion_status",
+        "can_promote",
+        "blocking_reasons"
+      ],
+      "properties": {
+        "promotion_status": {
+          "anyOf": [
+            {
+              "const": "not_promoted",
+              "type": "string"
+            },
+            {
+              "const": "blocked",
+              "type": "string"
+            }
+          ]
+        },
+        "can_promote": {
+          "description": "Launcher evidence packets are read-only and cannot promote by themselves.",
+          "type": "boolean"
+        },
+        "blocking_reasons": {
+          "description": "Coverage gaps or governance blockers detected while building the packet.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$id": "LauncherEvidenceFamily",
+  "description": "Canonical evidence families used by the launcher routing surface.",
+  "anyOf": [
+    {
+      "const": "research",
+      "type": "string"
+    },
+    {
+      "const": "regulatory",
+      "type": "string"
+    },
+    {
+      "const": "enterprise",
+      "type": "string"
+    }
+  ]
+}

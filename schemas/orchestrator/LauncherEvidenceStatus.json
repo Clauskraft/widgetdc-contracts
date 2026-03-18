@@ -1,0 +1,18 @@
+{
+  "$id": "LauncherEvidenceStatus",
+  "description": "Availability state for one evidence family inside the launcher packet.",
+  "anyOf": [
+    {
+      "const": "grounded",
+      "type": "string"
+    },
+    {
+      "const": "coverage_gap",
+      "type": "string"
+    },
+    {
+      "const": "unavailable",
+      "type": "string"
+    }
+  ]
+}

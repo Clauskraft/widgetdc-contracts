@@ -1,0 +1,56 @@
+{
+  "$id": "LauncherEvidenceItem",
+  "description": "One surfaced evidence item inside the launcher packet.",
+  "type": "object",
+  "required": [
+    "id",
+    "family",
+    "title",
+    "summary",
+    "source_type"
+  ],
+  "properties": {
+    "id": {
+      "description": "Stable evidence identifier or runtime-derived synthetic key.",
+      "type": "string"
+    },
+    "family": {
+      "$id": "LauncherEvidenceFamily",
+      "description": "Canonical evidence families used by the launcher routing surface.",
+      "anyOf": [
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "regulatory",
+          "type": "string"
+        },
+        {
+          "const": "enterprise",
+          "type": "string"
+        }
+      ]
+    },
+    "title": {
+      "description": "Human-readable evidence title suitable for launcher surfacing.",
+      "type": "string"
+    },
+    "summary": {
+      "description": "Short evidence summary for routing and operator review.",
+      "type": "string"
+    },
+    "source_type": {
+      "description": "Origin type such as graphrag, regulation, governance_read_model, or runtime_readback.",
+      "type": "string"
+    },
+    "score": {
+      "description": "Relative relevance score when available.",
+      "type": "number"
+    },
+    "evidence_ref": {
+      "description": "Reference path, query id, or runtime correlation id for read-back.",
+      "type": "string"
+    }
+  }
+}
