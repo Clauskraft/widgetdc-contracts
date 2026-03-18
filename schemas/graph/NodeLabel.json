@@ -241,6 +241,26 @@
     {
       "const": "GoldenEgg",
       "type": "string"
+    },
+    {
+      "const": "FabricController",
+      "type": "string"
+    },
+    {
+      "const": "ExitPath",
+      "type": "string"
+    },
+    {
+      "const": "ComplianceGap",
+      "type": "string"
+    },
+    {
+      "const": "StrategicLeverage",
+      "type": "string"
+    },
+    {
+      "const": "AuditProof",
+      "type": "string"
     }
   ]
 }

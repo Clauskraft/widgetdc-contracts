@@ -76,6 +76,11 @@ class NodeLabel(
             'AdoptedIP',
             'CompetitorShadow',
             'GoldenEgg',
+            'FabricController',
+            'ExitPath',
+            'ComplianceGap',
+            'StrategicLeverage',
+            'AuditProof',
         ]
     ]
 ):
@@ -140,6 +145,11 @@ class NodeLabel(
         'AdoptedIP',
         'CompetitorShadow',
         'GoldenEgg',
+        'FabricController',
+        'ExitPath',
+        'ComplianceGap',
+        'StrategicLeverage',
+        'AuditProof',
     ] = Field(..., description='Canonical Neo4j node labels')
 
 
@@ -199,6 +209,9 @@ class RelationshipType(
             'STRATEGIC_VALUE',
             'INTERCEPTS',
             'DRAINS',
+            'EXIT_PATH_FOR',
+            'REMEDIATES',
+            'LEVERAGES',
         ]
     ]
 ):
@@ -256,4 +269,7 @@ class RelationshipType(
         'STRATEGIC_VALUE',
         'INTERCEPTS',
         'DRAINS',
+        'EXIT_PATH_FOR',
+        'REMEDIATES',
+        'LEVERAGES',
     ] = Field(..., description='Canonical Neo4j relationship types')

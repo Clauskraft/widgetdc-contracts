@@ -213,6 +213,18 @@
     {
       "const": "DRAINS",
       "type": "string"
+    },
+    {
+      "const": "EXIT_PATH_FOR",
+      "type": "string"
+    },
+    {
+      "const": "REMEDIATES",
+      "type": "string"
+    },
+    {
+      "const": "LEVERAGES",
+      "type": "string"
     }
   ]
 }

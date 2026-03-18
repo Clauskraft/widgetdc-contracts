@@ -250,6 +250,14 @@ class RoutingDecision(BaseModel):
         False,
         description='Whether the route guarantees deterministic response time for MoE (Mixture-of-Experts) swarms.',
     )
+    vampire_drain_rate: confloat(ge=0.0, le=1.0) | None = Field(
+        None,
+        description='Rate of intellectual or economic value extraction from the target competitor (Adoption: Strategic Strategy Vampire).',
+    )
+    target_shadow_id: str | None = Field(
+        None,
+        description='Reference to the CompetitorShadow node being drained or intercepted.',
+    )
     evidence_refs: list[str] = Field(
         ...,
         description='References to trust, scorecard, or runtime evidence used during routing.',
