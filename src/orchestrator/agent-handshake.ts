@@ -75,13 +75,26 @@ export const AgentHandshake = Type.Object({
     minItems: 0,
   }),
 
-  /**
-   * Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
-   * Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).
+  /** Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
+   *  Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).
    */
   allowed_tool_namespaces: Type.Array(Type.String(), {
     description: 'MCP tool namespaces this agent may invoke (e.g. ["graph", "audit"])',
   }),
+
+  /** Optimized search index fingerprint for lazy-loading tools (Adoption: Anthropic Tool Search Index). Reduces handshake token bloat by 85%. */
+  capability_index: Type.Optional(Type.String({
+    description: 'Optimized search index fingerprint for lazy-loading tools (Adoption: Anthropic Tool Search Index). Reduces handshake token bloat by 85%.',
+  })),
+
+  /** Supported memory layers for this agent (Adoption: OpenClaw Memory Tiering). */
+  memory_tiers: Type.Optional(Type.Array(Type.Union([
+    Type.Literal('working'),
+    Type.Literal('episodic'),
+    Type.Literal('semantic'),
+  ]), {
+    description: 'Supported memory layers for this agent (Adoption: OpenClaw Memory Tiering).',
+  })),
 
   /** Max concurrent tool calls this agent is allowed to make */
   max_concurrent_calls: Type.Optional(Type.Integer({

@@ -177,7 +177,9 @@
     "phase_parameters": {
       "description": "Optimized parameters for multi-step agentic execution (Adoption: OpenAI Phase Pattern). Reduces token usage via targeted tool discovery.",
       "type": "object",
-      "additionalProperties": true
+      "patternProperties": {
+        "^(.*)$": {}
+      }
     },
     "started_at": {
       "format": "date-time",

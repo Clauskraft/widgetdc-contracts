@@ -59,6 +59,16 @@ export const AgentWorkflowEnvelope = Type.Object({
   quorum_consensus: Type.Optional(Type.Boolean({
     description: 'Set when a workflow requires explicit agreement before progressing.',
   })),
+  compute_mode: Type.Optional(Type.Union([
+    Type.Literal('standard'),
+    Type.Literal('extreme'),
+  ], {
+    description: 'Allocated compute intensity for the current workflow phase.',
+    default: 'standard',
+  })),
+  phase_parameters: Type.Optional(Type.Record(Type.String(), Type.Any(), {
+    description: 'Optimized parameters for multi-step agentic execution (Adoption: OpenAI Phase Pattern). Reduces token usage via targeted tool discovery.',
+  })),
   started_at: Type.String({
     format: 'date-time',
     description: 'Workflow start timestamp.',

@@ -1,9 +1,9 @@
 {
   "$id": "AgentTrustProfile",
-  "description": "Minimal orchestrator trust profile. Used only by widgetdc-orchestrator, widgetdc-librechat, and optional Snout routing support.",
+  "description": "Minimal orchestrator trust profile. Persona is the primary identity; provider identifiers are telemetry-only correlation metadata.",
   "type": "object",
   "required": [
-    "agent_id",
+    "agent_persona",
     "task_domain",
     "success_count",
     "fail_count",
@@ -16,8 +16,54 @@
     "last_verified_at"
   ],
   "properties": {
+    "agent_persona": {
+      "$id": "AgentPersona",
+      "description": "RLM Engine agent persona",
+      "anyOf": [
+        {
+          "const": "RESEARCHER",
+          "type": "string"
+        },
+        {
+          "const": "ENGINEER",
+          "type": "string"
+        },
+        {
+          "const": "CUSTODIAN",
+          "type": "string"
+        },
+        {
+          "const": "ARCHITECT",
+          "type": "string"
+        },
+        {
+          "const": "SENTINEL",
+          "type": "string"
+        },
+        {
+          "const": "ARCHIVIST",
+          "type": "string"
+        },
+        {
+          "const": "HARVESTER",
+          "type": "string"
+        },
+        {
+          "const": "ANALYST",
+          "type": "string"
+        },
+        {
+          "const": "INTEGRATOR",
+          "type": "string"
+        },
+        {
+          "const": "TESTER",
+          "type": "string"
+        }
+      ]
+    },
     "agent_id": {
-      "description": "Canonical agent identifier or scoped runtime agent ID.",
+      "description": "Legacy chat/runtime agent identifier. Optional because trust is anchored on persona, not provider.",
       "anyOf": [
         {
           "$id": "AgentId",
@@ -61,6 +107,16 @@
           "type": "string"
         }
       ]
+    },
+    "runtime_identity": {
+      "minLength": 1,
+      "description": "Scoped runtime identity for a concrete worker, session, or delegated specialist.",
+      "type": "string"
+    },
+    "provider_source": {
+      "minLength": 1,
+      "description": "Observed provider source for telemetry correlation only. Must not be used as the trust identity.",
+      "type": "string"
     },
     "task_domain": {
       "$id": "OrchestratorTaskDomain",
@@ -142,7 +198,8 @@
       ]
     },
     "scorecard_dimension": {
-      "description": "Primary scorecard dimension this trust profile is intended to improve.",
+      "$id": "ScorecardDimension",
+      "description": "Canonical decision-quality dimensions approved for trust mapping and scorecard entries.",
       "anyOf": [
         {
           "const": "prioritization_quality",
@@ -163,11 +220,28 @@
         {
           "const": "operator_acceptance",
           "type": "string"
+        },
+        {
+          "const": "normalization_quality",
+          "type": "string"
+        },
+        {
+          "const": "arbitration_confidence",
+          "type": "string"
+        },
+        {
+          "const": "time_to_verified_decision",
+          "type": "string"
+        },
+        {
+          "const": "tri_source_arbitration_divergence",
+          "type": "string"
         }
       ]
     },
     "scope_owner": {
-      "description": "Approved runtime owner/consumer scope for this trust profile.",
+      "$id": "ScopeOwner",
+      "description": "Approved runtime owner or consumer scope for routing and trust contracts.",
       "anyOf": [
         {
           "const": "widgetdc-orchestrator",
