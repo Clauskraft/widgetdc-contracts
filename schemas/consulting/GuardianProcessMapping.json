@@ -1,0 +1,20 @@
+{
+  "$id": "GuardianProcessMapping",
+  "description": "Kobling mellem L1-L3 business processer og Guardian Remediation Engine.",
+  "type": "object",
+  "required": ["domain_id", "process_level", "current_status"],
+  "properties": {
+    "domain_id": { "$ref": "DomainId.json" },
+    "process_level": { "enum": ["L1_INTENT", "L2_SUBPROCESS", "L3_EXECUTION"] },
+    "current_status": { "$ref": "ProcessStatus.json" },
+    "remediation": {
+      "type": "object",
+      "properties": {
+        "strategy": { "enum": ["OPTIMIZED", "COMPLIANT", "SOVEREIGN", "SECURE"] },
+        "vampire_drain_potential": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "fabric_insertion_point": { "type": "string" }
+      },
+      "required": ["strategy", "vampire_drain_potential"]
+    }
+  }
+}

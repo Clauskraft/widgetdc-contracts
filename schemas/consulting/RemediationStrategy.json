@@ -1,0 +1,12 @@
+{
+  "$id": "RemediationStrategy",
+  "description": "The Guardian Runtime's actionable output replacing legacy structures.",
+  "type": "object",
+  "required": ["target_id", "strategy_path", "transformation_logic"],
+  "properties": {
+    "target_id": { "type": "string", "description": "The ID of the legacy node in Omni-Graph" },
+    "strategy_path": { "enum": ["OPTIMIZED", "COMPLIANT", "SOVEREIGN", "SECURE"] },
+    "transformation_logic": { "type": "string", "description": "Generated WidgeTDC contract code to replace legacy" },
+    "sovereignty_score": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+  }
+}
