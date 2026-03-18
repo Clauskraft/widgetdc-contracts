@@ -249,6 +249,18 @@
     {
       "const": "REPORTED_AS_NIS2",
       "type": "string"
+    },
+    {
+      "const": "PROVIDES_FREEDOM_FROM",
+      "type": "string"
+    },
+    {
+      "const": "MAPS_LEGACY_DEBT",
+      "type": "string"
+    },
+    {
+      "const": "GOVERNS_CITIZEN_DATA",
+      "type": "string"
     }
   ]
 }
