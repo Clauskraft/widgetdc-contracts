@@ -269,8 +269,21 @@
         {
           "const": "WAIVER_ROUTE",
           "type": "string"
+        },
+        {
+          "const": "FABRIC_WIN",
+          "type": "string"
         }
       ]
+    },
+    "fabric_route_id": {
+      "description": "Virtual fabric identifier for low-latency agent-to-agent communication (Adoption: NVIDIA NVLink 6).",
+      "type": "string"
+    },
+    "latency_deterministic": {
+      "description": "Whether the route guarantees deterministic response time for MoE (Mixture-of-Experts) swarms.",
+      "type": "boolean",
+      "default": false
     },
     "evidence_refs": {
       "minItems": 1,
