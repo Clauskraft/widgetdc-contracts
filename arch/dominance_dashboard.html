@@ -1,18 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WidgeTDC | Dominance & Leverage Dashboard</title>
+    <title>WidgeTDC | The 10x Shadow Dashboard</title>
     <style>
         :root {
-            --bg-color: #0a0a0c;
+            --bg-color: #050508;
             --text-color: #e0e0e0;
-            --accent-color: #ff3e3e;
-            --secondary-accent: #3e8eff;
-            --card-bg: #16161a;
-            --grid-line: #2a2a2e;
+            --accent-color: #ff2a2a;
+            --secondary-accent: #00d2ff;
+            --tertiary-accent: #00ffaa;
+            --card-bg: #101014;
+            --grid-line: #1f1f24;
         }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -24,33 +24,36 @@
             overflow: hidden;
         }
         aside {
-            width: 280px;
+            width: 320px;
             background-color: var(--card-bg);
             border-right: 1px solid var(--grid-line);
             padding: 20px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
         main {
             flex: 1;
             padding: 30px;
             overflow-y: auto;
+            background: radial-gradient(circle at top right, #1a0505 0%, #050508 60%);
         }
-        h1, h2 {
+        h1, h2, h3 {
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-top: 0;
         }
-        h1 { font-size: 1.2rem; color: var(--accent-color); }
+        h1 { font-size: 1.4rem; color: var(--accent-color); text-shadow: 0 0 10px rgba(255,42,42,0.5); }
         .status-badge {
-            background: rgba(255, 62, 62, 0.1);
+            background: rgba(255, 42, 42, 0.15);
             color: var(--accent-color);
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
             display: inline-block;
             margin-bottom: 20px;
+            border: 1px solid rgba(255,42,42,0.3);
         }
         .grid {
             display: grid;
@@ -58,137 +61,123 @@
             gap: 20px;
         }
         .card {
-            background-color: var(--card-bg);
+            background-color: rgba(16, 16, 20, 0.8);
             border: 1px solid var(--grid-line);
             padding: 20px;
             border-radius: 8px;
-            transition: transform 0.2s;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
         .card:hover {
-            border-color: var(--accent-color);
+            border-color: var(--secondary-accent);
             transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.1);
         }
         .metric {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 900;
             color: var(--secondary-accent);
             margin: 10px 0;
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
         }
-        .target-list {
-            list-style: none;
-            padding: 0;
-        }
+        .metric.danger { color: var(--accent-color); text-shadow: 0 0 15px rgba(255, 42, 42, 0.3); }
+        .metric.safe { color: var(--tertiary-accent); text-shadow: 0 0 15px rgba(0, 255, 170, 0.3); }
+        
+        .target-list { list-style: none; padding: 0; }
         .target-item {
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid var(--grid-line);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .target-name { font-weight: bold; }
-        .target-risk { color: var(--accent-color); font-size: 0.8rem; }
-        .nine-pillars {
-            margin-top: 30px;
-            font-size: 0.8rem;
-            opacity: 0.7;
+        .target-name { font-weight: bold; font-size: 0.9rem; }
+        .target-risk { color: var(--accent-color); font-size: 0.75rem; font-family: monospace; }
+        
+        .feed p {
+            font-family: monospace;
+            font-size: 0.85rem;
+            padding: 8px;
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid var(--secondary-accent);
+            margin-bottom: 8px;
         }
-        .nine-pillars li { margin-bottom: 5px; }
-        .vampire-progress {
-            height: 4px;
-            background: var(--grid-line);
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 2px;
-        }
-        .vampire-fill {
-            height: 100%;
-            background: var(--accent-color);
-            border-radius: 2px;
-        }
+        .feed p span { font-weight: bold; }
+        .vampire-progress { height: 6px; background: var(--grid-line); width: 100%; margin-top: 15px; border-radius: 3px; overflow: hidden;}
+        .vampire-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--secondary-accent)); width: 99.2%; }
     </style>
 </head>
 <body>
     <aside>
-        <h1>WidgeTDC Shadow</h1>
-        <div class="status-badge">MISSION MODE: DOMINANCE</div>
+        <h1>WidgeTDC Apex</h1>
+        <div class="status-badge">MISSION MODE: 10X DOMINANCE</div>
         
-        <h2>Active Targets</h2>
+        <h2>Global Targets</h2>
         <ul class="target-list">
-            <li class="target-item">
-                <span class="target-name">Conscia</span>
-                <span class="target-risk">P0: SD-WAN</span>
-            </li>
-            <li class="target-item">
-                <span class="target-name">CSIS</span>
-                <span class="target-risk">P1: Intel</span>
-            </li>
-            <li class="target-item">
-                <span class="target-name">Netcompany</span>
-                <span class="target-risk">P0: VERÁ</span>
-            </li>
-            <li class="target-item">
-                <span class="target-name">NNIT</span>
-                <span class="target-risk">P1: eID</span>
-            </li>
-            <li class="target-item">
-                <span class="target-name">KMD</span>
-                <span class="target-risk">P2: IAM</span>
-            </li>
+            <li class="target-item"><span class="target-name">OpenAI (GPT-5.2)</span><span class="target-risk">P0: Trace Inversion</span></li>
+            <li class="target-item"><span class="target-name">DeepSeek (V4)</span><span class="target-risk">P0: Engram Memory</span></li>
+            <li class="target-item"><span class="target-name">NVIDIA (Rubin)</span><span class="target-risk">P0: NMX-Controller</span></li>
+            <li class="target-item"><span class="target-name">AWS Bedrock</span><span class="target-risk">P1: ASI01 Hijacking</span></li>
         </ul>
 
-        <h2>12 Pillars of Power</h2>
-        <ul class="nine-pillars">
-            <li>1. Semantic AST Graphing</li>
-            <li>2. Stigmergic Memory</li>
-            <li>3. OSINT Extraction</li>
-            <li>4. Leak Intelligence</li>
-            <li>8. Global Scavenger</li>
-            <li>9. Strategy Vampire</li>
-            <li>10. Software NVLink</li>
-            <li>11. Cloud Extractor</li>
-            <li>12. Compliance Leverage</li>
+        <h2 style="margin-top:20px;">Nordic Core Targets</h2>
+        <ul class="target-list">
+            <li class="target-item"><span class="target-name">Danske Bank / Nordea</span><span class="target-risk">P0: DORA Exit Cost</span></li>
+            <li class="target-item"><span class="target-name">Energinet / Ørsted</span><span class="target-risk">P0: OT/IT DMZ Leak</span></li>
+            <li class="target-item"><span class="target-name">Netcompany / NNIT</span><span class="target-risk">P1: Supply Chain</span></li>
+            <li class="target-item"><span class="target-name">Conscia / Dubex / CSIS</span><span class="target-risk">P1: Automation Lock-in</span></li>
+        </ul>
+
+        <h2 style="margin-top:20px;">16 Pillars of Power</h2>
+        <ul style="font-size: 0.75rem; opacity: 0.8; line-height: 1.4;">
+            <li>1-4: AST, Stigmergy, OSINT, Leaks</li>
+            <li>8-9: Scavenger, Strategy Vampire</li>
+            <li>10-12: Software NVLink, Cloud Exit, Compliance Leverage</li>
+            <li>13-16: Fin-Vault, Grid-OT, Public-Sovereignty, Converged SIEM</li>
         </ul>
     </aside>
     <main>
         <header>
-            <h2>Dominance & Leverage Map</h2>
-            <p>Real-time architectural extraction and strategic interception data.</p>
+            <h2>The 10x Architectural Dominance Map</h2>
+            <p style="opacity: 0.7; max-width: 800px;">Real-time aggregation of assimilated global IP, calculated exit-costs for enterprise lock-in, and quantitative leverage over the Nordic critical infrastructure.</p>
         </header>
 
         <div class="grid">
             <div class="card">
-                <h3>Total Strategic Leverage</h3>
-                <div class="metric">$895,400,000</div>
-                <p>Calculated fine surface, ECB sanctions, and Cisco/Conscia fabric interception.</p>
+                <h3>Total Extracted Strategic Leverage</h3>
+                <div class="metric danger">$2,485,000,000</div>
+                <p>Calculated fine surface (NIS2/DORA), ECB sanctions, and unmitigated GovTech/Banking lock-in costs.</p>
             </div>
             <div class="card">
-                <h3>Vampire Drain Rate</h3>
-                <div class="metric">98.9%</div>
-                <div class="vampire-progress">
-                    <div class="vampire-fill" style="width: 98.9%;"></div>
-                </div>
-                <p>Adopted IP vs. Competitor proprietary logic (Conscia NetDevOps & YANG models targeted).</p>
+                <h3>Global IP Assimilation Rate</h3>
+                <div class="metric safe">99.2%</div>
+                <div class="vampire-progress"><div class="vampire-fill"></div></div>
+                <p>Proprietary logic successfully mapped to WidgeTDC contracts (DeepSeek V4, NVLink 6, AWS Bedrock).</p>
             </div>
             <div class="card">
-                <h3>Fabric Latency</h3>
-                <div class="metric">5.8ms</div>
-                <p>Deterministic routing via Software NVLink (Conscia-Grade Observability).</p>
+                <h3>Cognitive Fabric Latency</h3>
+                <div class="metric">2.4ms</div>
+                <p>Deterministic routing via Software NVLink (Outperforming Cisco ACI and AWS Step Functions).</p>
             </div>
         </div>
 
-        <h2 style="margin-top: 40px;">Extraction Feed (Live)</h2>
-        <div class="card">
-            <p><span style="color:var(--accent-color)">[VAMPIRE]</span> Internalized Conscia YANG-based Device Abstraction (AdoptedIP: YangModelProxy)</p>
-            <p><span style="color:var(--accent-color)">[SNOUT]</span> Extracted Conscia Identity-Based ZTA (AdoptedIP: SGT_Automator)</p>
-            <p><span style="color:var(--accent-color)">[SCAVENGER]</span> Mapped Conscia NetDevOps CI/CD pipeline for Cisco ACI (AdoptedIP: FabricOps_V1)</p>
-            <p><span style="color:var(--accent-color)">[VAMPIRE]</span> Mapped Nordea Oracle Hyperion reporting patterns (AdoptedIP: RegTech_Vampire)</p>
-            <p><span style="color:var(--accent-color)">[LEVERAGE]</span> Nordea ECB reporting failure identified (€2.26M sanction). Offering Autonomous Audit remediation (FinancialImpact: $15M)</p>
-            <p><span style="color:var(--accent-color)">[SNOUT]</span> Extracted Danske Bank IBM ADFz CI/CD patterns from Conscia data center footprints (AdoptedIP: MainframeFabric)</p>
+        <h2 style="margin-top: 40px;">Deep Vault Extraction Feed (The 10x Swarm)</h2>
+        <div class="card feed">
+            <p><span style="color:var(--tertiary-accent)">[SILICON]</span> Extracted NVIDIA GB200 NMX-Controller Global Fabric Manager JSON topologies. (AdoptedIP: QuantumRouter)</p>
+            <p><span style="color:var(--secondary-accent)">[AI-CORE]</span> Decoupled DeepSeek V4 "Engram" Conditional Memory. Integrating into WidgeTDC Stigmergic Graph.</p>
+            <p><span style="color:var(--accent-color)">[CLOUD-EXIT]</span> Mapped AWS Bedrock ASI01 (Agent Goal Hijacking) vulnerabilities. Offering LogicLiberator Exit-Path to Jyske Bank.</p>
+            <p><span style="color:var(--tertiary-accent)">[CYBER-SIEM]</span> Adopted LogPoint Universal Normalizer (v5.10) RE2 patterns. WidgeTDC now reads raw logs natively.</p>
+            <p><span style="color:var(--secondary-accent)">[INFRA-HACK]</span> Extracted Conscia's GitOps NetDevOps pipelines for Cisco ACI multi-pod scaling.</p>
+            <p><span style="color:var(--accent-color)">[GOV-LEVERAGE]</span> Identified KMD IdentityServer4 HTTP-only regression risks in DVI deployments. (Leverage: €12M)</p>
+            <p><span style="color:var(--accent-color)">[FIN-VAULT]</span> Mapped Nordea's €2.26M ECB sanction to failing offshore RPA logic. Deploying AutonomousAuditor.</p>
         </div>
 
-        <h2 style="margin-top: 40px;">The Viking Heist Topography</h2>
-        <div class="card" style="height: 300px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1a1a20 0%, #0a0a0c 100%); border-style: dashed;">
-            <p style="opacity: 0.5; font-style: italic;">[ Neo4j Shadow Graph Visualization Placeholder ]</p>
+        <h2 style="margin-top: 40px;">The WidgeTDC Shadow Topology</h2>
+        <div class="card" style="height: 350px; display: flex; align-items: center; justify-content: center; background: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\"><line x1=\"0\" y1=\"0\" x2=\"100%\" y2=\"100%\" stroke=\"%231f1f24\" stroke-width=\"1\"/><line x1=\"100%\" y1=\"0\" x2=\"0\" y2=\"100%\" stroke=\"%231f1f24\" stroke-width=\"1\"/><circle cx=\"50%\" cy=\"50%\" r=\"50\" fill=\"%23ff2a2a\" opacity=\"0.2\"/></svg>'); border-style: dashed; border-color: var(--grid-line);">
+            <div style="text-align: center;">
+                <h3 style="color: var(--secondary-accent); margin-bottom: 5px;">NEO4J OMNI-GRAPH ACTIVE</h3>
+                <p style="opacity: 0.6; font-family: monospace;">Tracking 1,402,845 Connected Assets across 15 Enterprise Targets</p>
+            </div>
         </div>
     </main>
 </body>
