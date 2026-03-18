@@ -261,6 +261,14 @@
     {
       "const": "AuditProof",
       "type": "string"
+    },
+    {
+      "const": "CriticalFunction",
+      "type": "string"
+    },
+    {
+      "const": "ResilienceMetric",
+      "type": "string"
     }
   ]
 }

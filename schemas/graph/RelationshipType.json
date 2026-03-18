@@ -225,6 +225,18 @@
     {
       "const": "LEVERAGES",
       "type": "string"
+    },
+    {
+      "const": "SUPPORTS_CIF",
+      "type": "string"
+    },
+    {
+      "const": "DEPENDS_ON_CTPP",
+      "type": "string"
+    },
+    {
+      "const": "VERIFIES_RESILIENCE",
+      "type": "string"
     }
   ]
 }
