@@ -189,6 +189,30 @@
     {
       "const": "CAPABILITY_OF",
       "type": "string"
+    },
+    {
+      "const": "FLOWS_TO",
+      "type": "string"
+    },
+    {
+      "const": "REPRESENTS_VALUE",
+      "type": "string"
+    },
+    {
+      "const": "ADOPTED_FROM",
+      "type": "string"
+    },
+    {
+      "const": "STRATEGIC_VALUE",
+      "type": "string"
+    },
+    {
+      "const": "INTERCEPTS",
+      "type": "string"
+    },
+    {
+      "const": "DRAINS",
+      "type": "string"
     }
   ]
 }
