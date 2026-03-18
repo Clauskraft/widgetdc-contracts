@@ -1,0 +1,46 @@
+{
+  "$id": "CyberIntelligence",
+  "description": "Tactical threat intelligence node. Armored via CSIS-pattern adoption (STIX/JSON normalization).",
+  "type": "object",
+  "required": [
+    "intel_id",
+    "threat_type",
+    "indicators",
+    "confidence_score",
+    "discovered_at"
+  ],
+  "properties": {
+    "intel_id": {
+      "description": "Stable identifier for the intelligence node.",
+      "type": "string"
+    },
+    "threat_type": {
+      "description": "Categorization of the threat (e.g. Malware, APT, Phishing, Dork).",
+      "type": "string"
+    },
+    "indicators": {
+      "description": "List of Indicators of Compromise (IoCs) extracted (IPs, Hashes, Domains).",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "stix_alignment": {
+      "description": "Alignment status with STIX 2.1 standard (Adoption: CSIS Cyber Defence Feed Pattern).",
+      "type": "boolean",
+      "default": true
+    },
+    "adversary_correlation": {
+      "description": "Mapped MITRE ATT&CK techniques and adversary profiles.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "discovered_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

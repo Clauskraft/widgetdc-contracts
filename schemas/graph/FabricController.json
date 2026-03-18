@@ -1,0 +1,48 @@
+{
+  "$id": "FabricController",
+  "description": "Orchestration node for high-performance agent communication stubs. Armored via Conscia-pattern adoption (HTTP Path Probing).",
+  "type": "object",
+  "required": [
+    "controller_id",
+    "fabric_type",
+    "active_probes",
+    "health_status"
+  ],
+  "properties": {
+    "controller_id": {
+      "description": "Stable identifier for the fabric controller.",
+      "type": "string"
+    },
+    "fabric_type": {
+      "anyOf": [
+        { "const": "software_nvlink", "type": "string" },
+        { "const": "cross_repo_bridge", "type": "string" },
+        { "const": "external_gateway", "type": "string" }
+      ]
+    },
+    "active_probes": {
+      "description": "List of active health probes monitoring agent-to-agent sties (Adoption: Conscia HTTP Probe Pattern).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "probe_id": { "type": "string" },
+          "target_agent": { "type": "string" },
+          "latency_ms": { "type": "number" }
+        }
+      }
+    },
+    "identity_tag_mapping": {
+      "description": "Mapping of Scalable Group Tags (SGT) to agent identities (Adoption: Conscia Identity-Based ZTA).",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "health_status": {
+      "anyOf": [
+        { "const": "optimal", "type": "string" },
+        { "const": "congested", "type": "string" },
+        { "const": "remediating", "type": "string" }
+      ]
+    }
+  }
+}

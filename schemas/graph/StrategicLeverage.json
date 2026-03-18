@@ -1,0 +1,41 @@
+{
+  "$id": "StrategicLeverage",
+  "description": "Calculated leverage over a target entity. Armored via Dubex-pattern adoption (FAIR Financial Impact Analysis).",
+  "type": "object",
+  "required": [
+    "leverage_id",
+    "target_id",
+    "leverage_type",
+    "financial_impact_score",
+    "calculated_at"
+  ],
+  "properties": {
+    "leverage_id": {
+      "description": "Stable identifier for the leverage node.",
+      "type": "string"
+    },
+    "target_id": {
+      "description": "Reference to the Target (CompetitorShadow or ComplianceGap) being leveraged.",
+      "type": "string"
+    },
+    "leverage_type": {
+      "anyOf": [
+        { "const": "compliance_gap", "type": "string" },
+        { "const": "architectural_lockin", "type": "string" },
+        { "const": "operational_inefficiency", "type": "string" }
+      ]
+    },
+    "financial_impact_score": {
+      "description": "Quantified risk in financial terms (Adoption: Dubex FAIR Risk Framework). Used for board-level negotiation.",
+      "type": "number"
+    },
+    "remediation_contract_ref": {
+      "description": "Reference to the WidgeTDC contract that resolves the leverage point.",
+      "type": "string"
+    },
+    "calculated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
