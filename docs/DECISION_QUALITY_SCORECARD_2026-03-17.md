@@ -27,6 +27,12 @@
 
 ## 2. Scorecard Capture Fields (LF-Q1)
 
+Canonical runtime enforcement path:
+- `schemas/orchestrator/ScorecardEntry.json`
+- `schemas/orchestrator/TelemetryEntry.json`
+- `scripts/monitoring/types.ts`
+- `scripts/monitoring/index.ts`
+
 These fields are mandatory for all `LIN-165` task batches and recurring reviews.
 
 | Field | Description | Target | Threshold |

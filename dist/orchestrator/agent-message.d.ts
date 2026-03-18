@@ -14,7 +14,7 @@ export declare const AgentId: import("@sinclair/typebox").TUnion<[import("@sincl
 export type AgentId = Static<typeof AgentId>;
 export declare const AgentMessageSource: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"claude">, import("@sinclair/typebox").TLiteral<"gemini">, import("@sinclair/typebox").TLiteral<"deepseek">, import("@sinclair/typebox").TLiteral<"grok">, import("@sinclair/typebox").TLiteral<"rlm">, import("@sinclair/typebox").TLiteral<"user">, import("@sinclair/typebox").TLiteral<"system">, import("@sinclair/typebox").TLiteral<"orchestrator">]>;
 export type AgentMessageSource = Static<typeof AgentMessageSource>;
-export declare const AgentMessageType: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Message">, import("@sinclair/typebox").TLiteral<"Command">, import("@sinclair/typebox").TLiteral<"Answer">, import("@sinclair/typebox").TLiteral<"Handover">, import("@sinclair/typebox").TLiteral<"Alert">, import("@sinclair/typebox").TLiteral<"ToolResult">]>;
+export declare const AgentMessageType: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Message">, import("@sinclair/typebox").TLiteral<"Command">, import("@sinclair/typebox").TLiteral<"Answer">, import("@sinclair/typebox").TLiteral<"Handover">, import("@sinclair/typebox").TLiteral<"Alert">, import("@sinclair/typebox").TLiteral<"ToolResult">, import("@sinclair/typebox").TLiteral<"Arbitration">, import("@sinclair/typebox").TLiteral<"Divergence">]>;
 export type AgentMessageType = Static<typeof AgentMessageType>;
 export declare const AgentMessage: import("@sinclair/typebox").TObject<{
     /** Unique message ID (UUID or Notion page ID) */
@@ -28,7 +28,7 @@ export declare const AgentMessage: import("@sinclair/typebox").TObject<{
     /** Conversation thread identifier (groups related messages) */
     thread: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     /** Message classification */
-    type: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Message">, import("@sinclair/typebox").TLiteral<"Command">, import("@sinclair/typebox").TLiteral<"Answer">, import("@sinclair/typebox").TLiteral<"Handover">, import("@sinclair/typebox").TLiteral<"Alert">, import("@sinclair/typebox").TLiteral<"ToolResult">]>;
+    type: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Message">, import("@sinclair/typebox").TLiteral<"Command">, import("@sinclair/typebox").TLiteral<"Answer">, import("@sinclair/typebox").TLiteral<"Handover">, import("@sinclair/typebox").TLiteral<"Alert">, import("@sinclair/typebox").TLiteral<"ToolResult">, import("@sinclair/typebox").TLiteral<"Arbitration">, import("@sinclair/typebox").TLiteral<"Divergence">]>;
     /** The actual message content */
     message: import("@sinclair/typebox").TString;
     /** Optional: reference to an OrchestratorToolCall.call_id */

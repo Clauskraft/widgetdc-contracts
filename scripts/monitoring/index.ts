@@ -6,7 +6,7 @@
  * with graceful in-memory fallback.
  */
 
-import type { MonitoringState, CostEntry, HealthProbeResult, Incident, SLARecord } from "./types.js";
+import type { MonitoringState, CostEntry, HealthProbeResult, Incident, SLARecord, ScorecardEntry, TelemetryEntry } from "./types.js";
 import { fetchServices, fetchMetrics, fetchUsage, fetchDeployments, PROJECT_IDS } from "./railway-client.js";
 import { detectStatisticalAnomalies, detectTrendAnomalies, detectCostAnomalies } from "./metrics-processor.js";
 import { evaluateRules, acknowledgeAlert, resolveAlert, DEFAULT_RULES } from "./alert-engine.js";
@@ -36,6 +36,8 @@ const state: MonitoringState = {
   healthProbes: new Map(),
   incidents: [],
   slaRecords: new Map(),
+  telemetryEntries: [],
+  scorecardEntries: [],
 };
 
 const MAX_METRICS_HISTORY = 2880;  // 10 days at 5-min intervals
@@ -270,6 +272,41 @@ export function getInfrastructure() {
     },
     lastPoll: state.lastPoll,
     pollCount: state.pollCount,
+  };
+}
+
+export function ingestTelemetryEntries(entries: TelemetryEntry[]): number {
+  if (entries.length === 0) return 0;
+  state.telemetryEntries ??= [];
+  state.telemetryEntries.push(...entries);
+  if (state.telemetryEntries.length > 1000) {
+    state.telemetryEntries.splice(0, state.telemetryEntries.length - 1000);
+  }
+  broadcast("telemetry-ingested", {
+    count: entries.length,
+    lastTimestamp: entries[entries.length - 1]?.timestamp ?? null,
+  });
+  return entries.length;
+}
+
+export function ingestScorecardEntries(entries: ScorecardEntry[]): number {
+  if (entries.length === 0) return 0;
+  state.scorecardEntries ??= [];
+  state.scorecardEntries.push(...entries);
+  if (state.scorecardEntries.length > 1000) {
+    state.scorecardEntries.splice(0, state.scorecardEntries.length - 1000);
+  }
+  broadcast("decision-quality", {
+    count: entries.length,
+    dimensions: [...new Set(entries.map((entry) => entry.dimension))],
+  });
+  return entries.length;
+}
+
+export function getDecisionQuality() {
+  return {
+    telemetryEntries: state.telemetryEntries ?? [],
+    scorecardEntries: state.scorecardEntries ?? [],
   };
 }
 

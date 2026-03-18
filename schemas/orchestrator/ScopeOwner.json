@@ -1,0 +1,18 @@
+{
+  "$id": "ScopeOwner",
+  "description": "Approved runtime owner or consumer scope for routing and trust contracts.",
+  "anyOf": [
+    {
+      "const": "widgetdc-orchestrator",
+      "type": "string"
+    },
+    {
+      "const": "widgetdc-librechat",
+      "type": "string"
+    },
+    {
+      "const": "snout",
+      "type": "string"
+    }
+  ]
+}

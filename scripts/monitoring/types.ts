@@ -151,6 +151,64 @@ export interface AuditEntry {
   actor?: string;
 }
 
+export interface TelemetryEntry {
+  telemetry_id?: string;
+  timestamp: string;
+  scope_owner: "widgetdc-orchestrator" | "widgetdc-librechat" | "snout";
+  agent_persona: "RESEARCHER" | "ENGINEER" | "CUSTODIAN" | "ARCHITECT" | "SENTINEL" | "ARCHIVIST" | "HARVESTER" | "ANALYST" | "INTEGRATOR" | "TESTER";
+  runtime_identity?: string;
+  provider_source?: string;
+  task_domain: "intake" | "decomposition" | "recommendation" | "learning" | "routing" | "audit";
+  capability?: string;
+  phase: "discover" | "define" | "develop" | "deliver" | "observe" | "orient" | "decide" | "act";
+  outcome: "success" | "warning" | "timeout" | "fail" | "blocked";
+  duration_ms: number;
+  evidence_source: "decision_quality_scorecard" | "monitoring_audit_log" | "operator_feedback" | "runtime_readback";
+  trace_id?: string;
+  metadata?: Record<string, string | number | boolean | null>;
+}
+
+export interface ScorecardEntry {
+  entry_id: string;
+  recorded_at: string;
+  task_domain: "intake" | "decomposition" | "recommendation" | "learning" | "routing" | "audit";
+  scope_owner: "widgetdc-orchestrator" | "widgetdc-librechat" | "snout";
+  dimension:
+    | "prioritization_quality"
+    | "decomposition_quality"
+    | "promotion_precision"
+    | "decision_stability"
+    | "operator_acceptance"
+    | "normalization_quality"
+    | "arbitration_confidence"
+    | "time_to_verified_decision"
+    | "tri_source_arbitration_divergence";
+  metric_name: string;
+  metric_value: number;
+  target_value?: number;
+  status: "pass" | "warn" | "fail" | "pending";
+  confidence: number;
+  sample_size: number;
+  evidence_refs: string[];
+  trust_profile?: {
+    agent_persona: TelemetryEntry["agent_persona"];
+    agent_id?: string;
+    runtime_identity?: string;
+    provider_source?: string;
+    task_domain: ScorecardEntry["task_domain"];
+    success_count: number;
+    fail_count: number;
+    bayesian_score: number;
+    prior_weight: number;
+    default_prior_score: number;
+    evidence_source: TelemetryEntry["evidence_source"];
+    scorecard_dimension: ScorecardEntry["dimension"];
+    scope_owner: ScorecardEntry["scope_owner"];
+    last_verified_at: string;
+  };
+  notes?: string;
+}
+
 export interface ServiceDetail {
   service: RailwayService & { latencyMs?: number; healthProbeOk?: boolean };
   metrics: {
@@ -186,4 +244,6 @@ export interface MonitoringState {
   healthProbes: Map<string, HealthProbeResult[]>;
   incidents: Incident[];
   slaRecords: Map<string, SLARecord[]>;
+  telemetryEntries?: TelemetryEntry[];
+  scorecardEntries?: ScorecardEntry[];
 }

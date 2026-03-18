@@ -1,0 +1,38 @@
+{
+  "$id": "TelemetryPhase",
+  "description": "Canonical workflow or OODA phase associated with a telemetry sample.",
+  "anyOf": [
+    {
+      "const": "discover",
+      "type": "string"
+    },
+    {
+      "const": "define",
+      "type": "string"
+    },
+    {
+      "const": "develop",
+      "type": "string"
+    },
+    {
+      "const": "deliver",
+      "type": "string"
+    },
+    {
+      "const": "observe",
+      "type": "string"
+    },
+    {
+      "const": "orient",
+      "type": "string"
+    },
+    {
+      "const": "decide",
+      "type": "string"
+    },
+    {
+      "const": "act",
+      "type": "string"
+    }
+  ]
+}

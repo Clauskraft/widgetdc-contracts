@@ -1,0 +1,26 @@
+{
+  "$id": "TelemetryOutcome",
+  "description": "Normalized runtime outcome for telemetry ingestion.",
+  "anyOf": [
+    {
+      "const": "success",
+      "type": "string"
+    },
+    {
+      "const": "warning",
+      "type": "string"
+    },
+    {
+      "const": "timeout",
+      "type": "string"
+    },
+    {
+      "const": "fail",
+      "type": "string"
+    },
+    {
+      "const": "blocked",
+      "type": "string"
+    }
+  ]
+}

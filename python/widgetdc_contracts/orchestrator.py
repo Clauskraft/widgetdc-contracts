@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
+from pydantic import BaseModel, Field
 from pydantic import Field, RootModel
 from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "StoredMessage"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType"]
 
 class AgentCapability(
     RootModel[
@@ -248,6 +249,144 @@ class AgentMessageType(
         Field(..., description='Classification of the message purpose')
     )
 
+class AgentTrustProfile(BaseModel):
+    agent_id: (
+        Literal[
+            'Claude',
+            'Gemini',
+            'DeepSeek',
+            'Grok',
+            'RLM',
+            'User',
+            'System',
+            'Orchestrator',
+        ]
+        | str
+    ) = Field(..., description='Canonical agent identifier or scoped runtime agent ID.')
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+    ] = Field(
+        ...,
+        description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
+    )
+    success_count: int = Field(
+        ..., description='Verified successful outcomes in this domain.', ge=0
+    )
+    fail_count: int = Field(
+        ..., description='Verified failed outcomes in this domain.', ge=0
+    )
+    bayesian_score: float = Field(
+        ...,
+        description='Bayesian trust score derived from verified runtime evidence.',
+        ge=0.0,
+        le=1.0,
+    )
+    prior_weight: float = Field(
+        ..., description='Weight of the prior used for Bayesian smoothing.', ge=0.0
+    )
+    default_prior_score: float = Field(
+        ...,
+        description='Configured prior score before domain-specific evidence accumulates.',
+        ge=0.0,
+        le=1.0,
+    )
+    evidence_source: Literal[
+        'decision_quality_scorecard',
+        'monitoring_audit_log',
+        'operator_feedback',
+        'runtime_readback',
+    ] = Field(
+        ...,
+        description='Canonical evidence sources allowed to influence routing trust.',
+    )
+    scorecard_dimension: Literal[
+        'prioritization_quality',
+        'decomposition_quality',
+        'promotion_precision',
+        'decision_stability',
+        'operator_acceptance',
+    ] = Field(
+        ...,
+        description='Primary scorecard dimension this trust profile is intended to improve.',
+    )
+    scope_owner: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = (
+        Field(
+            ...,
+            description='Approved runtime owner/consumer scope for this trust profile.',
+        )
+    )
+    last_verified_at: AwareDatetime = Field(
+        ..., description='Latest runtime verification timestamp for this trust profile.'
+    )
+
+class AgentWorkflowEnvelope(BaseModel):
+    workflow_id: str = Field(
+        ..., description='Stable workflow identifier for orchestration lineage.'
+    )
+    workflow_type: Literal['research', 'delivery', 'audit', 'debate'] = Field(
+        ..., description='Workflow families allowed for the scoped orchestration layer.'
+    )
+    current_phase: Literal['discover', 'define', 'develop', 'deliver'] = Field(
+        ...,
+        description='Canonical orchestration phases, narrowed for orchestrator/librechat/snout usage only.',
+    )
+    participants: list[
+        Literal[
+            'Claude',
+            'Gemini',
+            'DeepSeek',
+            'Grok',
+            'RLM',
+            'User',
+            'System',
+            'Orchestrator',
+        ]
+        | str
+    ] = Field(
+        ...,
+        description='Participants involved in the current workflow envelope.',
+        min_length=1,
+    )
+    primary_surface: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = (
+        Field(
+            ...,
+            description='Primary consumer/runtime that owns this workflow envelope.',
+        )
+    )
+    flow_ref: Literal['core-flow-1', 'core-flow-2', 'core-flow-3'] = Field(
+        ..., description='Canonical LIN-165 flow strengthened by this workflow.'
+    )
+    scorecard_ref: str = Field(
+        ...,
+        description='Reference to the decision-quality scorecard batch or evidence packet.',
+    )
+    reasoning_lineage_visible: bool = Field(
+        ...,
+        description='Whether the workflow lineage may be surfaced in LibreChat or other approved consumers.',
+    )
+    quorum_consensus: bool | None = Field(
+        None,
+        description='Set when a workflow requires explicit agreement before progressing.',
+    )
+    started_at: AwareDatetime = Field(..., description='Workflow start timestamp.')
+    updated_at: AwareDatetime = Field(
+        ..., description='Last workflow state update timestamp.'
+    )
+
+class OrchestratorTaskDomain(
+    RootModel[
+        Literal[
+            'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+        ]
+    ]
+):
+    root: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+    ] = Field(
+        ...,
+        description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
+    )
+
 class OrchestratorToolCall(BaseModel):
     call_id: UUID = Field(
         ..., description='Unique ID for this tool call (agent-generated UUID)'
@@ -301,6 +440,396 @@ class OrchestratorToolStatus(
 ):
     root: Literal['success', 'error', 'timeout', 'rate_limited', 'unauthorized'] = (
         Field(..., description='Outcome status of an Orchestrator tool call')
+    )
+
+class RoutingCapability(
+    RootModel[
+        Literal[
+            'engagement_intake',
+            'guided_decomposition',
+            'verified_recommendation',
+            'learning_feedback',
+            'workflow_audit',
+        ]
+    ]
+):
+    root: Literal[
+        'engagement_intake',
+        'guided_decomposition',
+        'verified_recommendation',
+        'learning_feedback',
+        'workflow_audit',
+    ] = Field(
+        ...,
+        description='Capabilities the orchestrator may route within the active LIN-165 wedge.',
+    )
+
+class Intent(BaseModel):
+    intent_id: str = Field(
+        ..., description='Stable intent identifier for routing and lineage.'
+    )
+    capability: Literal[
+        'engagement_intake',
+        'guided_decomposition',
+        'verified_recommendation',
+        'learning_feedback',
+        'workflow_audit',
+    ] = Field(
+        ...,
+        description='Capabilities the orchestrator may route within the active LIN-165 wedge.',
+    )
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'audit'
+    ] = Field(
+        ..., description='Execution domain for scorecard and trust-model mapping.'
+    )
+    flow_ref: Literal['core-flow-1', 'core-flow-2', 'core-flow-3'] = Field(
+        ..., description='Canonical LIN-165 flow this intent strengthens.'
+    )
+    route_scope: list[
+        Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout']
+    ] = Field(
+        ...,
+        description='Only approved consumers for this routing intent.',
+        min_length=1,
+    )
+    operator_visible: bool = Field(
+        ..., description='Whether this intent may be surfaced in LibreChat lineage UI.'
+    )
+    scorecard_dimensions: list[
+        Literal[
+            'prioritization_quality',
+            'decomposition_quality',
+            'promotion_precision',
+            'decision_stability',
+            'operator_acceptance',
+            'time_to_verified_decision',
+            'tri_source_arbitration_divergence',
+        ]
+    ] = Field(
+        ...,
+        description='Decision-quality dimensions this routing intent is expected to affect.',
+        min_length=1,
+    )
+
+
+class RoutingDecision(BaseModel):
+    decision_id: str = Field(
+        ...,
+        description='Stable routing decision identifier for runtime lineage and read-back.',
+    )
+    intent: Intent = Field(
+        ...,
+        description='Canonical routing intent used by the orchestrator to classify and constrain work within the active WidgeTDC wedge.',
+    )
+    selected_agent_id: (
+        Literal[
+            'Claude',
+            'Gemini',
+            'DeepSeek',
+            'Grok',
+            'RLM',
+            'User',
+            'System',
+            'Orchestrator',
+        ]
+        | str
+    ) = Field(
+        ...,
+        description='Selected agent or runtime agent ID chosen by the orchestrator.',
+    )
+    selected_capability: Literal[
+        'engagement_intake',
+        'guided_decomposition',
+        'verified_recommendation',
+        'learning_feedback',
+        'workflow_audit',
+    ] = Field(
+        ...,
+        description='Capabilities the orchestrator may route within the active LIN-165 wedge.',
+    )
+    trust_score: float = Field(
+        ...,
+        description='Trust score that justified the selected route.',
+        ge=0.0,
+        le=1.0,
+    )
+    reason_code: Literal[
+        'TRUST_WIN',
+        'COST_TIER_MATCH',
+        'FLOW_SPECIALIZATION',
+        'FALLBACK_ROUTE',
+        'WAIVER_ROUTE',
+    ] = Field(..., description='Why this route was selected.')
+    evidence_refs: list[str] = Field(
+        ...,
+        description='References to trust, scorecard, or runtime evidence used during routing.',
+        min_length=1,
+    )
+    waiver_reason: str | None = Field(
+        None,
+        description='Required when fallback or waiver routing is used instead of the ideal route.',
+    )
+    decided_at: AwareDatetime = Field(
+        ..., description='Timestamp when the routing decision was made.'
+    )
+
+class RoutingIntent(BaseModel):
+    intent_id: str = Field(
+        ..., description='Stable intent identifier for routing and lineage.'
+    )
+    capability: Literal[
+        'engagement_intake',
+        'guided_decomposition',
+        'verified_recommendation',
+        'learning_feedback',
+        'workflow_audit',
+    ] = Field(
+        ...,
+        description='Capabilities the orchestrator may route within the active LIN-165 wedge.',
+    )
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'audit'
+    ] = Field(
+        ..., description='Execution domain for scorecard and trust-model mapping.'
+    )
+    flow_ref: Literal['core-flow-1', 'core-flow-2', 'core-flow-3'] = Field(
+        ..., description='Canonical LIN-165 flow this intent strengthens.'
+    )
+    route_scope: list[
+        Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout']
+    ] = Field(
+        ...,
+        description='Only approved consumers for this routing intent.',
+        min_length=1,
+    )
+    operator_visible: bool = Field(
+        ..., description='Whether this intent may be surfaced in LibreChat lineage UI.'
+    )
+    scorecard_dimensions: list[
+        Literal[
+            'prioritization_quality',
+            'decomposition_quality',
+            'promotion_precision',
+            'decision_stability',
+            'operator_acceptance',
+            'time_to_verified_decision',
+            'tri_source_arbitration_divergence',
+        ]
+    ] = Field(
+        ...,
+        description='Decision-quality dimensions this routing intent is expected to affect.',
+        min_length=1,
+    )
+
+class ScopeOwner(
+    RootModel[Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout']]
+):
+    root: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = Field(
+        ...,
+        description='Approved runtime owner or consumer scope for routing and trust contracts.',
+    )
+
+class ScorecardDimension(
+    RootModel[
+        Literal[
+            'prioritization_quality',
+            'decomposition_quality',
+            'promotion_precision',
+            'decision_stability',
+            'operator_acceptance',
+            'normalization_quality',
+            'arbitration_confidence',
+            'time_to_verified_decision',
+            'tri_source_arbitration_divergence',
+        ]
+    ]
+):
+    root: Literal[
+        'prioritization_quality',
+        'decomposition_quality',
+        'promotion_precision',
+        'decision_stability',
+        'operator_acceptance',
+        'normalization_quality',
+        'arbitration_confidence',
+        'time_to_verified_decision',
+        'tri_source_arbitration_divergence',
+    ] = Field(
+        ...,
+        description='Canonical decision-quality dimensions approved for trust mapping and scorecard entries.',
+    )
+
+class TrustProfile(BaseModel):
+    agent_persona: Literal[
+        'RESEARCHER',
+        'ENGINEER',
+        'CUSTODIAN',
+        'ARCHITECT',
+        'SENTINEL',
+        'ARCHIVIST',
+        'HARVESTER',
+        'ANALYST',
+        'INTEGRATOR',
+        'TESTER',
+    ] = Field(..., description='RLM Engine agent persona')
+    agent_id: (
+        Literal[
+            'Claude',
+            'Gemini',
+            'DeepSeek',
+            'Grok',
+            'RLM',
+            'User',
+            'System',
+            'Orchestrator',
+        ]
+        | str
+        | None
+    ) = Field(
+        None,
+        description='Legacy chat/runtime agent identifier. Optional because trust is anchored on persona, not provider.',
+    )
+    runtime_identity: str | None = Field(
+        None,
+        description='Scoped runtime identity for a concrete worker, session, or delegated specialist.',
+        min_length=1,
+    )
+    provider_source: str | None = Field(
+        None,
+        description='Observed provider source for telemetry correlation only. Must not be used as the trust identity.',
+        min_length=1,
+    )
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+    ] = Field(
+        ...,
+        description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
+    )
+    success_count: int = Field(
+        ..., description='Verified successful outcomes in this domain.', ge=0
+    )
+    fail_count: int = Field(
+        ..., description='Verified failed outcomes in this domain.', ge=0
+    )
+    bayesian_score: float = Field(
+        ...,
+        description='Bayesian trust score derived from verified runtime evidence.',
+        ge=0.0,
+        le=1.0,
+    )
+    prior_weight: float = Field(
+        ..., description='Weight of the prior used for Bayesian smoothing.', ge=0.0
+    )
+    default_prior_score: float = Field(
+        ...,
+        description='Configured prior score before domain-specific evidence accumulates.',
+        ge=0.0,
+        le=1.0,
+    )
+    evidence_source: Literal[
+        'decision_quality_scorecard',
+        'monitoring_audit_log',
+        'operator_feedback',
+        'runtime_readback',
+    ] = Field(
+        ...,
+        description='Canonical evidence sources allowed to influence routing trust.',
+    )
+    scorecard_dimension: Literal[
+        'prioritization_quality',
+        'decomposition_quality',
+        'promotion_precision',
+        'decision_stability',
+        'operator_acceptance',
+        'normalization_quality',
+        'arbitration_confidence',
+        'time_to_verified_decision',
+        'tri_source_arbitration_divergence',
+    ] = Field(
+        ...,
+        description='Canonical decision-quality dimensions approved for trust mapping and scorecard entries.',
+    )
+    scope_owner: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = (
+        Field(
+            ...,
+            description='Approved runtime owner or consumer scope for routing and trust contracts.',
+        )
+    )
+    last_verified_at: AwareDatetime = Field(
+        ..., description='Latest runtime verification timestamp for this trust profile.'
+    )
+
+
+class ScorecardEntry(BaseModel):
+    entry_id: str = Field(
+        ...,
+        description='Stable scorecard entry identifier for a batch, case, or evaluation window.',
+        min_length=1,
+    )
+    recorded_at: AwareDatetime = Field(
+        ..., description='Timestamp when the scorecard entry was recorded.'
+    )
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+    ] = Field(
+        ...,
+        description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
+    )
+    scope_owner: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = (
+        Field(
+            ...,
+            description='Approved runtime owner or consumer scope for routing and trust contracts.',
+        )
+    )
+    dimension: Literal[
+        'prioritization_quality',
+        'decomposition_quality',
+        'promotion_precision',
+        'decision_stability',
+        'operator_acceptance',
+        'normalization_quality',
+        'arbitration_confidence',
+        'time_to_verified_decision',
+        'tri_source_arbitration_divergence',
+    ] = Field(
+        ...,
+        description='Canonical decision-quality dimensions approved for trust mapping and scorecard entries.',
+    )
+    metric_name: str = Field(
+        ...,
+        description='Human-readable metric label, e.g. Normalization Quality.',
+        min_length=1,
+    )
+    metric_value: float = Field(..., description='Observed metric value.')
+    target_value: float | None = Field(
+        None, description='Target metric value for comparison.'
+    )
+    status: Literal['pass', 'warn', 'fail', 'pending'] = Field(
+        ..., description='Evaluation status for a scorecard metric.'
+    )
+    confidence: float = Field(
+        ..., description='Confidence in the metric evaluation.', ge=0.0, le=1.0
+    )
+    sample_size: int = Field(
+        ..., description='Number of observations underlying the metric.', ge=0
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='References to runtime, Linear, docs, or graph evidence.',
+        min_length=1,
+    )
+    trust_profile: TrustProfile | None = Field(
+        None,
+        description='Minimal orchestrator trust profile. Persona is the primary identity; provider identifiers are telemetry-only correlation metadata.',
+    )
+    notes: str | None = Field(
+        None, description='Short explanatory note for operators or audits.'
+    )
+
+class ScorecardMetricStatus(RootModel[Literal['pass', 'warn', 'fail', 'pending']]):
+    root: Literal['pass', 'warn', 'fail', 'pending'] = Field(
+        ..., description='Evaluation status for a scorecard metric.'
     )
 
 class File(BaseModel):
@@ -389,5 +918,137 @@ class StoredMessage(BaseModel):
     )
     pinned: bool | None = Field(
         None, description='Whether this message is pinned in the chat'
+    )
+
+class TelemetryEntry(BaseModel):
+    telemetry_id: str | None = Field(
+        None, description='Stable telemetry identifier when available.', min_length=1
+    )
+    timestamp: AwareDatetime = Field(
+        ..., description='Runtime timestamp for the event.'
+    )
+    scope_owner: Literal['widgetdc-orchestrator', 'widgetdc-librechat', 'snout'] = (
+        Field(
+            ...,
+            description='Approved runtime owner or consumer scope for routing and trust contracts.',
+        )
+    )
+    agent_persona: Literal[
+        'RESEARCHER',
+        'ENGINEER',
+        'CUSTODIAN',
+        'ARCHITECT',
+        'SENTINEL',
+        'ARCHIVIST',
+        'HARVESTER',
+        'ANALYST',
+        'INTEGRATOR',
+        'TESTER',
+    ] = Field(..., description='RLM Engine agent persona')
+    runtime_identity: str | None = Field(
+        None, description='Concrete runtime worker/session identity.', min_length=1
+    )
+    provider_source: str | None = Field(
+        None, description='Observed provider for correlation only.', min_length=1
+    )
+    task_domain: Literal[
+        'intake', 'decomposition', 'recommendation', 'learning', 'routing', 'audit'
+    ] = Field(
+        ...,
+        description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
+    )
+    capability: str | None = Field(
+        None,
+        description='Capability or workflow label associated with the event.',
+        min_length=1,
+    )
+    phase: Literal[
+        'discover', 'define', 'develop', 'deliver', 'observe', 'orient', 'decide', 'act'
+    ] = Field(
+        ...,
+        description='Canonical workflow or OODA phase associated with a telemetry sample.',
+    )
+    outcome: Literal['success', 'warning', 'timeout', 'fail', 'blocked'] = Field(
+        ..., description='Normalized runtime outcome for telemetry ingestion.'
+    )
+    duration_ms: int = Field(
+        ..., description='Observed duration in milliseconds.', ge=0
+    )
+    evidence_source: Literal[
+        'decision_quality_scorecard',
+        'monitoring_audit_log',
+        'operator_feedback',
+        'runtime_readback',
+    ] = Field(
+        ...,
+        description='Canonical evidence sources allowed to influence routing trust.',
+    )
+    trace_id: str | None = Field(
+        None,
+        description='Trace or checkpoint identifier for read-back correlation.',
+        min_length=1,
+    )
+    metadata: dict[constr(pattern=r'^(.*)$'), str | float | bool | None] | None = Field(
+        None,
+        description='Small scalar metadata only. Raw payloads and provider transcripts are out of scope.',
+    )
+
+class TelemetryOutcome(
+    RootModel[Literal['success', 'warning', 'timeout', 'fail', 'blocked']]
+):
+    root: Literal['success', 'warning', 'timeout', 'fail', 'blocked'] = Field(
+        ..., description='Normalized runtime outcome for telemetry ingestion.'
+    )
+
+class TelemetryPhase(
+    RootModel[
+        Literal[
+            'discover',
+            'define',
+            'develop',
+            'deliver',
+            'observe',
+            'orient',
+            'decide',
+            'act',
+        ]
+    ]
+):
+    root: Literal[
+        'discover', 'define', 'develop', 'deliver', 'observe', 'orient', 'decide', 'act'
+    ] = Field(
+        ...,
+        description='Canonical workflow or OODA phase associated with a telemetry sample.',
+    )
+
+class TrustEvidenceSource(
+    RootModel[
+        Literal[
+            'decision_quality_scorecard',
+            'monitoring_audit_log',
+            'operator_feedback',
+            'runtime_readback',
+        ]
+    ]
+):
+    root: Literal[
+        'decision_quality_scorecard',
+        'monitoring_audit_log',
+        'operator_feedback',
+        'runtime_readback',
+    ] = Field(
+        ...,
+        description='Canonical evidence sources allowed to influence routing trust.',
+    )
+
+class WorkflowPhase(RootModel[Literal['discover', 'define', 'develop', 'deliver']]):
+    root: Literal['discover', 'define', 'develop', 'deliver'] = Field(
+        ...,
+        description='Canonical orchestration phases, narrowed for orchestrator/librechat/snout usage only.',
+    )
+
+class WorkflowType(RootModel[Literal['research', 'delivery', 'audit', 'debate']]):
+    root: Literal['research', 'delivery', 'audit', 'debate'] = Field(
+        ..., description='Workflow families allowed for the scoped orchestration layer.'
     )
 

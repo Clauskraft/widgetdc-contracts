@@ -1,0 +1,42 @@
+{
+  "$id": "ScorecardDimension",
+  "description": "Canonical decision-quality dimensions approved for trust mapping and scorecard entries.",
+  "anyOf": [
+    {
+      "const": "prioritization_quality",
+      "type": "string"
+    },
+    {
+      "const": "decomposition_quality",
+      "type": "string"
+    },
+    {
+      "const": "promotion_precision",
+      "type": "string"
+    },
+    {
+      "const": "decision_stability",
+      "type": "string"
+    },
+    {
+      "const": "operator_acceptance",
+      "type": "string"
+    },
+    {
+      "const": "normalization_quality",
+      "type": "string"
+    },
+    {
+      "const": "arbitration_confidence",
+      "type": "string"
+    },
+    {
+      "const": "time_to_verified_decision",
+      "type": "string"
+    },
+    {
+      "const": "tri_source_arbitration_divergence",
+      "type": "string"
+    }
+  ]
+}

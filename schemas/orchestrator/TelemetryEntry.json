@@ -1,0 +1,254 @@
+{
+  "$id": "TelemetryEntry",
+  "description": "Normalized telemetry sample for orchestrator trust and scorecard ingestion. It aligns telemetry with persona-based trust instead of provider identity.",
+  "type": "object",
+  "required": [
+    "timestamp",
+    "scope_owner",
+    "agent_persona",
+    "task_domain",
+    "phase",
+    "outcome",
+    "duration_ms",
+    "evidence_source"
+  ],
+  "properties": {
+    "telemetry_id": {
+      "minLength": 1,
+      "description": "Stable telemetry identifier when available.",
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "description": "Runtime timestamp for the event.",
+      "type": "string"
+    },
+    "scope_owner": {
+      "$id": "ScopeOwner",
+      "description": "Approved runtime owner or consumer scope for routing and trust contracts.",
+      "anyOf": [
+        {
+          "const": "widgetdc-orchestrator",
+          "type": "string"
+        },
+        {
+          "const": "widgetdc-librechat",
+          "type": "string"
+        },
+        {
+          "const": "snout",
+          "type": "string"
+        }
+      ]
+    },
+    "agent_persona": {
+      "$id": "AgentPersona",
+      "description": "RLM Engine agent persona",
+      "anyOf": [
+        {
+          "const": "RESEARCHER",
+          "type": "string"
+        },
+        {
+          "const": "ENGINEER",
+          "type": "string"
+        },
+        {
+          "const": "CUSTODIAN",
+          "type": "string"
+        },
+        {
+          "const": "ARCHITECT",
+          "type": "string"
+        },
+        {
+          "const": "SENTINEL",
+          "type": "string"
+        },
+        {
+          "const": "ARCHIVIST",
+          "type": "string"
+        },
+        {
+          "const": "HARVESTER",
+          "type": "string"
+        },
+        {
+          "const": "ANALYST",
+          "type": "string"
+        },
+        {
+          "const": "INTEGRATOR",
+          "type": "string"
+        },
+        {
+          "const": "TESTER",
+          "type": "string"
+        }
+      ]
+    },
+    "runtime_identity": {
+      "minLength": 1,
+      "description": "Concrete runtime worker/session identity.",
+      "type": "string"
+    },
+    "provider_source": {
+      "minLength": 1,
+      "description": "Observed provider for correlation only.",
+      "type": "string"
+    },
+    "task_domain": {
+      "$id": "OrchestratorTaskDomain",
+      "description": "Narrow task domains used by the orchestrator trust model and scorecard mapping.",
+      "anyOf": [
+        {
+          "const": "intake",
+          "type": "string"
+        },
+        {
+          "const": "decomposition",
+          "type": "string"
+        },
+        {
+          "const": "recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning",
+          "type": "string"
+        },
+        {
+          "const": "routing",
+          "type": "string"
+        },
+        {
+          "const": "audit",
+          "type": "string"
+        }
+      ]
+    },
+    "capability": {
+      "minLength": 1,
+      "description": "Capability or workflow label associated with the event.",
+      "type": "string"
+    },
+    "phase": {
+      "$id": "TelemetryPhase",
+      "description": "Canonical workflow or OODA phase associated with a telemetry sample.",
+      "anyOf": [
+        {
+          "const": "discover",
+          "type": "string"
+        },
+        {
+          "const": "define",
+          "type": "string"
+        },
+        {
+          "const": "develop",
+          "type": "string"
+        },
+        {
+          "const": "deliver",
+          "type": "string"
+        },
+        {
+          "const": "observe",
+          "type": "string"
+        },
+        {
+          "const": "orient",
+          "type": "string"
+        },
+        {
+          "const": "decide",
+          "type": "string"
+        },
+        {
+          "const": "act",
+          "type": "string"
+        }
+      ]
+    },
+    "outcome": {
+      "$id": "TelemetryOutcome",
+      "description": "Normalized runtime outcome for telemetry ingestion.",
+      "anyOf": [
+        {
+          "const": "success",
+          "type": "string"
+        },
+        {
+          "const": "warning",
+          "type": "string"
+        },
+        {
+          "const": "timeout",
+          "type": "string"
+        },
+        {
+          "const": "fail",
+          "type": "string"
+        },
+        {
+          "const": "blocked",
+          "type": "string"
+        }
+      ]
+    },
+    "duration_ms": {
+      "minimum": 0,
+      "description": "Observed duration in milliseconds.",
+      "type": "integer"
+    },
+    "evidence_source": {
+      "$id": "TrustEvidenceSource",
+      "description": "Canonical evidence sources allowed to influence routing trust.",
+      "anyOf": [
+        {
+          "const": "decision_quality_scorecard",
+          "type": "string"
+        },
+        {
+          "const": "monitoring_audit_log",
+          "type": "string"
+        },
+        {
+          "const": "operator_feedback",
+          "type": "string"
+        },
+        {
+          "const": "runtime_readback",
+          "type": "string"
+        }
+      ]
+    },
+    "trace_id": {
+      "minLength": 1,
+      "description": "Trace or checkpoint identifier for read-back correlation.",
+      "type": "string"
+    },
+    "metadata": {
+      "description": "Small scalar metadata only. Raw payloads and provider transcripts are out of scope.",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

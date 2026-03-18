@@ -119,7 +119,7 @@ for module_dir in "$SCHEMAS_DIR"/*/; do
         /^$/ && !in_body { next }
         /^"""/ && !in_body { next }
         { in_body=1; print }
-      ' "$py_file" | sed "s/class ${py_name}(RootModel/class ${py_name}(RootModel/" | head -100
+      ' "$py_file" | sed "s/class ${py_name}(RootModel/class ${py_name}(RootModel/"
       echo ""
     done
   } > "$PYTHON_DIR/${output_name}.py"

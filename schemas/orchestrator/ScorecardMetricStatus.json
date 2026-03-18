@@ -1,0 +1,22 @@
+{
+  "$id": "ScorecardMetricStatus",
+  "description": "Evaluation status for a scorecard metric.",
+  "anyOf": [
+    {
+      "const": "pass",
+      "type": "string"
+    },
+    {
+      "const": "warn",
+      "type": "string"
+    },
+    {
+      "const": "fail",
+      "type": "string"
+    },
+    {
+      "const": "pending",
+      "type": "string"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox';
+import { AgentPersona } from '../agent/enums.js';
 import { AgentId } from './agent-message.js';
 export const OrchestratorTaskDomain = Type.Union([
     Type.Literal('intake'),
@@ -20,10 +21,41 @@ export const TrustEvidenceSource = Type.Union([
     $id: 'TrustEvidenceSource',
     description: 'Canonical evidence sources allowed to influence routing trust.',
 });
+export const ScorecardDimension = Type.Union([
+    Type.Literal('prioritization_quality'),
+    Type.Literal('decomposition_quality'),
+    Type.Literal('promotion_precision'),
+    Type.Literal('decision_stability'),
+    Type.Literal('operator_acceptance'),
+    Type.Literal('normalization_quality'),
+    Type.Literal('arbitration_confidence'),
+    Type.Literal('time_to_verified_decision'),
+    Type.Literal('tri_source_arbitration_divergence'),
+], {
+    $id: 'ScorecardDimension',
+    description: 'Canonical decision-quality dimensions approved for trust mapping and scorecard entries.',
+});
+export const ScopeOwner = Type.Union([
+    Type.Literal('widgetdc-orchestrator'),
+    Type.Literal('widgetdc-librechat'),
+    Type.Literal('snout'),
+], {
+    $id: 'ScopeOwner',
+    description: 'Approved runtime owner or consumer scope for routing and trust contracts.',
+});
 export const AgentTrustProfile = Type.Object({
-    agent_id: Type.Union([AgentId, Type.String()], {
-        description: 'Canonical agent identifier or scoped runtime agent ID.',
-    }),
+    agent_persona: AgentPersona,
+    agent_id: Type.Optional(Type.Union([AgentId, Type.String()], {
+        description: 'Legacy chat/runtime agent identifier. Optional because trust is anchored on persona, not provider.',
+    })),
+    runtime_identity: Type.Optional(Type.String({
+        minLength: 1,
+        description: 'Scoped runtime identity for a concrete worker, session, or delegated specialist.',
+    })),
+    provider_source: Type.Optional(Type.String({
+        minLength: 1,
+        description: 'Observed provider source for telemetry correlation only. Must not be used as the trust identity.',
+    })),
     task_domain: OrchestratorTaskDomain,
     success_count: Type.Integer({
         minimum: 0,
@@ -48,28 +80,14 @@ export const AgentTrustProfile = Type.Object({
         description: 'Configured prior score before domain-specific evidence accumulates.',
     }),
     evidence_source: TrustEvidenceSource,
-    scorecard_dimension: Type.Union([
-        Type.Literal('prioritization_quality'),
-        Type.Literal('decomposition_quality'),
-        Type.Literal('promotion_precision'),
-        Type.Literal('decision_stability'),
-        Type.Literal('operator_acceptance'),
-    ], {
-        description: 'Primary scorecard dimension this trust profile is intended to improve.',
-    }),
-    scope_owner: Type.Union([
-        Type.Literal('widgetdc-orchestrator'),
-        Type.Literal('widgetdc-librechat'),
-        Type.Literal('snout'),
-    ], {
-        description: 'Approved runtime owner/consumer scope for this trust profile.',
-    }),
+    scorecard_dimension: ScorecardDimension,
+    scope_owner: ScopeOwner,
     last_verified_at: Type.String({
         format: 'date-time',
         description: 'Latest runtime verification timestamp for this trust profile.',
     }),
 }, {
     $id: 'AgentTrustProfile',
-    description: 'Minimal orchestrator trust profile. Used only by widgetdc-orchestrator, widgetdc-librechat, and optional Snout routing support.',
+    description: 'Minimal orchestrator trust profile. Persona is the primary identity; provider identifiers are telemetry-only correlation metadata.',
 });
 //# sourceMappingURL=agent-trust-profile.js.map

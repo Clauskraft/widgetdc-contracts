@@ -16,6 +16,10 @@ import {
   AgentTier,
   AgentPersona,
   SignalType,
+  AgentMessageType,
+  AgentTrustProfile,
+  ScorecardEntry,
+  TelemetryEntry,
   NodeLabel,
   RelationshipType,
   DOMAIN_SHORT_IDS,
@@ -257,5 +261,87 @@ describe('graph/', () => {
       expect(Value.Check(RelationshipType, r)).toBe(true)
     }
     expect(Value.Check(RelationshipType, 'INVALID_REL')).toBe(false)
+  })
+})
+
+describe('orchestrator/', () => {
+  it('AgentMessageType supports arbitration and divergence', () => {
+    expect(Value.Check(AgentMessageType, 'Arbitration')).toBe(true)
+    expect(Value.Check(AgentMessageType, 'Divergence')).toBe(true)
+  })
+
+  it('AgentTrustProfile anchors trust on persona instead of provider identity', () => {
+    const profile = {
+      agent_persona: 'ARCHITECT',
+      runtime_identity: 'masterarchitectwidgetdc',
+      provider_source: 'gemini',
+      task_domain: 'routing',
+      success_count: 12,
+      fail_count: 1,
+      bayesian_score: 0.92,
+      prior_weight: 5,
+      default_prior_score: 0.7,
+      evidence_source: 'decision_quality_scorecard',
+      scorecard_dimension: 'arbitration_confidence',
+      scope_owner: 'widgetdc-orchestrator',
+      last_verified_at: '2026-03-18T10:00:00Z',
+    }
+    expect(Value.Check(AgentTrustProfile, profile)).toBe(true)
+  })
+
+  it('TelemetryEntry validates normalized runtime telemetry', () => {
+    const entry = {
+      timestamp: '2026-03-18T10:00:00Z',
+      scope_owner: 'widgetdc-orchestrator',
+      agent_persona: 'ENGINEER',
+      runtime_identity: 'legofactory-worker-1',
+      provider_source: 'gemini',
+      task_domain: 'decomposition',
+      capability: 'diamond-develop',
+      phase: 'develop',
+      outcome: 'success',
+      duration_ms: 2450,
+      evidence_source: 'monitoring_audit_log',
+      trace_id: 'trace-123',
+      metadata: {
+        routed: true,
+        retries: 1,
+      },
+    }
+    expect(Value.Check(TelemetryEntry, entry)).toBe(true)
+  })
+
+  it('ScorecardEntry validates normalization and arbitration metrics', () => {
+    const entry = {
+      entry_id: 'scorecard-1',
+      recorded_at: '2026-03-18T10:00:00Z',
+      task_domain: 'routing',
+      scope_owner: 'widgetdc-orchestrator',
+      dimension: 'normalization_quality',
+      metric_name: 'Normalization Quality',
+      metric_value: 0.98,
+      target_value: 1,
+      status: 'pass',
+      confidence: 0.91,
+      sample_size: 24,
+      evidence_refs: ['LIN-261', 'runtime://scorecard/2026-03-18'],
+      trust_profile: {
+        agent_persona: 'ARCHITECT',
+        runtime_identity: 'masterarchitectwidgetdc',
+        provider_source: 'gemini',
+        task_domain: 'routing',
+        success_count: 12,
+        fail_count: 1,
+        bayesian_score: 0.92,
+        prior_weight: 5,
+        default_prior_score: 0.7,
+        evidence_source: 'decision_quality_scorecard',
+        scorecard_dimension: 'arbitration_confidence',
+        scope_owner: 'widgetdc-orchestrator',
+        last_verified_at: '2026-03-18T10:00:00Z',
+      },
+      notes: 'Canonical runtime enforcement path is now schema-backed.',
+    }
+    expect(Value.Check(ScorecardEntry, entry)).toBe(true)
   })
 })

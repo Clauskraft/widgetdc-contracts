@@ -4,7 +4,7 @@
 **Date:** 2026-03-17  
 **Status:** Approved for Implementation  
 **Governing Issue:** [LIN-261](https://linear.app/linear-clauskraft/issue/LIN-261/decision-quality-scorecard-baseline-and-review-cadence)  
-**Core Intent:** Transition the platform from static agent assignments to a dynamic, self-optimizing "Agent Bus" powered by Bayesian trust and intent-based routing.
+**Core Intent:** Transition the platform from static agent assignments to a dynamic, self-optimizing routing layer powered by Bayesian trust and intent-based routing.
 
 ---
 
@@ -23,14 +23,14 @@ To achieve the "Architecture Synthesis" goals of `LIN-165`, the WidgeTDC Orchest
 
 ### 2.1 Bayesian Trust Engine (The Referee)
 The system tracks every agent's performance across specific task types (`coding`, `research`, `strategy`, `audit`).
-- **Telemetry Source:** `monitoring_audit_log` (PostgreSQL).
+- **Telemetry Source:** `TelemetryEntry` + `ScorecardEntry`, backed by monitoring/runtime audit evidence.
 - **Formula:** Bayesian trust score using a Beta distribution (successes + alpha) / (total + alpha + beta).
 - **Default Prior:** 0.70 (Weight: 5).
 
 ### 2.2 Intent Routing Engine (The Brain)
 Every incoming `AgentMessage` of type `Command` or `Question` is passed through the Intent Router.
 - **Classification:** Maps prompts to `AgentCapability` (e.g., `knowledge-advise`, `diamond-develop`).
-- **Resolution:** Selects the provider with the highest Trust Score for that specific intent and cost-tier.
+- **Resolution:** Selects the best qualified persona/runtime identity for that specific intent and cost-tier. Provider is correlation metadata only.
 
 ### 2.3 Universal Workflow Patterns (The "Octo-Flow")
 Standardizes multi-agent coordination into four canonical phases:
@@ -47,7 +47,10 @@ Standardizes multi-agent coordination into four canonical phases:
 Stored in `schemas/orchestrator/AgentTrustProfile.json`.
 ```json
 {
-  "agent_id": "string",
+  "agent_persona": "string",
+  "agent_id": "string?",
+  "runtime_identity": "string?",
+  "provider_source": "string?",
   "task_domain": "string",
   "success_count": "number",
   "fail_count": "number",
@@ -73,8 +76,8 @@ Stored in `schemas/orchestrator/AgentWorkflow.json`.
 ## 4. Implementation Path (Cross-Repo)
 
 ### Phase 1: Contract Enforcement (`widgetdc-contracts`)
-- [ ] Implement `AgentWorkflow` and `AgentTrustProfile` TypeBox schemas.
-- [ ] Export to JSON Schema and Pydantic models.
+- [x] Implement `AgentTrustProfile`, `ScorecardEntry`, and `TelemetryEntry` TypeBox schemas.
+- [x] Export to JSON Schema and Pydantic models.
 
 ### Phase 2: Orchestrator Logic (`WidgeTDC/apps/backend`)
 - [ ] Implement `IntentRouter.ts` using the Octopus-derived classification regex.
@@ -89,8 +92,8 @@ Stored in `schemas/orchestrator/AgentWorkflow.json`.
 ## 5. Governance & Arbitration (LegoFactory)
 
 The **LegoFactory** acts as the final judge of agent performance. 
-- **Arbitration State:** If two agents (e.g., Gemini and Claude) disagree in a `Debate` workflow, the Orchestrator invokes the `quality_gate` defined in the Scorecard.
-- **Trust Decay:** Intentional "Jitter" or failed audits trigger a Trust Decay, preventing an agent from dominating a domain if its decision quality drops below 0.85.
+- **Arbitration State:** If two agents disagree in a `Debate` workflow, the Orchestrator emits explicit `Arbitration` or `Divergence` messages and invokes the `quality_gate` defined in the Scorecard.
+- **Trust Decay:** Only verified scorecard outcomes, runtime read-back, or operator feedback may reduce trust. Synthetic "jitter" is forbidden.
 
 ---
 

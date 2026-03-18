@@ -43,6 +43,8 @@ export const AgentMessageType = Type.Union([
     Type.Literal('Handover'), // Formal agent handover (sprint transitions)
     Type.Literal('Alert'), // System alert or urgent notification
     Type.Literal('ToolResult'), // Result of an Orchestrator tool call
+    Type.Literal('Arbitration'), // Explicit arbitration packet in the governed routing loop
+    Type.Literal('Divergence'), // Explicit disagreement/divergence packet for tri-source review
 ], {
     $id: 'AgentMessageType',
     description: 'Classification of the message purpose',

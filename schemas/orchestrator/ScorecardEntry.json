@@ -1,0 +1,444 @@
+{
+  "$id": "ScorecardEntry",
+  "description": "Canonical decision-quality scorecard entry used for runtime enforcement, monitoring, and governed routing review.",
+  "type": "object",
+  "required": [
+    "entry_id",
+    "recorded_at",
+    "task_domain",
+    "scope_owner",
+    "dimension",
+    "metric_name",
+    "metric_value",
+    "status",
+    "confidence",
+    "sample_size",
+    "evidence_refs"
+  ],
+  "properties": {
+    "entry_id": {
+      "minLength": 1,
+      "description": "Stable scorecard entry identifier for a batch, case, or evaluation window.",
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "description": "Timestamp when the scorecard entry was recorded.",
+      "type": "string"
+    },
+    "task_domain": {
+      "$id": "OrchestratorTaskDomain",
+      "description": "Narrow task domains used by the orchestrator trust model and scorecard mapping.",
+      "anyOf": [
+        {
+          "const": "intake",
+          "type": "string"
+        },
+        {
+          "const": "decomposition",
+          "type": "string"
+        },
+        {
+          "const": "recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning",
+          "type": "string"
+        },
+        {
+          "const": "routing",
+          "type": "string"
+        },
+        {
+          "const": "audit",
+          "type": "string"
+        }
+      ]
+    },
+    "scope_owner": {
+      "$id": "ScopeOwner",
+      "description": "Approved runtime owner or consumer scope for routing and trust contracts.",
+      "anyOf": [
+        {
+          "const": "widgetdc-orchestrator",
+          "type": "string"
+        },
+        {
+          "const": "widgetdc-librechat",
+          "type": "string"
+        },
+        {
+          "const": "snout",
+          "type": "string"
+        }
+      ]
+    },
+    "dimension": {
+      "$id": "ScorecardDimension",
+      "description": "Canonical decision-quality dimensions approved for trust mapping and scorecard entries.",
+      "anyOf": [
+        {
+          "const": "prioritization_quality",
+          "type": "string"
+        },
+        {
+          "const": "decomposition_quality",
+          "type": "string"
+        },
+        {
+          "const": "promotion_precision",
+          "type": "string"
+        },
+        {
+          "const": "decision_stability",
+          "type": "string"
+        },
+        {
+          "const": "operator_acceptance",
+          "type": "string"
+        },
+        {
+          "const": "normalization_quality",
+          "type": "string"
+        },
+        {
+          "const": "arbitration_confidence",
+          "type": "string"
+        },
+        {
+          "const": "time_to_verified_decision",
+          "type": "string"
+        },
+        {
+          "const": "tri_source_arbitration_divergence",
+          "type": "string"
+        }
+      ]
+    },
+    "metric_name": {
+      "minLength": 1,
+      "description": "Human-readable metric label, e.g. Normalization Quality.",
+      "type": "string"
+    },
+    "metric_value": {
+      "description": "Observed metric value.",
+      "type": "number"
+    },
+    "target_value": {
+      "description": "Target metric value for comparison.",
+      "type": "number"
+    },
+    "status": {
+      "$id": "ScorecardMetricStatus",
+      "description": "Evaluation status for a scorecard metric.",
+      "anyOf": [
+        {
+          "const": "pass",
+          "type": "string"
+        },
+        {
+          "const": "warn",
+          "type": "string"
+        },
+        {
+          "const": "fail",
+          "type": "string"
+        },
+        {
+          "const": "pending",
+          "type": "string"
+        }
+      ]
+    },
+    "confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in the metric evaluation.",
+      "type": "number"
+    },
+    "sample_size": {
+      "minimum": 0,
+      "description": "Number of observations underlying the metric.",
+      "type": "integer"
+    },
+    "evidence_refs": {
+      "minItems": 1,
+      "description": "References to runtime, Linear, docs, or graph evidence.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trust_profile": {
+      "$id": "AgentTrustProfile",
+      "description": "Minimal orchestrator trust profile. Persona is the primary identity; provider identifiers are telemetry-only correlation metadata.",
+      "type": "object",
+      "required": [
+        "agent_persona",
+        "task_domain",
+        "success_count",
+        "fail_count",
+        "bayesian_score",
+        "prior_weight",
+        "default_prior_score",
+        "evidence_source",
+        "scorecard_dimension",
+        "scope_owner",
+        "last_verified_at"
+      ],
+      "properties": {
+        "agent_persona": {
+          "$id": "AgentPersona",
+          "description": "RLM Engine agent persona",
+          "anyOf": [
+            {
+              "const": "RESEARCHER",
+              "type": "string"
+            },
+            {
+              "const": "ENGINEER",
+              "type": "string"
+            },
+            {
+              "const": "CUSTODIAN",
+              "type": "string"
+            },
+            {
+              "const": "ARCHITECT",
+              "type": "string"
+            },
+            {
+              "const": "SENTINEL",
+              "type": "string"
+            },
+            {
+              "const": "ARCHIVIST",
+              "type": "string"
+            },
+            {
+              "const": "HARVESTER",
+              "type": "string"
+            },
+            {
+              "const": "ANALYST",
+              "type": "string"
+            },
+            {
+              "const": "INTEGRATOR",
+              "type": "string"
+            },
+            {
+              "const": "TESTER",
+              "type": "string"
+            }
+          ]
+        },
+        "agent_id": {
+          "description": "Legacy chat/runtime agent identifier. Optional because trust is anchored on persona, not provider.",
+          "anyOf": [
+            {
+              "$id": "AgentId",
+              "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+              "anyOf": [
+                {
+                  "const": "Claude",
+                  "type": "string"
+                },
+                {
+                  "const": "Gemini",
+                  "type": "string"
+                },
+                {
+                  "const": "DeepSeek",
+                  "type": "string"
+                },
+                {
+                  "const": "Grok",
+                  "type": "string"
+                },
+                {
+                  "const": "RLM",
+                  "type": "string"
+                },
+                {
+                  "const": "User",
+                  "type": "string"
+                },
+                {
+                  "const": "System",
+                  "type": "string"
+                },
+                {
+                  "const": "Orchestrator",
+                  "type": "string"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "runtime_identity": {
+          "minLength": 1,
+          "description": "Scoped runtime identity for a concrete worker, session, or delegated specialist.",
+          "type": "string"
+        },
+        "provider_source": {
+          "minLength": 1,
+          "description": "Observed provider source for telemetry correlation only. Must not be used as the trust identity.",
+          "type": "string"
+        },
+        "task_domain": {
+          "$id": "OrchestratorTaskDomain",
+          "description": "Narrow task domains used by the orchestrator trust model and scorecard mapping.",
+          "anyOf": [
+            {
+              "const": "intake",
+              "type": "string"
+            },
+            {
+              "const": "decomposition",
+              "type": "string"
+            },
+            {
+              "const": "recommendation",
+              "type": "string"
+            },
+            {
+              "const": "learning",
+              "type": "string"
+            },
+            {
+              "const": "routing",
+              "type": "string"
+            },
+            {
+              "const": "audit",
+              "type": "string"
+            }
+          ]
+        },
+        "success_count": {
+          "minimum": 0,
+          "description": "Verified successful outcomes in this domain.",
+          "type": "integer"
+        },
+        "fail_count": {
+          "minimum": 0,
+          "description": "Verified failed outcomes in this domain.",
+          "type": "integer"
+        },
+        "bayesian_score": {
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Bayesian trust score derived from verified runtime evidence.",
+          "type": "number"
+        },
+        "prior_weight": {
+          "minimum": 0,
+          "description": "Weight of the prior used for Bayesian smoothing.",
+          "type": "number"
+        },
+        "default_prior_score": {
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Configured prior score before domain-specific evidence accumulates.",
+          "type": "number"
+        },
+        "evidence_source": {
+          "$id": "TrustEvidenceSource",
+          "description": "Canonical evidence sources allowed to influence routing trust.",
+          "anyOf": [
+            {
+              "const": "decision_quality_scorecard",
+              "type": "string"
+            },
+            {
+              "const": "monitoring_audit_log",
+              "type": "string"
+            },
+            {
+              "const": "operator_feedback",
+              "type": "string"
+            },
+            {
+              "const": "runtime_readback",
+              "type": "string"
+            }
+          ]
+        },
+        "scorecard_dimension": {
+          "$id": "ScorecardDimension",
+          "description": "Canonical decision-quality dimensions approved for trust mapping and scorecard entries.",
+          "anyOf": [
+            {
+              "const": "prioritization_quality",
+              "type": "string"
+            },
+            {
+              "const": "decomposition_quality",
+              "type": "string"
+            },
+            {
+              "const": "promotion_precision",
+              "type": "string"
+            },
+            {
+              "const": "decision_stability",
+              "type": "string"
+            },
+            {
+              "const": "operator_acceptance",
+              "type": "string"
+            },
+            {
+              "const": "normalization_quality",
+              "type": "string"
+            },
+            {
+              "const": "arbitration_confidence",
+              "type": "string"
+            },
+            {
+              "const": "time_to_verified_decision",
+              "type": "string"
+            },
+            {
+              "const": "tri_source_arbitration_divergence",
+              "type": "string"
+            }
+          ]
+        },
+        "scope_owner": {
+          "$id": "ScopeOwner",
+          "description": "Approved runtime owner or consumer scope for routing and trust contracts.",
+          "anyOf": [
+            {
+              "const": "widgetdc-orchestrator",
+              "type": "string"
+            },
+            {
+              "const": "widgetdc-librechat",
+              "type": "string"
+            },
+            {
+              "const": "snout",
+              "type": "string"
+            }
+          ]
+        },
+        "last_verified_at": {
+          "format": "date-time",
+          "description": "Latest runtime verification timestamp for this trust profile.",
+          "type": "string"
+        }
+      }
+    },
+    "notes": {
+      "description": "Short explanatory note for operators or audits.",
+      "type": "string"
+    }
+  }
+}
