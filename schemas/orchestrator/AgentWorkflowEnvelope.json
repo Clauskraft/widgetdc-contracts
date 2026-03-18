@@ -160,6 +160,25 @@
       "description": "Set when a workflow requires explicit agreement before progressing.",
       "type": "boolean"
     },
+    "compute_mode": {
+      "description": "Allocated compute intensity for the current workflow phase.",
+      "default": "standard",
+      "anyOf": [
+        {
+          "const": "standard",
+          "type": "string"
+        },
+        {
+          "const": "extreme",
+          "type": "string"
+        }
+      ]
+    },
+    "phase_parameters": {
+      "description": "Optimized parameters for multi-step agentic execution (Adoption: OpenAI Phase Pattern). Reduces token usage via targeted tool discovery.",
+      "type": "object",
+      "additionalProperties": true
+    },
     "started_at": {
       "format": "date-time",
       "description": "Workflow start timestamp.",
