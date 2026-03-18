@@ -277,6 +277,10 @@
     {
       "const": "AnomalyPheromone",
       "type": "string"
+    },
+    {
+      "const": "NormalizerConfig",
+      "type": "string"
     }
   ]
 }

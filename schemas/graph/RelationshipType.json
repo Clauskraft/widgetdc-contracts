@@ -261,6 +261,18 @@
     {
       "const": "GOVERNS_CITIZEN_DATA",
       "type": "string"
+    },
+    {
+      "const": "NORMALIZED_FROM",
+      "type": "string"
+    },
+    {
+      "const": "PART_OF_HYPERGRAPH",
+      "type": "string"
+    },
+    {
+      "const": "DEVIATES_FROM_BASELINE",
+      "type": "string"
     }
   ]
 }
