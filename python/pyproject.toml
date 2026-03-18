@@ -11,5 +11,20 @@ dependencies = [
     "pydantic>=2.0,<3.0",
 ]
 
+[project.optional-dependencies]
+adv-graph = [
+    "tree-sitter>=0.23.0,<1",
+    "tree-sitter-language-pack>=0.3.0,<1",
+    "networkx>=3.2,<4",
+    "watchdog>=4.0.0,<6",
+]
+snout = [
+    "networkx>=3.2,<4",
+    "pandas>=2.0,<3.0",
+    "numpy>=1.26,<3",
+    "spacy>=3.7,<4",
+    "sentence-transformers>=3.0.0,<4",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["widgetdc_contracts"]

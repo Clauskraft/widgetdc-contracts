@@ -1,4 +1,8 @@
 node_modules/
+scripts/__pycache__/
+python/**/__pycache__/
+python/**/*.pyc
+arch/.ast_graph.db
 
 # Architecture graph outputs (generated, ephemeral)
 # Exception: platform-graph.json is committed for Railway MCP server
