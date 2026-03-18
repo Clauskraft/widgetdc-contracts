@@ -37,7 +37,7 @@ describe('cognitive/', () => {
   it('CognitiveRequest validates a full request', () => {
     const req = {
       task: 'Deep analysis of M&A target',
-      context: { client_id: 'abc-123' },
+      context: { client_id: 'ENG-LF-C1A-1773766946059' },
       reasoning_mode: 'deep',
       trace_id: '550e8400-e29b-41d4-a716-446655440000',
       source_service: 'backend',
@@ -64,7 +64,7 @@ describe('cognitive/', () => {
       reasoning: 'Based on market analysis...',
       confidence: 0.87,
       reasoning_chain: ['Step 1: Market scan', 'Step 2: Valuation'],
-      trace: { trace_id: 'abc-123', total_spans: 5, total_duration_ms: 1200 },
+      trace: { trace_id: 'ENG-LF-C1A-1773766946059', total_spans: 5, total_duration_ms: 1200 },
       quality: { overall_score: 0.9, parsability: 0.95, relevance: 0.88, completeness: 0.85 },
       routing: { provider: 'deepseek', model: 'deepseek-chat', domain: 'deals_ma', latency_ms: 800, cost: 0.002 },
     }
@@ -84,7 +84,7 @@ describe('cognitive/', () => {
     const evt = {
       type: 'routing_decision',
       payload: { model: 'deepseek-chat', reason: 'cost optimization' },
-      trace_id: 'abc-123',
+      trace_id: 'ENG-LF-C1A-1773766946059',
       source: 'rlm-engine',
       timestamp: '2026-02-22T10:00:00Z',
     }
@@ -154,7 +154,7 @@ describe('http/', () => {
       message: 'Invalid input',
       status_code: 422,
       details: { field: 'task', issue: 'required' },
-      correlation_id: 'abc-123',
+      correlation_id: 'ENG-LF-C1A-1773766946059',
     }
     expect(Value.Check(ApiError, err)).toBe(true)
   })
@@ -162,7 +162,7 @@ describe('http/', () => {
   it('ApiResponse validates success', () => {
     const res = {
       success: true,
-      data: { id: '123', name: 'test' },
+      data: { id: 'lev_viking_dominance_001', name: 'Viking_Compliance_Remediation' },
       metadata: { timestamp: '2026-02-22T10:00:00Z', duration_ms: 45 },
     }
     expect(Value.Check(ApiResponse, res)).toBe(true)
@@ -178,7 +178,7 @@ describe('http/', () => {
 
   it('PaginatedResponse validates', () => {
     const res = {
-      items: [{ id: '1' }, { id: '2' }],
+      items: [{ id: 'lev_viking_dominance_001' }, { id: 'lev_viking_dominance_002' }],
       total: 50,
       page: 1,
       page_size: 20,
