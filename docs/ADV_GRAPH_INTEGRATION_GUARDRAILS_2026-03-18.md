@@ -6,10 +6,10 @@
 It is not yet a promotable public contracts surface.
 
 ## Current Findings
-- `scripts/arch-ast-bridge.py` referenced a vendored `ast_graph` engine that is incomplete in the current working tree.
-- `python/widgetdc_contracts/snout_engine/` still imports foreign application paths such as `app.models`, `app.utils`, and `app.services`.
+- `scripts/arch-ast-bridge.py` now resolves the vendored `ast_graph` engine from the internal namespace, but still requires optional `adv-graph` dependencies at runtime.
+- `python/widgetdc_contracts/snout_engine/` is now import-safe and fail-closed, but still depends on explicit host adapters or optional runtime extras for full execution.
 - The added Python dependencies are analysis-heavy and do not belong in the default install path for shared contracts consumers.
-- `python/widgetdc_contracts/graph.py` has local generated drift, but those label additions are not yet backed by the canonical schema/export flow.
+- `python/widgetdc_contracts/graph.py` has local generated changes and must stay aligned with the canonical schema/export flow.
 
 ## Canonical Boundary
 - `widgetdc-contracts` remains the canonical shared contracts library.
@@ -21,11 +21,11 @@ It is not yet a promotable public contracts surface.
 - No promotion of `Adv Graph` to `main` as a public package surface until the vendored AST engine is complete and import-clean.
 - No default Python dependency inflation for consumers that only need shared contracts.
 - No new graph labels or relationships are canonical until they are generated from the schema pipeline.
-- No `snout_engine` runtime adoption until foreign imports are replaced with internal package boundaries or adapters.
+- No `snout_engine` runtime adoption until host integrations are provided via explicit adapters or host-configured import paths.
 
 ## Required Before Promotion
-1. Complete the vendored `ast_graph` engine so the bridge can execute without missing modules.
-2. Replace foreign imports inside `snout_engine` with internal package modules or explicit adapters.
+1. Install and verify the optional `adv-graph` runtime so the bridge can execute without dependency failure.
+2. Keep `snout_engine` on explicit adapters and optional runtime extras; do not reintroduce direct host imports.
 3. Keep heavy Python analysis dependencies behind optional extras.
 4. Add a deterministic verification path:
    - `python scripts/arch-ast-bridge.py`
@@ -34,6 +34,7 @@ It is not yet a promotable public contracts surface.
 5. Regenerate Python contracts from schemas before any graph ontology changes are promoted.
 
 ## Current Verification
-- The bridge now fails closed with an explicit error when `ast_graph` is incomplete.
+- The bridge now fails closed with an explicit optional-dependency error when `adv-graph` runtime packages are missing.
+- `snout_engine` module imports are clean at import time and fail closed on missing runtime adapters or optional dependencies.
 - Python cache artifacts are ignored.
 - Analysis database output is ignored.

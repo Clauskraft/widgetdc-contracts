@@ -48,9 +48,17 @@ def main():
     # Ensure Python can find widgetdc_contracts only after the engine guard passes.
     sys.path.insert(0, str(PYTHON_ROOT))
 
-    from widgetdc_contracts.ast_graph.incremental import full_build
-    from widgetdc_contracts.ast_graph.graph import GraphStore
-    from widgetdc_contracts.ast_graph.visualization import export_graph_data
+    try:
+        from widgetdc_contracts.ast_graph.incremental import full_build
+        from widgetdc_contracts.ast_graph.graph import GraphStore
+        from widgetdc_contracts.ast_graph.visualization import export_graph_data
+    except ModuleNotFoundError as exc:
+        missing = exc.name or "unknown optional dependency"
+        return _fatal(
+            "AST graph bridge dependencies are not installed: "
+            f"{missing}. Install the optional extra with "
+            "`pip install .[adv-graph]` from the python package root before running the bridge."
+        )
 
     repo_root = REPO_ROOT
     db_path = repo_root / "arch" / ".ast_graph.db"
