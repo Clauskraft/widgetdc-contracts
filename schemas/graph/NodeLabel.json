@@ -269,6 +269,14 @@
     {
       "const": "ResilienceMetric",
       "type": "string"
+    },
+    {
+      "const": "GridFunction",
+      "type": "string"
+    },
+    {
+      "const": "AnomalyPheromone",
+      "type": "string"
     }
   ]
 }

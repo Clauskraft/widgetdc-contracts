@@ -237,6 +237,18 @@
     {
       "const": "VERIFIES_RESILIENCE",
       "type": "string"
+    },
+    {
+      "const": "MONITORS_GRID",
+      "type": "string"
+    },
+    {
+      "const": "BRIDGES_OT_IT",
+      "type": "string"
+    },
+    {
+      "const": "REPORTED_AS_NIS2",
+      "type": "string"
     }
   ]
 }
