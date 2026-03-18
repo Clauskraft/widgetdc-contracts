@@ -15,59 +15,19 @@
       "type": "string"
     },
     {
-      "const": "PARENT_PROCESS",
+      "const": "BELONGS_TO_ENGAGEMENT",
       "type": "string"
     },
     {
-      "const": "USES_PROCESS",
+      "const": "BELONGS_TO_TRACK",
       "type": "string"
     },
     {
-      "const": "HAS_TRACK",
+      "const": "PROVIDES_INSIGHT",
       "type": "string"
     },
     {
-      "const": "ASSIGNED_TO",
-      "type": "string"
-    },
-    {
-      "const": "IMPLEMENTS",
-      "type": "string"
-    },
-    {
-      "const": "USES_METHODOLOGY",
-      "type": "string"
-    },
-    {
-      "const": "MEASURES",
-      "type": "string"
-    },
-    {
-      "const": "EVALUATES",
-      "type": "string"
-    },
-    {
-      "const": "HAS_CRITERION",
-      "type": "string"
-    },
-    {
-      "const": "HAS_CAPABILITY",
-      "type": "string"
-    },
-    {
-      "const": "USES_TOOL",
-      "type": "string"
-    },
-    {
-      "const": "USES_FRAMEWORK",
-      "type": "string"
-    },
-    {
-      "const": "CODE_FOR",
-      "type": "string"
-    },
-    {
-      "const": "CONTAINS_PATTERN",
+      "const": "HAS_STRATEGIC_INSIGHT",
       "type": "string"
     },
     {
@@ -75,75 +35,87 @@
       "type": "string"
     },
     {
-      "const": "CITES",
+      "const": "PROVES",
       "type": "string"
     },
     {
-      "const": "IN_DOMAIN",
+      "const": "CLAIM_OF",
       "type": "string"
     },
     {
-      "const": "RELATES_TO",
+      "const": "IN_KNOWLEDGE_PACK",
       "type": "string"
     },
     {
-      "const": "IS_A",
+      "const": "FOLLOWS_PATTERN",
       "type": "string"
     },
     {
-      "const": "RUNS",
+      "const": "RELATED_TO",
       "type": "string"
     },
     {
-      "const": "MADE_DECISION",
+      "const": "USES_TOOL",
       "type": "string"
     },
     {
-      "const": "HAS_CONTENT",
+      "const": "IMPLEMENTS",
       "type": "string"
     },
     {
-      "const": "SIMILAR_TO",
+      "const": "RUNS_IN",
       "type": "string"
     },
     {
-      "const": "DUPLICATE_OF",
+      "const": "ACTS_AS",
       "type": "string"
     },
     {
-      "const": "HAS_EXPANSION_SIGNAL",
+      "const": "PRODUCED_DECISION",
       "type": "string"
     },
     {
-      "const": "DETECTED_AT",
+      "const": "CITED_IN",
       "type": "string"
     },
     {
-      "const": "GOVERNED_BY",
+      "const": "SNAPSHOT_OF",
       "type": "string"
     },
     {
-      "const": "CONSTRAINS",
+      "const": "REFERENCES",
       "type": "string"
     },
     {
-      "const": "AMENDS",
+      "const": "TRIGGERS",
       "type": "string"
     },
     {
-      "const": "PUBLISHED_BY",
+      "const": "VULNERABILITY_OF",
       "type": "string"
     },
     {
-      "const": "VETOED_BY",
+      "const": "HAS_CVE",
       "type": "string"
     },
     {
-      "const": "REPORTS",
+      "const": "INSTRUCTED_BY",
       "type": "string"
     },
     {
-      "const": "EXTRACTED_FROM",
+      "const": "MEASURES",
+      "type": "string"
+    },
+    {
+      "const": "CONTAINS",
+      "type": "string"
+    },
+    {
+      "const": "MEMBER_OF",
+      "type": "string"
+    },
+    {
+      "const": "CONTROLS",
       "type": "string"
     },
     {
