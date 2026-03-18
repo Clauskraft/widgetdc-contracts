@@ -1,0 +1,22 @@
+{
+  "$id": "TrustEvidenceSource",
+  "description": "Canonical evidence sources allowed to influence routing trust.",
+  "anyOf": [
+    {
+      "const": "decision_quality_scorecard",
+      "type": "string"
+    },
+    {
+      "const": "monitoring_audit_log",
+      "type": "string"
+    },
+    {
+      "const": "operator_feedback",
+      "type": "string"
+    },
+    {
+      "const": "runtime_readback",
+      "type": "string"
+    }
+  ]
+}

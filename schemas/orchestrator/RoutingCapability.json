@@ -1,0 +1,26 @@
+{
+  "$id": "RoutingCapability",
+  "description": "Capabilities the orchestrator may route within the active LIN-165 wedge.",
+  "anyOf": [
+    {
+      "const": "engagement_intake",
+      "type": "string"
+    },
+    {
+      "const": "guided_decomposition",
+      "type": "string"
+    },
+    {
+      "const": "verified_recommendation",
+      "type": "string"
+    },
+    {
+      "const": "learning_feedback",
+      "type": "string"
+    },
+    {
+      "const": "workflow_audit",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "$id": "AgentTrustProfile",
+  "description": "Minimal orchestrator trust profile. Used only by widgetdc-orchestrator, widgetdc-librechat, and optional Snout routing support.",
+  "type": "object",
+  "required": [
+    "agent_id",
+    "task_domain",
+    "success_count",
+    "fail_count",
+    "bayesian_score",
+    "prior_weight",
+    "default_prior_score",
+    "evidence_source",
+    "scorecard_dimension",
+    "scope_owner",
+    "last_verified_at"
+  ],
+  "properties": {
+    "agent_id": {
+      "description": "Canonical agent identifier or scoped runtime agent ID.",
+      "anyOf": [
+        {
+          "$id": "AgentId",
+          "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+          "anyOf": [
+            {
+              "const": "Claude",
+              "type": "string"
+            },
+            {
+              "const": "Gemini",
+              "type": "string"
+            },
+            {
+              "const": "DeepSeek",
+              "type": "string"
+            },
+            {
+              "const": "Grok",
+              "type": "string"
+            },
+            {
+              "const": "RLM",
+              "type": "string"
+            },
+            {
+              "const": "User",
+              "type": "string"
+            },
+            {
+              "const": "System",
+              "type": "string"
+            },
+            {
+              "const": "Orchestrator",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "task_domain": {
+      "$id": "OrchestratorTaskDomain",
+      "description": "Narrow task domains used by the orchestrator trust model and scorecard mapping.",
+      "anyOf": [
+        {
+          "const": "intake",
+          "type": "string"
+        },
+        {
+          "const": "decomposition",
+          "type": "string"
+        },
+        {
+          "const": "recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning",
+          "type": "string"
+        },
+        {
+          "const": "routing",
+          "type": "string"
+        },
+        {
+          "const": "audit",
+          "type": "string"
+        }
+      ]
+    },
+    "success_count": {
+      "minimum": 0,
+      "description": "Verified successful outcomes in this domain.",
+      "type": "integer"
+    },
+    "fail_count": {
+      "minimum": 0,
+      "description": "Verified failed outcomes in this domain.",
+      "type": "integer"
+    },
+    "bayesian_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Bayesian trust score derived from verified runtime evidence.",
+      "type": "number"
+    },
+    "prior_weight": {
+      "minimum": 0,
+      "description": "Weight of the prior used for Bayesian smoothing.",
+      "type": "number"
+    },
+    "default_prior_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Configured prior score before domain-specific evidence accumulates.",
+      "type": "number"
+    },
+    "evidence_source": {
+      "$id": "TrustEvidenceSource",
+      "description": "Canonical evidence sources allowed to influence routing trust.",
+      "anyOf": [
+        {
+          "const": "decision_quality_scorecard",
+          "type": "string"
+        },
+        {
+          "const": "monitoring_audit_log",
+          "type": "string"
+        },
+        {
+          "const": "operator_feedback",
+          "type": "string"
+        },
+        {
+          "const": "runtime_readback",
+          "type": "string"
+        }
+      ]
+    },
+    "scorecard_dimension": {
+      "description": "Primary scorecard dimension this trust profile is intended to improve.",
+      "anyOf": [
+        {
+          "const": "prioritization_quality",
+          "type": "string"
+        },
+        {
+          "const": "decomposition_quality",
+          "type": "string"
+        },
+        {
+          "const": "promotion_precision",
+          "type": "string"
+        },
+        {
+          "const": "decision_stability",
+          "type": "string"
+        },
+        {
+          "const": "operator_acceptance",
+          "type": "string"
+        }
+      ]
+    },
+    "scope_owner": {
+      "description": "Approved runtime owner/consumer scope for this trust profile.",
+      "anyOf": [
+        {
+          "const": "widgetdc-orchestrator",
+          "type": "string"
+        },
+        {
+          "const": "widgetdc-librechat",
+          "type": "string"
+        },
+        {
+          "const": "snout",
+          "type": "string"
+        }
+      ]
+    },
+    "last_verified_at": {
+      "format": "date-time",
+      "description": "Latest runtime verification timestamp for this trust profile.",
+      "type": "string"
+    }
+  }
+}

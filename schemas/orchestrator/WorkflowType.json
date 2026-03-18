@@ -1,0 +1,22 @@
+{
+  "$id": "WorkflowType",
+  "description": "Workflow families allowed for the scoped orchestration layer.",
+  "anyOf": [
+    {
+      "const": "research",
+      "type": "string"
+    },
+    {
+      "const": "delivery",
+      "type": "string"
+    },
+    {
+      "const": "audit",
+      "type": "string"
+    },
+    {
+      "const": "debate",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$id": "OrchestratorTaskDomain",
+  "description": "Narrow task domains used by the orchestrator trust model and scorecard mapping.",
+  "anyOf": [
+    {
+      "const": "intake",
+      "type": "string"
+    },
+    {
+      "const": "decomposition",
+      "type": "string"
+    },
+    {
+      "const": "recommendation",
+      "type": "string"
+    },
+    {
+      "const": "learning",
+      "type": "string"
+    },
+    {
+      "const": "routing",
+      "type": "string"
+    },
+    {
+      "const": "audit",
+      "type": "string"
+    }
+  ]
+}

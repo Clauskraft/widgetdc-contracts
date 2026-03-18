@@ -1,0 +1,293 @@
+{
+  "$id": "RoutingDecision",
+  "description": "Minimal routing decision envelope. Supports orchestrator routing transparency without introducing a second governance truth.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "intent",
+    "selected_agent_id",
+    "selected_capability",
+    "trust_score",
+    "reason_code",
+    "evidence_refs",
+    "decided_at"
+  ],
+  "properties": {
+    "decision_id": {
+      "description": "Stable routing decision identifier for runtime lineage and read-back.",
+      "type": "string"
+    },
+    "intent": {
+      "$id": "RoutingIntent",
+      "description": "Canonical routing intent used by the orchestrator to classify and constrain work within the active WidgeTDC wedge.",
+      "type": "object",
+      "required": [
+        "intent_id",
+        "capability",
+        "task_domain",
+        "flow_ref",
+        "route_scope",
+        "operator_visible",
+        "scorecard_dimensions"
+      ],
+      "properties": {
+        "intent_id": {
+          "description": "Stable intent identifier for routing and lineage.",
+          "type": "string"
+        },
+        "capability": {
+          "$id": "RoutingCapability",
+          "description": "Capabilities the orchestrator may route within the active LIN-165 wedge.",
+          "anyOf": [
+            {
+              "const": "engagement_intake",
+              "type": "string"
+            },
+            {
+              "const": "guided_decomposition",
+              "type": "string"
+            },
+            {
+              "const": "verified_recommendation",
+              "type": "string"
+            },
+            {
+              "const": "learning_feedback",
+              "type": "string"
+            },
+            {
+              "const": "workflow_audit",
+              "type": "string"
+            }
+          ]
+        },
+        "task_domain": {
+          "description": "Execution domain for scorecard and trust-model mapping.",
+          "anyOf": [
+            {
+              "const": "intake",
+              "type": "string"
+            },
+            {
+              "const": "decomposition",
+              "type": "string"
+            },
+            {
+              "const": "recommendation",
+              "type": "string"
+            },
+            {
+              "const": "learning",
+              "type": "string"
+            },
+            {
+              "const": "audit",
+              "type": "string"
+            }
+          ]
+        },
+        "flow_ref": {
+          "description": "Canonical LIN-165 flow this intent strengthens.",
+          "anyOf": [
+            {
+              "const": "core-flow-1",
+              "type": "string"
+            },
+            {
+              "const": "core-flow-2",
+              "type": "string"
+            },
+            {
+              "const": "core-flow-3",
+              "type": "string"
+            }
+          ]
+        },
+        "route_scope": {
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Only approved consumers for this routing intent.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "const": "widgetdc-orchestrator",
+                "type": "string"
+              },
+              {
+                "const": "widgetdc-librechat",
+                "type": "string"
+              },
+              {
+                "const": "snout",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "operator_visible": {
+          "description": "Whether this intent may be surfaced in LibreChat lineage UI.",
+          "type": "boolean"
+        },
+        "scorecard_dimensions": {
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Decision-quality dimensions this routing intent is expected to affect.",
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "const": "prioritization_quality",
+                "type": "string"
+              },
+              {
+                "const": "decomposition_quality",
+                "type": "string"
+              },
+              {
+                "const": "promotion_precision",
+                "type": "string"
+              },
+              {
+                "const": "decision_stability",
+                "type": "string"
+              },
+              {
+                "const": "operator_acceptance",
+                "type": "string"
+              },
+              {
+                "const": "time_to_verified_decision",
+                "type": "string"
+              },
+              {
+                "const": "tri_source_arbitration_divergence",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "selected_agent_id": {
+      "description": "Selected agent or runtime agent ID chosen by the orchestrator.",
+      "anyOf": [
+        {
+          "$id": "AgentId",
+          "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+          "anyOf": [
+            {
+              "const": "Claude",
+              "type": "string"
+            },
+            {
+              "const": "Gemini",
+              "type": "string"
+            },
+            {
+              "const": "DeepSeek",
+              "type": "string"
+            },
+            {
+              "const": "Grok",
+              "type": "string"
+            },
+            {
+              "const": "RLM",
+              "type": "string"
+            },
+            {
+              "const": "User",
+              "type": "string"
+            },
+            {
+              "const": "System",
+              "type": "string"
+            },
+            {
+              "const": "Orchestrator",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "selected_capability": {
+      "$id": "RoutingCapability",
+      "description": "Capabilities the orchestrator may route within the active LIN-165 wedge.",
+      "anyOf": [
+        {
+          "const": "engagement_intake",
+          "type": "string"
+        },
+        {
+          "const": "guided_decomposition",
+          "type": "string"
+        },
+        {
+          "const": "verified_recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning_feedback",
+          "type": "string"
+        },
+        {
+          "const": "workflow_audit",
+          "type": "string"
+        }
+      ]
+    },
+    "trust_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Trust score that justified the selected route.",
+      "type": "number"
+    },
+    "reason_code": {
+      "description": "Why this route was selected.",
+      "anyOf": [
+        {
+          "const": "TRUST_WIN",
+          "type": "string"
+        },
+        {
+          "const": "COST_TIER_MATCH",
+          "type": "string"
+        },
+        {
+          "const": "FLOW_SPECIALIZATION",
+          "type": "string"
+        },
+        {
+          "const": "FALLBACK_ROUTE",
+          "type": "string"
+        },
+        {
+          "const": "WAIVER_ROUTE",
+          "type": "string"
+        }
+      ]
+    },
+    "evidence_refs": {
+      "minItems": 1,
+      "description": "References to trust, scorecard, or runtime evidence used during routing.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "waiver_reason": {
+      "description": "Required when fallback or waiver routing is used instead of the ideal route.",
+      "type": "string"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "description": "Timestamp when the routing decision was made.",
+      "type": "string"
+    }
+  }
+}

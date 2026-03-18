@@ -1,0 +1,152 @@
+{
+  "$id": "RoutingIntent",
+  "description": "Canonical routing intent used by the orchestrator to classify and constrain work within the active WidgeTDC wedge.",
+  "type": "object",
+  "required": [
+    "intent_id",
+    "capability",
+    "task_domain",
+    "flow_ref",
+    "route_scope",
+    "operator_visible",
+    "scorecard_dimensions"
+  ],
+  "properties": {
+    "intent_id": {
+      "description": "Stable intent identifier for routing and lineage.",
+      "type": "string"
+    },
+    "capability": {
+      "$id": "RoutingCapability",
+      "description": "Capabilities the orchestrator may route within the active LIN-165 wedge.",
+      "anyOf": [
+        {
+          "const": "engagement_intake",
+          "type": "string"
+        },
+        {
+          "const": "guided_decomposition",
+          "type": "string"
+        },
+        {
+          "const": "verified_recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning_feedback",
+          "type": "string"
+        },
+        {
+          "const": "workflow_audit",
+          "type": "string"
+        }
+      ]
+    },
+    "task_domain": {
+      "description": "Execution domain for scorecard and trust-model mapping.",
+      "anyOf": [
+        {
+          "const": "intake",
+          "type": "string"
+        },
+        {
+          "const": "decomposition",
+          "type": "string"
+        },
+        {
+          "const": "recommendation",
+          "type": "string"
+        },
+        {
+          "const": "learning",
+          "type": "string"
+        },
+        {
+          "const": "audit",
+          "type": "string"
+        }
+      ]
+    },
+    "flow_ref": {
+      "description": "Canonical LIN-165 flow this intent strengthens.",
+      "anyOf": [
+        {
+          "const": "core-flow-1",
+          "type": "string"
+        },
+        {
+          "const": "core-flow-2",
+          "type": "string"
+        },
+        {
+          "const": "core-flow-3",
+          "type": "string"
+        }
+      ]
+    },
+    "route_scope": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Only approved consumers for this routing intent.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "const": "widgetdc-orchestrator",
+            "type": "string"
+          },
+          {
+            "const": "widgetdc-librechat",
+            "type": "string"
+          },
+          {
+            "const": "snout",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "operator_visible": {
+      "description": "Whether this intent may be surfaced in LibreChat lineage UI.",
+      "type": "boolean"
+    },
+    "scorecard_dimensions": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Decision-quality dimensions this routing intent is expected to affect.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "const": "prioritization_quality",
+            "type": "string"
+          },
+          {
+            "const": "decomposition_quality",
+            "type": "string"
+          },
+          {
+            "const": "promotion_precision",
+            "type": "string"
+          },
+          {
+            "const": "decision_stability",
+            "type": "string"
+          },
+          {
+            "const": "operator_acceptance",
+            "type": "string"
+          },
+          {
+            "const": "time_to_verified_decision",
+            "type": "string"
+          },
+          {
+            "const": "tri_source_arbitration_divergence",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  }
+}

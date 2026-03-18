@@ -1,0 +1,22 @@
+{
+  "$id": "WorkflowPhase",
+  "description": "Canonical orchestration phases, narrowed for orchestrator/librechat/snout usage only.",
+  "anyOf": [
+    {
+      "const": "discover",
+      "type": "string"
+    },
+    {
+      "const": "define",
+      "type": "string"
+    },
+    {
+      "const": "develop",
+      "type": "string"
+    },
+    {
+      "const": "deliver",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "$id": "AgentWorkflowEnvelope",
+  "description": "Minimal workflow envelope for orchestrator routing and lineage. Not a platform-wide execution bus or governance replacement.",
+  "type": "object",
+  "required": [
+    "workflow_id",
+    "workflow_type",
+    "current_phase",
+    "participants",
+    "primary_surface",
+    "flow_ref",
+    "scorecard_ref",
+    "reasoning_lineage_visible",
+    "started_at",
+    "updated_at"
+  ],
+  "properties": {
+    "workflow_id": {
+      "description": "Stable workflow identifier for orchestration lineage.",
+      "type": "string"
+    },
+    "workflow_type": {
+      "$id": "WorkflowType",
+      "description": "Workflow families allowed for the scoped orchestration layer.",
+      "anyOf": [
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "delivery",
+          "type": "string"
+        },
+        {
+          "const": "audit",
+          "type": "string"
+        },
+        {
+          "const": "debate",
+          "type": "string"
+        }
+      ]
+    },
+    "current_phase": {
+      "$id": "WorkflowPhase",
+      "description": "Canonical orchestration phases, narrowed for orchestrator/librechat/snout usage only.",
+      "anyOf": [
+        {
+          "const": "discover",
+          "type": "string"
+        },
+        {
+          "const": "define",
+          "type": "string"
+        },
+        {
+          "const": "develop",
+          "type": "string"
+        },
+        {
+          "const": "deliver",
+          "type": "string"
+        }
+      ]
+    },
+    "participants": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Participants involved in the current workflow envelope.",
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$id": "AgentId",
+            "description": "Canonical agent identifiers matching Notion Global Chat From/To schema",
+            "anyOf": [
+              {
+                "const": "Claude",
+                "type": "string"
+              },
+              {
+                "const": "Gemini",
+                "type": "string"
+              },
+              {
+                "const": "DeepSeek",
+                "type": "string"
+              },
+              {
+                "const": "Grok",
+                "type": "string"
+              },
+              {
+                "const": "RLM",
+                "type": "string"
+              },
+              {
+                "const": "User",
+                "type": "string"
+              },
+              {
+                "const": "System",
+                "type": "string"
+              },
+              {
+                "const": "Orchestrator",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "primary_surface": {
+      "description": "Primary consumer/runtime that owns this workflow envelope.",
+      "anyOf": [
+        {
+          "const": "widgetdc-orchestrator",
+          "type": "string"
+        },
+        {
+          "const": "widgetdc-librechat",
+          "type": "string"
+        },
+        {
+          "const": "snout",
+          "type": "string"
+        }
+      ]
+    },
+    "flow_ref": {
+      "description": "Canonical LIN-165 flow strengthened by this workflow.",
+      "anyOf": [
+        {
+          "const": "core-flow-1",
+          "type": "string"
+        },
+        {
+          "const": "core-flow-2",
+          "type": "string"
+        },
+        {
+          "const": "core-flow-3",
+          "type": "string"
+        }
+      ]
+    },
+    "scorecard_ref": {
+      "description": "Reference to the decision-quality scorecard batch or evidence packet.",
+      "type": "string"
+    },
+    "reasoning_lineage_visible": {
+      "description": "Whether the workflow lineage may be surfaced in LibreChat or other approved consumers.",
+      "type": "boolean"
+    },
+    "quorum_consensus": {
+      "description": "Set when a workflow requires explicit agreement before progressing.",
+      "type": "boolean"
+    },
+    "started_at": {
+      "format": "date-time",
+      "description": "Workflow start timestamp.",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "description": "Last workflow state update timestamp.",
+      "type": "string"
+    }
+  }
+}
