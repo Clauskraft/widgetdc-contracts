@@ -37,6 +37,7 @@ interface FetchGovernanceSurfaceOptions {
   backendUrl: string
   apiKey?: string
   fetchImpl?: typeof fetch
+  timeoutMs?: number
 }
 
 export interface GovernanceSurfaceResponse {
@@ -59,12 +60,22 @@ export async function fetchGovernanceSurface(
   }
 
   const fetchImpl = options.fetchImpl ?? fetch
-  const response = await fetchImpl(`${normalizeBaseUrl(options.backendUrl)}${surface.backendPath}`, {
-    method: 'GET',
-    headers: {
-      ...(options.apiKey ? { Authorization: `Bearer ${options.apiKey}` } : {}),
-    },
-  })
+  const controller = new AbortController()
+  const timeoutMs = options.timeoutMs ?? 8000
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  let response: Response
+  try {
+    response = await fetchImpl(`${normalizeBaseUrl(options.backendUrl)}${surface.backendPath}`, {
+      method: 'GET',
+      headers: {
+        ...(options.apiKey ? { Authorization: `Bearer ${options.apiKey}` } : {}),
+      },
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
 
   const contentType = response.headers.get('content-type') ?? surface.contentType
   const body =
