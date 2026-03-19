@@ -12,7 +12,7 @@ from uuid import UUID
 
 
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "FabricProof", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType"]
 
 class AgentCapability(
     RootModel[
@@ -43,6 +43,31 @@ class AgentCapability(
         'audit',
     ] = Field(
         ..., description='Capability flags declaring what an agent is authorized to do'
+    )
+
+
+class FabricProof(BaseModel):
+    proof_id: UUID = Field(
+        ..., description='Unique identifier for the issued fabric proof'
+    )
+    proof_type: Literal['sgt'] | str = Field(
+        ..., description='Fabric proof mechanism identifier'
+    )
+    verification_status: Literal['verified', 'unverified', 'expired', 'revoked'] = (
+        Field(
+            ...,
+            description='Verification result for the proof at issuance or last refresh',
+        )
+    )
+    authorized_tool_namespaces: list[str] = Field(
+        ...,
+        description='Tool namespaces this proof authorizes. ["*"] grants all namespaces.',
+    )
+    issued_at: AwareDatetime
+    expires_at: AwareDatetime | None = None
+    issuer: str | None = Field(None, description='Canonical issuer of the proof')
+    handshake_id: str | None = Field(
+        None, description='Associated handshake identifier or fingerprint'
     )
 
 class AgentHandshake(BaseModel):
@@ -99,6 +124,10 @@ class AgentHandshake(BaseModel):
     allowed_tool_namespaces: list[str] = Field(
         ...,
         description='MCP tool namespaces this agent may invoke (e.g. ["graph", "audit"])',
+    )
+    fabric_proof: FabricProof | None = Field(
+        None,
+        description='Verified immutable fabric proof for authorizing high-risk delegation and tool execution.',
     )
     capability_index: str | None = Field(
         None,
@@ -644,6 +673,10 @@ class OrchestratorToolCall(BaseModel):
     )
     arguments: dict[constr(pattern=r'^(.*)$'), Any] = Field(
         ..., description='Tool-specific arguments (passed as payload to MCP route)'
+    )
+    fabric_proof: FabricProof | None = Field(
+        None,
+        description='Optional delegated fabric proof copied from the verified agent handshake when high-risk namespaces are requested.',
     )
     trace_id: UUID | None = None
     priority: Literal['low', 'normal', 'high', 'critical'] | None = 'normal'

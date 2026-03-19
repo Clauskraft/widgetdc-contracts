@@ -4,7 +4,14 @@ from pathlib import Path
 from pydantic import ValidationError
 from widgetdc_contracts.cognitive import CognitiveRequest, CognitiveResponse
 from widgetdc_contracts.health import HealthPulse
-from widgetdc_contracts.orchestrator import AgentTrustProfile, TelemetryEntry, ScorecardEntry
+from widgetdc_contracts.orchestrator import (
+    AgentHandshake,
+    AgentTrustProfile,
+    FabricProof,
+    OrchestratorToolCall,
+    ScorecardEntry,
+    TelemetryEntry,
+)
 
 def test_cognitive_parity():
     # Real trace ID from SITREP
@@ -52,3 +59,34 @@ def test_orchestrator_trust_parity():
     )
     assert profile.agent_persona == "ARCHITECT"
     assert profile.bayesian_score == 0.92
+
+
+def test_fabric_proof_parity():
+    proof = FabricProof(
+        proof_id="550e8400-e29b-41d4-a716-446655440010",
+        proof_type="sgt",
+        verification_status="verified",
+        authorized_tool_namespaces=["shell", "git"],
+        issued_at="2026-03-19T08:00:00Z",
+    )
+    assert proof.verification_status == "verified"
+
+    handshake = AgentHandshake(
+        agent_id="MASTERARCHITECTWIDGETDC",
+        display_name="Master Architect WidgetDC",
+        source="gemini",
+        status="online",
+        capabilities=["graph_read", "mcp_tools"],
+        allowed_tool_namespaces=["graph", "audit"],
+        fabric_proof=proof,
+    )
+    assert handshake.fabric_proof is not None
+
+    tool_call = OrchestratorToolCall(
+        call_id="550e8400-e29b-41d4-a716-446655440011",
+        agent_id="MASTERARCHITECTWIDGETDC",
+        tool_name="audit.lessons",
+        arguments={"topic": "fabric"},
+        fabric_proof=proof,
+    )
+    assert tool_call.fabric_proof is not None

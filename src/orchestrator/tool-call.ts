@@ -8,6 +8,7 @@
  * Wire format: snake_case JSON
  */
 import { Type, Static } from '@sinclair/typebox'
+import { FabricProof } from './fabric-proof.js'
 
 export const OrchestratorToolCall = Type.Object({
   /** Unique call ID — used to correlate with OrchestratorToolResult */
@@ -31,6 +32,9 @@ export const OrchestratorToolCall = Type.Object({
   arguments: Type.Record(Type.String(), Type.Unknown(), {
     description: 'Tool-specific arguments (passed as payload to MCP route)',
   }),
+
+  /** Delegated fabric proof copied from verified handshake when high-risk namespaces are requested. */
+  fabric_proof: Type.Optional(FabricProof),
 
   /** Optional: cross-service trace ID for end-to-end correlation */
   trace_id: Type.Optional(Type.String({ format: 'uuid' })),

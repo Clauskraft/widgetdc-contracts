@@ -30,6 +30,10 @@
         "^(.*)$": {}
       }
     },
+    "fabric_proof": {
+      "$ref": "FabricProof.json",
+      "description": "Optional delegated fabric proof copied from the verified agent handshake when high-risk namespaces are requested."
+    },
     "trace_id": {
       "format": "uuid",
       "type": "string"

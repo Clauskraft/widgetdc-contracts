@@ -156,6 +156,10 @@
         "type": "string"
       }
     },
+    "fabric_proof": {
+      "$ref": "FabricProof.json",
+      "description": "Verified immutable fabric proof for authorizing high-risk delegation and tool execution."
+    },
     "capability_index": {
       "description": "Optimized search index fingerprint for lazy-loading tools (Adoption: Anthropic Tool Search Index). Reduces handshake token bloat by 85%.",
       "type": "string"

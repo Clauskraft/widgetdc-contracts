@@ -12,6 +12,7 @@
  */
 import { Type, Static } from '@sinclair/typebox'
 import { AgentMessageSource } from './agent-message.js'
+import { FabricProof } from './fabric-proof.js'
 
 export const AgentCapability = Type.Union([
   Type.Literal('graph_read'),         // Can read Neo4j via graph.read_cypher
@@ -81,6 +82,9 @@ export const AgentHandshake = Type.Object({
   allowed_tool_namespaces: Type.Array(Type.String(), {
     description: 'MCP tool namespaces this agent may invoke (e.g. ["graph", "audit"])',
   }),
+
+  /** Verified immutable fabric proof for authorizing high-risk delegation/tool execution. */
+  fabric_proof: Type.Optional(FabricProof),
 
   /** Optimized search index fingerprint for lazy-loading tools (Adoption: Anthropic Tool Search Index). Reduces handshake token bloat by 85%. */
   capability_index: Type.Optional(Type.String({
