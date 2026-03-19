@@ -14,6 +14,7 @@ __all__ = [
     "DomainHealthProfile",
     "DomainId",
     "GuardianProcessMapping",
+    "LogicReconstructionPacket",
     "ProcessStatus",
     "RemediationStrategy",
 ]
@@ -63,6 +64,41 @@ class DomainHealthProfile(BaseModel):
     )
     risk_rules_triggered: int = Field(..., description="Count of active risk rules")
     updated_at: AwareDatetime
+
+
+class LogicGraphNode(BaseModel):
+    id: str
+    kind: str
+    label: str
+    metadata: dict[str, object] | None = None
+
+
+class LogicGraphEdge(BaseModel):
+    source: str
+    target: str
+    relation: str
+
+
+class IntentGraph(BaseModel):
+    nodes: list[LogicGraphNode]
+    edges: list[LogicGraphEdge]
+
+
+class LogicReconstructionPacket(BaseModel):
+    source_language: str = Field(
+        ..., description="Detected or supplied source language identifier."
+    )
+    reconstruction_method: str = Field(
+        ..., description="Backend used to derive the reconstruction packet."
+    )
+    contextual_summary: str = Field(
+        ..., description="Compact contextual summary preserving likely business intent."
+    )
+    intent_graph: IntentGraph
+    invariant_list: list[str] = Field(
+        ...,
+        description="Declarative rules, conditions, or invariants inferred from the source.",
+    )
 
 
 class DomainId(

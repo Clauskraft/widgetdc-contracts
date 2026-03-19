@@ -1,0 +1,67 @@
+{
+  "$id": "LogicReconstructionPacket",
+  "description": "Language-agnostic logic reconstruction output derived from source code or execution-oriented artifacts.",
+  "type": "object",
+  "required": [
+    "source_language",
+    "reconstruction_method",
+    "contextual_summary",
+    "intent_graph",
+    "invariant_list"
+  ],
+  "properties": {
+    "source_language": {
+      "type": "string",
+      "description": "Detected or supplied source language identifier."
+    },
+    "reconstruction_method": {
+      "type": "string",
+      "description": "Backend used to derive the reconstruction packet."
+    },
+    "contextual_summary": {
+      "type": "string",
+      "description": "Compact contextual summary preserving likely business intent."
+    },
+    "intent_graph": {
+      "type": "object",
+      "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "kind", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "kind": { "type": "string" },
+              "label": { "type": "string" },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "target", "relation"],
+            "properties": {
+              "source": { "type": "string" },
+              "target": { "type": "string" },
+              "relation": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "invariant_list": {
+      "type": "array",
+      "description": "Declarative rules, conditions, or invariants inferred from the source.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
