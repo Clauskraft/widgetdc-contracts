@@ -13,7 +13,11 @@ export declare const RoutingDecision: import("@sinclair/typebox").TObject<{
     selected_agent_id: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"Claude">, import("@sinclair/typebox").TLiteral<"Gemini">, import("@sinclair/typebox").TLiteral<"DeepSeek">, import("@sinclair/typebox").TLiteral<"Grok">, import("@sinclair/typebox").TLiteral<"RLM">, import("@sinclair/typebox").TLiteral<"User">, import("@sinclair/typebox").TLiteral<"System">, import("@sinclair/typebox").TLiteral<"Orchestrator">]>, import("@sinclair/typebox").TString]>;
     selected_capability: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"engagement_intake">, import("@sinclair/typebox").TLiteral<"guided_decomposition">, import("@sinclair/typebox").TLiteral<"verified_recommendation">, import("@sinclair/typebox").TLiteral<"learning_feedback">, import("@sinclair/typebox").TLiteral<"workflow_audit">]>;
     trust_score: import("@sinclair/typebox").TNumber;
-    reason_code: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"TRUST_WIN">, import("@sinclair/typebox").TLiteral<"COST_TIER_MATCH">, import("@sinclair/typebox").TLiteral<"FLOW_SPECIALIZATION">, import("@sinclair/typebox").TLiteral<"FALLBACK_ROUTE">, import("@sinclair/typebox").TLiteral<"WAIVER_ROUTE">]>;
+    reason_code: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"TRUST_WIN">, import("@sinclair/typebox").TLiteral<"COST_TIER_MATCH">, import("@sinclair/typebox").TLiteral<"FLOW_SPECIALIZATION">, import("@sinclair/typebox").TLiteral<"FALLBACK_ROUTE">, import("@sinclair/typebox").TLiteral<"WAIVER_ROUTE">, import("@sinclair/typebox").TLiteral<"FABRIC_WIN">]>;
+    fabric_route_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    latency_deterministic: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TBoolean>;
+    vampire_drain_rate: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TNumber>;
+    target_shadow_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     evidence_refs: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
     waiver_reason: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     decided_at: import("@sinclair/typebox").TString;

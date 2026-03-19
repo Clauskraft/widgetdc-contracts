@@ -1,4 +1,4 @@
-﻿"""
+"""
 widgetdc_contracts.orchestrator — Auto-generated Pydantic v2 models.
 Source: @widgetdc/contracts schemas/orchestrator/
 Do not edit manually — regenerate with: npm run python
@@ -6,11 +6,13 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
-from pydantic import AwareDatetime, BaseModel, Field, RootModel, constr
+from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, constr
+from pydantic import BaseModel, Field
+from pydantic import Field, RootModel
 from typing import Any, Literal
+from typing import Literal
 from uuid import UUID
-
-
 
 __all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "FabricProof", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType"]
 
@@ -45,7 +47,6 @@ class AgentCapability(
         ..., description='Capability flags declaring what an agent is authorized to do'
     )
 
-
 class FabricProof(BaseModel):
     proof_id: UUID = Field(
         ..., description='Unique identifier for the issued fabric proof'
@@ -69,6 +70,7 @@ class FabricProof(BaseModel):
     handshake_id: str | None = Field(
         None, description='Associated handshake identifier or fingerprint'
     )
+
 
 class AgentHandshake(BaseModel):
     agent_id: str = Field(
@@ -127,7 +129,7 @@ class AgentHandshake(BaseModel):
     )
     fabric_proof: FabricProof | None = Field(
         None,
-        description='Verified immutable fabric proof for authorizing high-risk delegation and tool execution.',
+        description='Verified immutable fabric proof issued during agent handshake. Used to authorize high-risk delegation and tool execution.',
     )
     capability_index: str | None = Field(
         None,
@@ -469,6 +471,30 @@ class AgentWorkflowEnvelope(BaseModel):
         ..., description='Last workflow state update timestamp.'
     )
 
+class FabricProof(BaseModel):
+    proof_id: UUID = Field(
+        ..., description='Unique identifier for the issued fabric proof'
+    )
+    proof_type: Literal['sgt'] | str = Field(
+        ..., description='Fabric proof mechanism identifier'
+    )
+    verification_status: Literal['verified', 'unverified', 'expired', 'revoked'] = (
+        Field(
+            ...,
+            description='Verification result for the proof at issuance or last refresh',
+        )
+    )
+    authorized_tool_namespaces: list[str] = Field(
+        ...,
+        description='Tool namespaces this proof authorizes. ["*"] grants all namespaces.',
+    )
+    issued_at: AwareDatetime
+    expires_at: AwareDatetime | None = None
+    issuer: str | None = Field(None, description='Canonical issuer of the proof')
+    handshake_id: str | None = Field(
+        None, description='Associated handshake identifier or fingerprint'
+    )
+
 class LauncherEvidenceFamily(
     RootModel[Literal['research', 'regulatory', 'enterprise']]
 ):
@@ -658,6 +684,31 @@ class OrchestratorTaskDomain(
         description='Narrow task domains used by the orchestrator trust model and scorecard mapping.',
     )
 
+class FabricProof(BaseModel):
+    proof_id: UUID = Field(
+        ..., description='Unique identifier for the issued fabric proof'
+    )
+    proof_type: Literal['sgt'] | str = Field(
+        ..., description='Fabric proof mechanism identifier'
+    )
+    verification_status: Literal['verified', 'unverified', 'expired', 'revoked'] = (
+        Field(
+            ...,
+            description='Verification result for the proof at issuance or last refresh',
+        )
+    )
+    authorized_tool_namespaces: list[str] = Field(
+        ...,
+        description='Tool namespaces this proof authorizes. ["*"] grants all namespaces.',
+    )
+    issued_at: AwareDatetime
+    expires_at: AwareDatetime | None = None
+    issuer: str | None = Field(None, description='Canonical issuer of the proof')
+    handshake_id: str | None = Field(
+        None, description='Associated handshake identifier or fingerprint'
+    )
+
+
 class OrchestratorToolCall(BaseModel):
     call_id: UUID = Field(
         ..., description='Unique ID for this tool call (agent-generated UUID)'
@@ -676,7 +727,7 @@ class OrchestratorToolCall(BaseModel):
     )
     fabric_proof: FabricProof | None = Field(
         None,
-        description='Optional delegated fabric proof copied from the verified agent handshake when high-risk namespaces are requested.',
+        description='Verified immutable fabric proof issued during agent handshake. Used to authorize high-risk delegation and tool execution.',
     )
     trace_id: UUID | None = None
     priority: Literal['low', 'normal', 'high', 'critical'] | None = 'normal'
@@ -691,7 +742,7 @@ class OrchestratorToolResult(BaseModel):
         Field(..., description='Outcome status of an Orchestrator tool call')
     )
     result: Any = Field(
-        ..., description='Parsed tool output â€” whatever the MCP tool returned'
+        ..., description='Parsed tool output — whatever the MCP tool returned'
     )
     error_message: str | None = None
     error_code: (
@@ -1215,7 +1266,7 @@ class StoredMessage(BaseModel):
         None, description='When this message was created'
     )
     reactions: dict[constr(pattern=r'^(.*)$'), list[str]] | None = Field(
-        None, description='Emoji reactions: emoji key â†’ agent IDs who reacted'
+        None, description='Emoji reactions: emoji key → agent IDs who reacted'
     )
     pinned: bool | None = Field(
         None, description='Whether this message is pinned in the chat'
@@ -1352,5 +1403,3 @@ class WorkflowType(RootModel[Literal['research', 'delivery', 'audit', 'debate']]
     root: Literal['research', 'delivery', 'audit', 'debate'] = Field(
         ..., description='Workflow families allowed for the scoped orchestration layer.'
     )
-
-

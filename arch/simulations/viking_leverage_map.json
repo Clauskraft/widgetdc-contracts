@@ -6,7 +6,7 @@
     "leverage_type": "compliance_gap",
     "financial_impact_score": 85000000.0,
     "remediation_contract_ref": "contract_autonomous_auditor_v1",
-    "calculated_at": "2026-03-18 14:43:39.665905+00:00"
+    "calculated_at": "2026-03-19 19:35:28.552349+00:00"
   },
   "fabric": {
     "controller_id": "wdc_viking_audit_fabric",
@@ -58,6 +58,6 @@
       "gap_nis2_incident_response_manual_bottleneck"
     ],
     "waiver_reason": null,
-    "decided_at": "2026-03-18 14:43:39.665905+00:00"
+    "decided_at": "2026-03-19 19:35:28.552349+00:00"
   }
 }

@@ -11,33 +11,48 @@
   ],
   "properties": {
     "source_language": {
-      "type": "string",
-      "description": "Detected or supplied source language identifier."
+      "description": "Detected or supplied source language identifier.",
+      "type": "string"
     },
     "reconstruction_method": {
-      "type": "string",
-      "description": "Backend used to derive the reconstruction packet."
+      "description": "Backend used to derive the reconstruction packet.",
+      "type": "string"
     },
     "contextual_summary": {
-      "type": "string",
-      "description": "Compact contextual summary preserving likely business intent."
+      "description": "Compact contextual summary preserving likely business intent.",
+      "type": "string"
     },
     "intent_graph": {
       "type": "object",
-      "required": ["nodes", "edges"],
+      "required": [
+        "nodes",
+        "edges"
+      ],
       "properties": {
         "nodes": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "kind", "label"],
+            "required": [
+              "id",
+              "kind",
+              "label"
+            ],
             "properties": {
-              "id": { "type": "string" },
-              "kind": { "type": "string" },
-              "label": { "type": "string" },
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
               "metadata": {
                 "type": "object",
-                "additionalProperties": true
+                "patternProperties": {
+                  "^(.*)$": {}
+                }
               }
             }
           }
@@ -46,19 +61,29 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["source", "target", "relation"],
+            "required": [
+              "source",
+              "target",
+              "relation"
+            ],
             "properties": {
-              "source": { "type": "string" },
-              "target": { "type": "string" },
-              "relation": { "type": "string" }
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "relation": {
+                "type": "string"
+              }
             }
           }
         }
       }
     },
     "invariant_list": {
-      "type": "array",
       "description": "Declarative rules, conditions, or invariants inferred from the source.",
+      "type": "array",
       "items": {
         "type": "string"
       }

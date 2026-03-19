@@ -1,8 +1,20 @@
 # SUPREMACY DESIGN 04: Omniverse Business Twins (Shadow Topology)
 
-**Status:** Canonical Design Draft (Disruptive)
+**Status:** Design Draft with contract safety downgrade
 **Stolen IP:** NVIDIA Omniverse (Digital Twins) + GraphRAG (Semantic Granularity)
 **Author:** Gemini (Master Architect)
+
+## Contract Safety Lock
+
+`overdesign-downgrade`
+
+- `ShadowTwinSimulation` is not a canonical contract in `widgetdc-contracts` today.
+- `SimulationConstraint` is not a canonical contract in `widgetdc-contracts` today.
+- No first-class schema or Python model may be added for these concepts unless a real payload exchange requires validation parity across source, schema, Python, and consuming runtime.
+- Current canonical truth in this repo is narrower:
+  - graph vocabulary belongs in `src/graph/*`
+  - established payload schemas belong in `schemas/*`
+  - design examples in this document are illustrative only until promoted by a proven runtime payload
 
 ## 1. Executive Summary
 Instead of generating static slide decks to explain a company's architecture to them, WidgeTDC will build a "Shadow Business Twin". Using NVIDIA's concept of cyber-physical digital twins, we map the client's entire L1-L3 business processes into a live, queryable Neo4j property graph. We then use GraphRAG to allow stakeholders to "simulate" changes (e.g., "What happens if we shut down the legacy mainframe?") before executing them via the Fabric.
@@ -37,8 +49,8 @@ graph TD
 
 ## 3. Code & Contract Implementation
 
-### 3.1 Pydantic Spec (Python Integration)
-Connecting the digital twin simulation constraints to the Graph schemas.
+### 3.1 Illustrative Pydantic Spec (Not Canonical Contract Truth)
+The example below is design-only and must not be treated as source-of-truth schema until a real payload contract exists.
 
 ```python
 from pydantic import BaseModel, Field
@@ -57,5 +69,5 @@ class ShadowTwinSimulation(BaseModel):
 ```
 
 ## 4. Integration into WidgeTDC Core
-1.  **Simulation Layer:** Before the `LegoFactory` governor approves a promotion to production, the change *must* be run through the `ShadowTwinSimulation`.
-2.  **Visual Output:** The blast radius is visualized dynamically in the Valhalla Dashboard, showing exactly which L1 business processes will fail if an L3 server goes offline.
+1.  **Simulation Layer:** Any future simulation payload must first prove a real runtime exchange before `ShadowTwinSimulation` can become a contract.
+2.  **Visual Output:** Blast-radius visualization may exist as implementation behavior without promoting new contract objects prematurely.

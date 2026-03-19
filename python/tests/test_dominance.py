@@ -1,33 +1,49 @@
-import pytest
 import json
 from pathlib import Path
+
+import pytest
 from pydantic import ValidationError
-from widgetdc_contracts.viking import StrategicLeverage, FabricController
+
+from widgetdc_contracts.graph import FabricController, StrategicLeverage
 from widgetdc_contracts.orchestrator import RoutingDecision
 
-def test_viking_simulation_parity():
-    # Path to real simulation data
-    sim_path = Path(__file__).parent.parent.parent / "arch" / "simulations" / "viking_leverage_map.json"
+
+def load_simulation(name: str) -> dict:
+    sim_path = Path(__file__).parent.parent.parent / "arch" / "simulations" / name
     assert sim_path.exists()
-    
-    with open(sim_path, "r") as f:
-        data = json.load(f)
-    
-    # 1. Validate StrategicLeverage
+
+    with open(sim_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_leverage_id", "expected_controller_id", "expected_decision_id", "expected_drain_rate"),
+    [
+        ("viking_leverage_map.json", "lev_viking_dominance_001", "wdc_viking_audit_fabric", "dec_viking_intercept_001", 0.95),
+        ("cisco_leverage_map.json", "lev_cisco_viptela_heist_001", "wdc_fabric_guardian_alpha", "dec_interception_cisco_001", 0.85),
+        ("aws_liberation_map.json", "lev_aws_liberation_001", "wdc_logic_liberator_alpha", "dec_liberation_aws_001", 0.92),
+    ],
+)
+def test_simulation_maps_validate_against_canonical_contracts(
+    name: str,
+    expected_leverage_id: str,
+    expected_controller_id: str,
+    expected_decision_id: str,
+    expected_drain_rate: float,
+):
+    data = load_simulation(name)
+
     leverage = StrategicLeverage(**data["leverage"])
-    assert leverage.leverage_id == "lev_viking_dominance_001"
-    assert leverage.financial_impact_score == 85000000.0
-    
-    # 2. Validate FabricController
+    assert leverage.leverage_id == expected_leverage_id
+
     fabric = FabricController(**data["fabric"])
-    assert fabric.controller_id == "wdc_viking_audit_fabric"
+    assert fabric.controller_id == expected_controller_id
     assert fabric.health_status == "optimal"
-    
-    # 3. Validate RoutingDecision
+
     decision = RoutingDecision(**data["decision"])
-    assert decision.decision_id == "dec_viking_intercept_001"
+    assert decision.decision_id == expected_decision_id
     assert decision.reason_code == "FABRIC_WIN"
-    assert decision.vampire_drain_rate == 0.95
+    assert decision.vampire_drain_rate == expected_drain_rate
 
 def test_schema_rejection():
     # Test invalid data rejection

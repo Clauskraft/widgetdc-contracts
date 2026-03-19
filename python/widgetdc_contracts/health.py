@@ -7,9 +7,9 @@ Do not edit manually — regenerate with: npm run python
 from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel
-from pydantic import AwareDatetime, BaseModel, constr
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
+from pydantic import AwareDatetime, BaseModel, constr
 from pydantic import BaseModel
 from pydantic import BaseModel, Field
 from pydantic import Field, RootModel
@@ -133,4 +133,3 @@ class ServiceResources(BaseModel):
 
 class ServiceStatus(RootModel[Literal['healthy', 'degraded', 'unhealthy', 'starting']]):
     root: Literal['healthy', 'degraded', 'unhealthy', 'starting']
-

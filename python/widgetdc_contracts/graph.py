@@ -6,12 +6,56 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import BaseModel, Field
+from pydantic import Field, RootModel
+from typing import Any
 from typing import Literal
 
-from pydantic import Field, RootModel
+__all__ = ["CyberIntelligence", "FabricController", "NodeLabel", "RelationshipType", "StrategicLeverage"]
 
-__all__ = ["NodeLabel", "RelationshipType"]
+class CyberIntelligence(BaseModel):
+    intel_id: str = Field(
+        ..., description='Stable identifier for the intelligence node.'
+    )
+    threat_type: str = Field(
+        ...,
+        description='Categorization of the threat (e.g. Malware, APT, Phishing, Dork).',
+    )
+    indicators: list[str] = Field(
+        ...,
+        description='List of Indicators of Compromise (IoCs) extracted (IPs, Hashes, Domains).',
+    )
+    stix_alignment: bool | None = Field(
+        True,
+        description='Alignment status with STIX 2.1 standard (Adoption: CSIS Cyber Defence Feed Pattern).',
+    )
+    adversary_correlation: dict[str, Any] | None = Field(
+        None, description='Mapped MITRE ATT&CK techniques and adversary profiles.'
+    )
+    confidence_score: float = Field(..., ge=0.0, le=1.0)
+    discovered_at: AwareDatetime
 
+class ActiveProbe(BaseModel):
+    probe_id: str | None = None
+    target_agent: str | None = None
+    latency_ms: float | None = None
+
+
+class FabricController(BaseModel):
+    controller_id: str = Field(
+        ..., description='Stable identifier for the fabric controller.'
+    )
+    fabric_type: Literal['software_nvlink', 'cross_repo_bridge', 'external_gateway']
+    active_probes: list[ActiveProbe] = Field(
+        ...,
+        description='List of active health probes monitoring agent-to-agent sties (Adoption: Conscia HTTP Probe Pattern).',
+    )
+    identity_tag_mapping: dict[str, str] | None = Field(
+        None,
+        description='Mapping of Scalable Group Tags (SGT) to agent identities (Adoption: Conscia Identity-Based ZTA).',
+    )
+    health_status: Literal['optimal', 'congested', 'remediating']
 
 class NodeLabel(
     RootModel[
@@ -81,6 +125,11 @@ class NodeLabel(
             'ComplianceGap',
             'StrategicLeverage',
             'AuditProof',
+            'CriticalFunction',
+            'ResilienceMetric',
+            'GridFunction',
+            'AnomalyPheromone',
+            'NormalizerConfig',
         ]
     ]
 ):
@@ -150,8 +199,12 @@ class NodeLabel(
         'ComplianceGap',
         'StrategicLeverage',
         'AuditProof',
+        'CriticalFunction',
+        'ResilienceMetric',
+        'GridFunction',
+        'AnomalyPheromone',
+        'NormalizerConfig',
     ] = Field(..., description='Canonical Neo4j node labels')
-
 
 class RelationshipType(
     RootModel[
@@ -159,21 +212,40 @@ class RelationshipType(
             'BELONGS_TO_DOMAIN',
             'HAS_SUBPROCESS',
             'HAS_TASK',
+            'PARENT_PROCESS',
             'BELONGS_TO_ENGAGEMENT',
             'BELONGS_TO_TRACK',
             'PROVIDES_INSIGHT',
             'HAS_STRATEGIC_INSIGHT',
+            'USES_PROCESS',
+            'HAS_TRACK',
+            'ASSIGNED_TO',
+            'IMPLEMENTS',
+            'USES_METHODOLOGY',
+            'MEASURES',
+            'EVALUATES',
+            'HAS_CRITERION',
+            'HAS_CAPABILITY',
+            'USES_TOOL',
+            'USES_FRAMEWORK',
+            'CODE_FOR',
+            'CONTAINS_PATTERN',
             'SUPPORTED_BY',
+            'CITES',
+            'IN_DOMAIN',
+            'RELATES_TO',
+            'IS_A',
             'PROVES',
             'CLAIM_OF',
             'IN_KNOWLEDGE_PACK',
             'FOLLOWS_PATTERN',
             'RELATED_TO',
-            'USES_TOOL',
-            'IMPLEMENTS',
+            'RUNS',
             'RUNS_IN',
             'ACTS_AS',
+            'MADE_DECISION',
             'PRODUCED_DECISION',
+            'HAS_CONTENT',
             'CITED_IN',
             'SNAPSHOT_OF',
             'REFERENCES',
@@ -181,10 +253,20 @@ class RelationshipType(
             'VULNERABILITY_OF',
             'HAS_CVE',
             'INSTRUCTED_BY',
-            'MEASURES',
             'CONTAINS',
             'MEMBER_OF',
             'CONTROLS',
+            'SIMILAR_TO',
+            'DUPLICATE_OF',
+            'HAS_EXPANSION_SIGNAL',
+            'DETECTED_AT',
+            'GOVERNED_BY',
+            'CONSTRAINS',
+            'AMENDS',
+            'PUBLISHED_BY',
+            'VETOED_BY',
+            'REPORTS',
+            'EXTRACTED_FROM',
             'PRODUCED_BY',
             'DELIVERED_IN',
             'CONTAINS_STEP',
@@ -212,6 +294,18 @@ class RelationshipType(
             'EXIT_PATH_FOR',
             'REMEDIATES',
             'LEVERAGES',
+            'SUPPORTS_CIF',
+            'DEPENDS_ON_CTPP',
+            'VERIFIES_RESILIENCE',
+            'MONITORS_GRID',
+            'BRIDGES_OT_IT',
+            'REPORTED_AS_NIS2',
+            'PROVIDES_FREEDOM_FROM',
+            'MAPS_LEGACY_DEBT',
+            'GOVERNS_CITIZEN_DATA',
+            'NORMALIZED_FROM',
+            'PART_OF_HYPERGRAPH',
+            'DEVIATES_FROM_BASELINE',
         ]
     ]
 ):
@@ -219,21 +313,40 @@ class RelationshipType(
         'BELONGS_TO_DOMAIN',
         'HAS_SUBPROCESS',
         'HAS_TASK',
+        'PARENT_PROCESS',
         'BELONGS_TO_ENGAGEMENT',
         'BELONGS_TO_TRACK',
         'PROVIDES_INSIGHT',
         'HAS_STRATEGIC_INSIGHT',
+        'USES_PROCESS',
+        'HAS_TRACK',
+        'ASSIGNED_TO',
+        'IMPLEMENTS',
+        'USES_METHODOLOGY',
+        'MEASURES',
+        'EVALUATES',
+        'HAS_CRITERION',
+        'HAS_CAPABILITY',
+        'USES_TOOL',
+        'USES_FRAMEWORK',
+        'CODE_FOR',
+        'CONTAINS_PATTERN',
         'SUPPORTED_BY',
+        'CITES',
+        'IN_DOMAIN',
+        'RELATES_TO',
+        'IS_A',
         'PROVES',
         'CLAIM_OF',
         'IN_KNOWLEDGE_PACK',
         'FOLLOWS_PATTERN',
         'RELATED_TO',
-        'USES_TOOL',
-        'IMPLEMENTS',
+        'RUNS',
         'RUNS_IN',
         'ACTS_AS',
+        'MADE_DECISION',
         'PRODUCED_DECISION',
+        'HAS_CONTENT',
         'CITED_IN',
         'SNAPSHOT_OF',
         'REFERENCES',
@@ -241,10 +354,20 @@ class RelationshipType(
         'VULNERABILITY_OF',
         'HAS_CVE',
         'INSTRUCTED_BY',
-        'MEASURES',
         'CONTAINS',
         'MEMBER_OF',
         'CONTROLS',
+        'SIMILAR_TO',
+        'DUPLICATE_OF',
+        'HAS_EXPANSION_SIGNAL',
+        'DETECTED_AT',
+        'GOVERNED_BY',
+        'CONSTRAINS',
+        'AMENDS',
+        'PUBLISHED_BY',
+        'VETOED_BY',
+        'REPORTS',
+        'EXTRACTED_FROM',
         'PRODUCED_BY',
         'DELIVERED_IN',
         'CONTAINS_STEP',
@@ -272,4 +395,37 @@ class RelationshipType(
         'EXIT_PATH_FOR',
         'REMEDIATES',
         'LEVERAGES',
+        'SUPPORTS_CIF',
+        'DEPENDS_ON_CTPP',
+        'VERIFIES_RESILIENCE',
+        'MONITORS_GRID',
+        'BRIDGES_OT_IT',
+        'REPORTED_AS_NIS2',
+        'PROVIDES_FREEDOM_FROM',
+        'MAPS_LEGACY_DEBT',
+        'GOVERNS_CITIZEN_DATA',
+        'NORMALIZED_FROM',
+        'PART_OF_HYPERGRAPH',
+        'DEVIATES_FROM_BASELINE',
     ] = Field(..., description='Canonical Neo4j relationship types')
+
+class StrategicLeverage(BaseModel):
+    leverage_id: str = Field(
+        ..., description='Stable identifier for the leverage node.'
+    )
+    target_id: str = Field(
+        ...,
+        description='Reference to the Target (CompetitorShadow or ComplianceGap) being leveraged.',
+    )
+    leverage_type: Literal[
+        'compliance_gap', 'architectural_lockin', 'operational_inefficiency'
+    ]
+    financial_impact_score: float = Field(
+        ...,
+        description='Quantified risk in financial terms (Adoption: Dubex FAIR Risk Framework). Used for board-level negotiation.',
+    )
+    remediation_contract_ref: str | None = Field(
+        None,
+        description='Reference to the WidgeTDC contract that resolves the leverage point.',
+    )
+    calculated_at: AwareDatetime

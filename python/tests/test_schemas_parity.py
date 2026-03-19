@@ -78,7 +78,7 @@ def test_fabric_proof_parity():
         status="online",
         capabilities=["graph_read", "mcp_tools"],
         allowed_tool_namespaces=["graph", "audit"],
-        fabric_proof=proof,
+        fabric_proof=proof.model_dump(mode="json"),
     )
     assert handshake.fabric_proof is not None
 
@@ -87,6 +87,30 @@ def test_fabric_proof_parity():
         agent_id="MASTERARCHITECTWIDGETDC",
         tool_name="audit.lessons",
         arguments={"topic": "fabric"},
-        fabric_proof=proof,
+        fabric_proof=proof.model_dump(mode="json"),
     )
     assert tool_call.fabric_proof is not None
+
+
+def test_agent_handshake_capability_index_is_scalar_fingerprint():
+    handshake = AgentHandshake(
+        agent_id="MASTERARCHITECTWIDGETDC",
+        display_name="Master Architect WidgetDC",
+        source="gemini",
+        status="online",
+        capabilities=["graph_read", "mcp_tools"],
+        allowed_tool_namespaces=["graph", "audit"],
+        capability_index="sha256:abc123",
+    )
+    assert handshake.capability_index == "sha256:abc123"
+
+    with pytest.raises(ValidationError):
+        AgentHandshake(
+            agent_id="MASTERARCHITECTWIDGETDC",
+            display_name="Master Architect WidgetDC",
+            source="gemini",
+            status="online",
+            capabilities=["graph_read", "mcp_tools"],
+            allowed_tool_namespaces=["graph", "audit"],
+            capability_index=["sha256:abc123"],
+        )

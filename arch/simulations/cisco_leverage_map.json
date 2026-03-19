@@ -6,7 +6,7 @@
     "leverage_type": "compliance_gap",
     "financial_impact_score": 12500000.0,
     "remediation_contract_ref": "contract_fabric_guardian_v1",
-    "calculated_at": "2026-03-18 14:40:07.471712+00:00"
+    "calculated_at": "2026-03-19 19:35:28.721738+00:00"
   },
   "fabric": {
     "controller_id": "wdc_fabric_guardian_alpha",
@@ -57,6 +57,6 @@
       "cve_2026_20127_auth_bypass"
     ],
     "waiver_reason": null,
-    "decided_at": "2026-03-18 14:40:07.471712+00:00"
+    "decided_at": "2026-03-19 19:35:28.721738+00:00"
   }
 }

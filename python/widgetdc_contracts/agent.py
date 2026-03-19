@@ -73,4 +73,3 @@ class SignalType(
         'insight',
         'warning',
     ] = Field(..., description='Agent signal event type')
-

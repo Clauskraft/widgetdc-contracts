@@ -8,7 +8,7 @@ import json
 sys.path.insert(0, str(Path.cwd() / "python"))
 
 from widgetdc_contracts.graph import NodeLabel, RelationshipType
-from widgetdc_contracts.viking import StrategicLeverage, FabricController
+from widgetdc_contracts.graph import StrategicLeverage, FabricController
 from widgetdc_contracts.orchestrator import RoutingDecision, Intent
 
 def run_viking_compliance_simulation():

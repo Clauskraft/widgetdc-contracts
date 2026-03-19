@@ -274,6 +274,26 @@ describe('orchestrator/agent-handshake', () => {
     }
   })
 
+  it('AgentHandshake keeps capability_index as an optional scalar fingerprint, not a list', () => {
+    const scalarHandshake = {
+      agent_id: 'INDEXED_AGENT',
+      display_name: 'Indexed Agent',
+      source: 'system',
+      status: 'online',
+      capabilities: ['mcp_tools'],
+      allowed_tool_namespaces: ['graph'],
+      capability_index: 'sha256:abc123',
+    }
+
+    const listHandshake = {
+      ...scalarHandshake,
+      capability_index: ['sha256:abc123'],
+    }
+
+    expect(Value.Check(AgentHandshake, scalarHandshake)).toBe(true)
+    expect(Value.Check(AgentHandshake, listHandshake)).toBe(false)
+  })
+
   it('AgentCapability validates all 10 capabilities', () => {
     const caps = [
       'graph_read', 'graph_write', 'mcp_tools', 'cognitive_reasoning',
