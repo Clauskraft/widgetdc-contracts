@@ -70,6 +70,10 @@ import {
   removeRule,
 } from "./monitoring/index.js";
 import { sseHandler } from "./monitoring/sse.js";
+import {
+  AGENT_GOVERNANCE_PROXY_SURFACES,
+  fetchGovernanceSurface,
+} from "./agent-governance-proxy.js";
 
 // --- GitHub Changelog ---
 interface ChangelogCommit {
@@ -1974,6 +1978,27 @@ app.delete("/api/monitoring/rules/:id", async (req, res) => {
 // Proxies to the backend's audit tools and provides aggregated integrity data.
 const BACKEND_URL = process.env.BACKEND_URL || "https://backend-production-d3da.up.railway.app";
 const BACKEND_API_KEY = process.env.WIDGETDC_API_KEY || process.env.API_KEY || "";
+
+for (const surface of AGENT_GOVERNANCE_PROXY_SURFACES) {
+  app.get(surface.route, async (_req, res) => {
+    try {
+      const result = await fetchGovernanceSurface(surface.id, {
+        backendUrl: BACKEND_URL,
+        apiKey: BACKEND_API_KEY || undefined,
+      });
+
+      res.setHeader("x-agent-governance-bridge", "backend-proxy");
+      res.setHeader("x-agent-governance-upstream", surface.backendPath);
+      res.status(result.status).type(result.contentType).send(result.body as any);
+    } catch (e: any) {
+      res.status(502).json({
+        error: "Failed to proxy governance surface",
+        surface: surface.id,
+        message: e.message,
+      });
+    }
+  });
+}
 
 app.get("/api/integrity", async (_req, res) => {
   try {
