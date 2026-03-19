@@ -23,6 +23,12 @@ def get_embedding_model() -> SentenceTransformer:
 def contextual_proximity(df: pd.DataFrame) -> pd.DataFrame:
     """
     Generate a set of direct and indirect edges based on shared context (chunks).
+    
+    Args:
+        df: DataFrame with columns [node_1, node_2, edge, chunk_id]
+        
+    Returns:
+        DataFrame with additional 'indirect contextual proximity' edges.
     """
     if df.empty:
         return df
@@ -50,7 +56,7 @@ def contextual_proximity(df: pd.DataFrame) -> pd.DataFrame:
     dfg2.replace("", np.nan, inplace=True)
     dfg2.dropna(subset=["node_1", "node_2"], inplace=True)
     
-    # Drop edges with 1 count
+    # Drop edges with 1 count (optional, depending on your use case)
     dfg2 = dfg2[dfg2["count"] != 1]
     dfg2["edge"] = "contextual proximity"
     
@@ -59,18 +65,24 @@ def contextual_proximity(df: pd.DataFrame) -> pd.DataFrame:
     nodes = dfg2[['node_1', 'node_2']].stack().unique()
     
     for node in nodes:
+        # Get all nodes directly connected to the current node
         connected_nodes = pd.concat([
             dfg2[dfg2['node_1'] == node][['node_2', 'chunk_id']],
             dfg2[dfg2['node_2'] == node][['node_1', 'chunk_id']].rename(columns={'node_1': 'node_2'})
         ])
         
+        # Create pairs of these connected nodes
         for i in range(len(connected_nodes)):
             for j in range(i + 1, len(connected_nodes)):
                 pair = sorted([connected_nodes.iloc[i]['node_2'], connected_nodes.iloc[j]['node_2']])
                 chunk_ids = ','.join([connected_nodes.iloc[i]['chunk_id'], connected_nodes.iloc[j]['chunk_id']])
+                
                 indirect_edges.append((pair[0], pair[1], node, chunk_ids))
     
+    # Convert indirect edges into a DataFrame and combine with direct edges
     indirect_df = pd.DataFrame(indirect_edges, columns=["node_1", "node_2", "via_node", "chunk_id"])
+    
+    # Group by to aggregate chunk_ids and count indirect edges
     indirect_df = (
         indirect_df.groupby(["node_1", "node_2"])
         .agg({"chunk_id": ",".join, "via_node": "count"})
@@ -79,7 +91,10 @@ def contextual_proximity(df: pd.DataFrame) -> pd.DataFrame:
     indirect_df.columns = ["node_1", "node_2", "chunk_id", "count"]
     indirect_df["edge"] = "indirect contextual proximity"
     
+    # Merge indirect edges with the direct edges
     final_df = pd.concat([dfg2, indirect_df], ignore_index=True)
+    
+    # Handle cases where direct and indirect edges might overlap
     final_df = (
         final_df.groupby(["node_1", "node_2", "edge"])
         .agg({"chunk_id": ",".join, "count": "sum"})
@@ -97,16 +112,40 @@ def add_embeddings_to_df(df: pd.DataFrame) -> pd.DataFrame:
     """Add embeddings to the DataFrame based on combined text from nodes and edges."""
     if df.empty:
         return df
+        
+    # Combine node_1, edge, and node_2 into a single text string
     df['combined_text'] = df.apply(lambda row: f"{row['node_1']} {row['edge']} {row['node_2']}", axis=1)
+    
+    # Generate embeddings for the combined text
     embeddings = generate_embeddings(df['combined_text'].tolist())
+    
+    # Store embeddings in the DataFrame
     df['embedding'] = list(embeddings)
+    
     return df
 
 def find_relevant_relationships(query: str, df: pd.DataFrame, similarity_threshold: float = 0.5) -> pd.DataFrame:
-    """Find relationships semantically relevant to the query."""
+    """
+    Find relationships in the graph that are semantically relevant to the query.
+    
+    Args:
+        query: User's natural language query
+        df: DataFrame with embeddings
+        similarity_threshold: Minimum cosine similarity score
+        
+    Returns:
+        Filtered DataFrame with relevant relationships
+    """
     if df.empty or 'embedding' not in df.columns:
         return pd.DataFrame()
+        
+    # Generate an embedding for the user query
     query_embedding = generate_embeddings([query])[0]
+    
+    # Compute cosine similarity
     df['similarity'] = df['embedding'].apply(lambda emb: 1 - cosine(query_embedding, emb))
+    
+    # Filter based on threshold
     relevant_rows = df[df['similarity'] >= similarity_threshold].sort_values(by='similarity', ascending=False)
+    
     return relevant_rows

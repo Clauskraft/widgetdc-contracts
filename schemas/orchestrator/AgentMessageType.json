@@ -25,6 +25,14 @@
     {
       "const": "ToolResult",
       "type": "string"
+    },
+    {
+      "const": "Arbitration",
+      "type": "string"
+    },
+    {
+      "const": "Divergence",
+      "type": "string"
     }
   ]
 }

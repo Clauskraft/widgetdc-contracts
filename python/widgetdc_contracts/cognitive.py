@@ -171,4 +171,3 @@ class TraceInfo(BaseModel):
     trace_id: str
     total_spans: int | None = None
     total_duration_ms: float | None = None
-

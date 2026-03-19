@@ -1,0 +1,62 @@
+{
+  "status": "VAMPIRIC_DOMINANCE_ESTABLISHED",
+  "leverage": {
+    "leverage_id": "lev_cisco_viptela_heist_001",
+    "target_id": "comp_cisco_sdwan_vsmart",
+    "leverage_type": "compliance_gap",
+    "financial_impact_score": 12500000.0,
+    "remediation_contract_ref": "contract_fabric_guardian_v1",
+    "calculated_at": "2026-03-19 19:35:28.721738+00:00"
+  },
+  "fabric": {
+    "controller_id": "wdc_fabric_guardian_alpha",
+    "fabric_type": "software_nvlink",
+    "active_probes": [
+      {
+        "probe_id": "p1",
+        "target_agent": "GEMINI_ARCHITECT",
+        "latency_ms": 12.5
+      },
+      {
+        "probe_id": "p2",
+        "target_agent": "CODEX_ENGINEER",
+        "latency_ms": 8.2
+      }
+    ],
+    "identity_tag_mapping": {
+      "SGT_TRUSTED_INTERNAL": "WIDGETDC_CORE",
+      "SGT_EXTERNAL_UNTRUSTED": "CISCO_LEGACY_NODE"
+    },
+    "health_status": "optimal"
+  },
+  "decision": {
+    "decision_id": "dec_interception_cisco_001",
+    "intent": {
+      "intent_id": "int_logic_liberation",
+      "capability": "verified_recommendation",
+      "task_domain": "audit",
+      "flow_ref": "core-flow-3",
+      "route_scope": [
+        "widgetdc-orchestrator"
+      ],
+      "operator_visible": true,
+      "scorecard_dimensions": [
+        "tri_source_arbitration_divergence"
+      ]
+    },
+    "selected_agent_id": "ORCHESTRATOR_MASTER",
+    "selected_capability": "workflow_audit",
+    "trust_score": 0.98,
+    "reason_code": "FABRIC_WIN",
+    "fabric_route_id": "wdc_fabric_guardian_alpha",
+    "latency_deterministic": false,
+    "vampire_drain_rate": 0.85,
+    "target_shadow_id": "comp_cisco_sdwan_vsmart",
+    "evidence_refs": [
+      "lev_cisco_viptela_heist_001",
+      "cve_2026_20127_auth_bypass"
+    ],
+    "waiver_reason": null,
+    "decided_at": "2026-03-19 19:35:28.721738+00:00"
+  }
+}

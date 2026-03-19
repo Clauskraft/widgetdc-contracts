@@ -129,4 +129,3 @@ class WinProbabilityScore(BaseModel):
     )
     is_go: bool = Field(..., description='True if overall_score > threshold')
     assessed_at: AwareDatetime
-

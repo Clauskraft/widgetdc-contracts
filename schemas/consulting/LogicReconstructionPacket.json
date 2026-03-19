@@ -1,0 +1,92 @@
+{
+  "$id": "LogicReconstructionPacket",
+  "description": "Language-agnostic logic reconstruction output derived from source code or execution-oriented artifacts.",
+  "type": "object",
+  "required": [
+    "source_language",
+    "reconstruction_method",
+    "contextual_summary",
+    "intent_graph",
+    "invariant_list"
+  ],
+  "properties": {
+    "source_language": {
+      "description": "Detected or supplied source language identifier.",
+      "type": "string"
+    },
+    "reconstruction_method": {
+      "description": "Backend used to derive the reconstruction packet.",
+      "type": "string"
+    },
+    "contextual_summary": {
+      "description": "Compact contextual summary preserving likely business intent.",
+      "type": "string"
+    },
+    "intent_graph": {
+      "type": "object",
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "kind",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object",
+                "patternProperties": {
+                  "^(.*)$": {}
+                }
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "target",
+              "relation"
+            ],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "relation": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "invariant_list": {
+      "description": "Declarative rules, conditions, or invariants inferred from the source.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

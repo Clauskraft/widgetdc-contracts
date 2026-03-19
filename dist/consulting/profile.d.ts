@@ -15,4 +15,24 @@ export declare const DomainHealthProfile: import("@sinclair/typebox").TObject<{
     updated_at: import("@sinclair/typebox").TString;
 }>;
 export type DomainHealthProfile = Static<typeof DomainHealthProfile>;
+export declare const LogicReconstructionPacket: import("@sinclair/typebox").TObject<{
+    source_language: import("@sinclair/typebox").TString;
+    reconstruction_method: import("@sinclair/typebox").TString;
+    contextual_summary: import("@sinclair/typebox").TString;
+    intent_graph: import("@sinclair/typebox").TObject<{
+        nodes: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TObject<{
+            id: import("@sinclair/typebox").TString;
+            kind: import("@sinclair/typebox").TString;
+            label: import("@sinclair/typebox").TString;
+            metadata: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TRecord<import("@sinclair/typebox").TString, import("@sinclair/typebox").TUnknown>>;
+        }>>;
+        edges: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TObject<{
+            source: import("@sinclair/typebox").TString;
+            target: import("@sinclair/typebox").TString;
+            relation: import("@sinclair/typebox").TString;
+        }>>;
+    }>;
+    invariant_list: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+}>;
+export type LogicReconstructionPacket = Static<typeof LogicReconstructionPacket>;
 //# sourceMappingURL=profile.d.ts.map

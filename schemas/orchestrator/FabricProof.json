@@ -1,0 +1,75 @@
+{
+  "$id": "FabricProof",
+  "description": "Verified immutable fabric proof issued during agent handshake. Used to authorize high-risk delegation and tool execution.",
+  "type": "object",
+  "required": [
+    "proof_id",
+    "proof_type",
+    "verification_status",
+    "authorized_tool_namespaces",
+    "issued_at"
+  ],
+  "properties": {
+    "proof_id": {
+      "format": "uuid",
+      "description": "Unique identifier for the issued fabric proof",
+      "type": "string"
+    },
+    "proof_type": {
+      "description": "Fabric proof mechanism identifier",
+      "anyOf": [
+        {
+          "const": "sgt",
+          "type": "string"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "verification_status": {
+      "description": "Verification result for the proof at issuance or last refresh",
+      "anyOf": [
+        {
+          "const": "verified",
+          "type": "string"
+        },
+        {
+          "const": "unverified",
+          "type": "string"
+        },
+        {
+          "const": "expired",
+          "type": "string"
+        },
+        {
+          "const": "revoked",
+          "type": "string"
+        }
+      ]
+    },
+    "authorized_tool_namespaces": {
+      "description": "Tool namespaces this proof authorizes. [\"*\"] grants all namespaces.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issued_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "issuer": {
+      "description": "Canonical issuer of the proof",
+      "type": "string"
+    },
+    "handshake_id": {
+      "description": "Associated handshake identifier or fingerprint",
+      "type": "string"
+    }
+  }
+}

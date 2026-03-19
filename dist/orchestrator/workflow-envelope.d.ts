@@ -13,6 +13,8 @@ export declare const AgentWorkflowEnvelope: import("@sinclair/typebox").TObject<
     scorecard_ref: import("@sinclair/typebox").TString;
     reasoning_lineage_visible: import("@sinclair/typebox").TBoolean;
     quorum_consensus: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TBoolean>;
+    compute_mode: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"standard">, import("@sinclair/typebox").TLiteral<"extreme">]>>;
+    phase_parameters: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TRecord<import("@sinclair/typebox").TString, import("@sinclair/typebox").TAny>>;
     started_at: import("@sinclair/typebox").TString;
     updated_at: import("@sinclair/typebox").TString;
 }>;

@@ -52,7 +52,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "schemas": "tsx scripts/export-schemas.ts",
-    "python": "bash scripts/generate-python.sh",
+    "python": "tsx scripts/generate-python.ts",
     "generate": "npm run build && npm run schemas",
     "test": "vitest run",
     "test:watch": "vitest",

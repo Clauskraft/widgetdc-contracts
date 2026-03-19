@@ -96,4 +96,3 @@ class ResponseMetadata(BaseModel):
     timestamp: AwareDatetime | None = None
     duration_ms: int | None = Field(None, ge=0)
     correlation_id: str | None = None
-

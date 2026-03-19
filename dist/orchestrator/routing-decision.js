@@ -21,9 +21,25 @@ export const RoutingDecision = Type.Object({
         Type.Literal('FLOW_SPECIALIZATION'),
         Type.Literal('FALLBACK_ROUTE'),
         Type.Literal('WAIVER_ROUTE'),
+        Type.Literal('FABRIC_WIN'),
     ], {
         description: 'Why this route was selected.',
     }),
+    fabric_route_id: Type.Optional(Type.String({
+        description: 'Virtual fabric identifier for low-latency agent-to-agent communication (Adoption: NVIDIA NVLink 6).',
+    })),
+    latency_deterministic: Type.Optional(Type.Boolean({
+        description: 'Whether the route guarantees deterministic response time for MoE (Mixture-of-Experts) swarms.',
+        default: false,
+    })),
+    vampire_drain_rate: Type.Optional(Type.Number({
+        minimum: 0,
+        maximum: 1,
+        description: 'Rate of intellectual or economic value extraction from the target competitor (Adoption: Strategic Strategy Vampire).',
+    })),
+    target_shadow_id: Type.Optional(Type.String({
+        description: 'Reference to the CompetitorShadow node being drained or intercepted.',
+    })),
     evidence_refs: Type.Array(Type.String(), {
         minItems: 1,
         description: 'References to trust, scorecard, or runtime evidence used during routing.',

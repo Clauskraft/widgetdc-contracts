@@ -82,5 +82,20 @@ export const NodeLabel = Type.Union([
     Type.Literal('ScopedKnowledge'),
     Type.Literal('DataSourceConfig'),
     Type.Literal('ProjectTemplate'),
+    // Pillar 1-12 Dominance labels (P0 — research 2026-03-18)
+    Type.Literal('ScavengerProbe'),
+    Type.Literal('AdoptedIP'),
+    Type.Literal('CompetitorShadow'),
+    Type.Literal('GoldenEgg'),
+    Type.Literal('FabricController'),
+    Type.Literal('ExitPath'),
+    Type.Literal('ComplianceGap'),
+    Type.Literal('StrategicLeverage'),
+    Type.Literal('AuditProof'),
+    Type.Literal('CriticalFunction'),
+    Type.Literal('ResilienceMetric'),
+    Type.Literal('GridFunction'),
+    Type.Literal('AnomalyPheromone'),
+    Type.Literal('NormalizerConfig'),
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' });
 //# sourceMappingURL=labels.js.map

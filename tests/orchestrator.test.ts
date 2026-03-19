@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import '../src/formats.js' // register uuid + date-time format validators
 import { Value } from '@sinclair/typebox/value'
 import {
+  FabricProof,
   OrchestratorToolCall,
   OrchestratorToolResult,
   OrchestratorToolStatus,
@@ -31,12 +32,30 @@ describe('orchestrator/tool-call', () => {
       agent_id: 'GEMINI_ARCHITECT',
       tool_name: 'audit.lessons',
       arguments: { agentId: 'GEMINI_ARCHITECT' },
+      fabric_proof: {
+        proof_id: '770e8400-e29b-41d4-a716-446655440099',
+        proof_type: 'sgt',
+        verification_status: 'verified',
+        authorized_tool_namespaces: ['audit'],
+        issued_at: '2026-03-19T08:00:00Z',
+      },
       trace_id: '660e8400-e29b-41d4-a716-446655440001',
       priority: 'high',
       timeout_ms: 15000,
       emitted_at: '2026-03-06T12:00:00Z',
     }
     expect(Value.Check(OrchestratorToolCall, call)).toBe(true)
+  })
+
+  it('FabricProof validates a verified SGT proof', () => {
+    const proof = {
+      proof_id: '770e8400-e29b-41d4-a716-446655440099',
+      proof_type: 'sgt',
+      verification_status: 'verified',
+      authorized_tool_namespaces: ['shell', 'git'],
+      issued_at: '2026-03-19T08:00:00Z',
+    }
+    expect(Value.Check(FabricProof, proof)).toBe(true)
   })
 
   it('OrchestratorToolCall rejects invalid tool_name format', () => {
@@ -213,6 +232,13 @@ describe('orchestrator/agent-handshake', () => {
       status: 'standby',
       capabilities: ['graph_read', 'cognitive_reasoning', 'audit'],
       allowed_tool_namespaces: ['graph', 'knowledge', 'audit'],
+      fabric_proof: {
+        proof_id: '770e8400-e29b-41d4-a716-446655440099',
+        proof_type: 'sgt',
+        verification_status: 'verified',
+        authorized_tool_namespaces: ['graph', 'audit'],
+        issued_at: '2026-03-19T08:00:00Z',
+      },
       max_concurrent_calls: 3,
       default_thread: 'widgetdc-sprint-march26',
       registered_at: '2026-03-06T10:00:00Z',
@@ -246,6 +272,26 @@ describe('orchestrator/agent-handshake', () => {
       }
       expect(Value.Check(AgentHandshake, handshake)).toBe(true)
     }
+  })
+
+  it('AgentHandshake keeps capability_index as an optional scalar fingerprint, not a list', () => {
+    const scalarHandshake = {
+      agent_id: 'INDEXED_AGENT',
+      display_name: 'Indexed Agent',
+      source: 'system',
+      status: 'online',
+      capabilities: ['mcp_tools'],
+      allowed_tool_namespaces: ['graph'],
+      capability_index: 'sha256:abc123',
+    }
+
+    const listHandshake = {
+      ...scalarHandshake,
+      capability_index: ['sha256:abc123'],
+    }
+
+    expect(Value.Check(AgentHandshake, scalarHandshake)).toBe(true)
+    expect(Value.Check(AgentHandshake, listHandshake)).toBe(false)
   })
 
   it('AgentCapability validates all 10 capabilities', () => {

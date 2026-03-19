@@ -30,11 +30,25 @@ export declare const AgentHandshake: import("@sinclair/typebox").TObject<{
      *  Accepts both known AgentCapability literals and free-form strings
      *  for domain-specific capabilities (e.g. 'sitrep', 'threat_hunting'). */
     capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"graph_read">, import("@sinclair/typebox").TLiteral<"graph_write">, import("@sinclair/typebox").TLiteral<"mcp_tools">, import("@sinclair/typebox").TLiteral<"cognitive_reasoning">, import("@sinclair/typebox").TLiteral<"document_generation">, import("@sinclair/typebox").TLiteral<"osint">, import("@sinclair/typebox").TLiteral<"code_execution">, import("@sinclair/typebox").TLiteral<"ingestion">, import("@sinclair/typebox").TLiteral<"git_operations">, import("@sinclair/typebox").TLiteral<"audit">]>, import("@sinclair/typebox").TString]>>;
-    /**
-     * Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
-     * Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).
+    /** Allowed MCP tool namespaces (e.g. ["graph", "audit", "consulting"])
+     *  Empty = no MCP tool access. ["*"] = all tools (superuser — use with caution).
      */
     allowed_tool_namespaces: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+    /** Verified immutable fabric proof for authorizing high-risk delegation/tool execution. */
+    fabric_proof: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TObject<{
+        proof_id: import("@sinclair/typebox").TString;
+        proof_type: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"sgt">, import("@sinclair/typebox").TString]>;
+        verification_status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"verified">, import("@sinclair/typebox").TLiteral<"unverified">, import("@sinclair/typebox").TLiteral<"expired">, import("@sinclair/typebox").TLiteral<"revoked">]>;
+        authorized_tool_namespaces: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+        issued_at: import("@sinclair/typebox").TString;
+        expires_at: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+        issuer: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+        handshake_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    }>>;
+    /** Optimized search index fingerprint for lazy-loading tools (Adoption: Anthropic Tool Search Index). Reduces handshake token bloat by 85%. */
+    capability_index: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    /** Supported memory layers for this agent (Adoption: OpenClaw Memory Tiering). */
+    memory_tiers: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TArray<import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"working">, import("@sinclair/typebox").TLiteral<"episodic">, import("@sinclair/typebox").TLiteral<"semantic">]>>>;
     /** Max concurrent tool calls this agent is allowed to make */
     max_concurrent_calls: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TInteger>;
     /** Preferred thread ID for this agent's chat messages */

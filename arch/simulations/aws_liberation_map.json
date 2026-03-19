@@ -1,0 +1,63 @@
+{
+  "status": "AWS_LOCKIN_INTERCEPTED",
+  "leverage": {
+    "leverage_id": "lev_aws_liberation_001",
+    "target_id": "comp_aws_bedrock_orchestrator",
+    "leverage_type": "architectural_lockin",
+    "financial_impact_score": 4500000.0,
+    "remediation_contract_ref": "contract_logic_liberator_v1",
+    "calculated_at": "2026-03-19 19:35:28.558924+00:00"
+  },
+  "fabric": {
+    "controller_id": "wdc_logic_liberator_alpha",
+    "fabric_type": "cross_repo_bridge",
+    "active_probes": [
+      {
+        "probe_id": "p1",
+        "target_agent": "SNOUT_EXTRACTOR",
+        "latency_ms": 45.0
+      },
+      {
+        "probe_id": "p2",
+        "target_agent": "ORCHESTRATOR_MASTER",
+        "latency_ms": 15.2
+      }
+    ],
+    "identity_tag_mapping": {
+      "SGT_AWS_LEGACY_STATE": "LOCKED_ASSET",
+      "SGT_WIDGETDC_ENVELOPE": "LIBERATED_LOGIC"
+    },
+    "health_status": "optimal"
+  },
+  "decision": {
+    "decision_id": "dec_liberation_aws_001",
+    "intent": {
+      "intent_id": "int_aws_exit_execution",
+      "capability": "guided_decomposition",
+      "task_domain": "decomposition",
+      "flow_ref": "core-flow-2",
+      "route_scope": [
+        "snout",
+        "widgetdc-orchestrator"
+      ],
+      "operator_visible": true,
+      "scorecard_dimensions": [
+        "promotion_precision"
+      ]
+    },
+    "selected_agent_id": "ORCHESTRATOR_MASTER",
+    "selected_capability": "guided_decomposition",
+    "trust_score": 0.99,
+    "reason_code": "FABRIC_WIN",
+    "fabric_route_id": "wdc_logic_liberator_alpha",
+    "latency_deterministic": false,
+    "vampire_drain_rate": 0.92,
+    "target_shadow_id": "comp_aws_bedrock_orchestrator",
+    "evidence_refs": [
+      "lev_aws_liberation_001",
+      "lockin_proprietary_agent_state_v4"
+    ],
+    "waiver_reason": null,
+    "decided_at": "2026-03-19 19:35:28.558924+00:00"
+  }
+}
