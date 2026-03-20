@@ -97,5 +97,9 @@ export const NodeLabel = Type.Union([
     Type.Literal('GridFunction'),
     Type.Literal('AnomalyPheromone'),
     Type.Literal('NormalizerConfig'),
+    // RSI / compound-interest architecture (G2 preflight)
+    Type.Literal('CompoundingStrategy'),
+    Type.Literal('RefinementObservation'),
+    Type.Literal('InteractiveWidget'),
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' });
 //# sourceMappingURL=labels.js.map

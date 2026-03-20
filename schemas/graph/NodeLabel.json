@@ -281,6 +281,18 @@
     {
       "const": "NormalizerConfig",
       "type": "string"
+    },
+    {
+      "const": "CompoundingStrategy",
+      "type": "string"
+    },
+    {
+      "const": "RefinementObservation",
+      "type": "string"
+    },
+    {
+      "const": "InteractiveWidget",
+      "type": "string"
     }
   ]
 }

@@ -389,6 +389,18 @@
     {
       "const": "DEVIATES_FROM_BASELINE",
       "type": "string"
+    },
+    {
+      "const": "RECURSIVELY_REFINES",
+      "type": "string"
+    },
+    {
+      "const": "COMPOUNDS_INTO",
+      "type": "string"
+    },
+    {
+      "const": "HOSTS_WIDGET",
+      "type": "string"
     }
   ]
 }
