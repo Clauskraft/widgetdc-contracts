@@ -262,6 +262,20 @@ describe('graph/', () => {
     }
     expect(Value.Check(RelationshipType, 'INVALID_REL')).toBe(false)
   })
+
+  it('NodeLabel validates RSI graph labels', () => {
+    const labels = ['CompoundingStrategy', 'RefinementObservation', 'InteractiveWidget']
+    for (const label of labels) {
+      expect(Value.Check(NodeLabel, label)).toBe(true)
+    }
+  })
+
+  it('RelationshipType validates RSI graph relationships', () => {
+    const rels = ['RECURSIVELY_REFINES', 'COMPOUNDS_INTO', 'HOSTS_WIDGET']
+    for (const rel of rels) {
+      expect(Value.Check(RelationshipType, rel)).toBe(true)
+    }
+  })
 })
 
 describe('orchestrator/', () => {

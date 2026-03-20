@@ -125,5 +125,9 @@ export const RelationshipType = Type.Union([
     Type.Literal('NORMALIZED_FROM'),
     Type.Literal('PART_OF_HYPERGRAPH'),
     Type.Literal('DEVIATES_FROM_BASELINE'),
+    // RSI / compound-interest architecture (G2 preflight)
+    Type.Literal('RECURSIVELY_REFINES'),
+    Type.Literal('COMPOUNDS_INTO'),
+    Type.Literal('HOSTS_WIDGET'),
 ], { $id: 'RelationshipType', description: 'Canonical Neo4j relationship types' });
 //# sourceMappingURL=relationships.js.map

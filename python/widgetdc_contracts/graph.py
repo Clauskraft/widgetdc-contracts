@@ -130,6 +130,9 @@ class NodeLabel(
             'GridFunction',
             'AnomalyPheromone',
             'NormalizerConfig',
+            'CompoundingStrategy',
+            'RefinementObservation',
+            'InteractiveWidget',
         ]
     ]
 ):
@@ -204,6 +207,9 @@ class NodeLabel(
         'GridFunction',
         'AnomalyPheromone',
         'NormalizerConfig',
+        'CompoundingStrategy',
+        'RefinementObservation',
+        'InteractiveWidget',
     ] = Field(..., description='Canonical Neo4j node labels')
 
 class RelationshipType(
@@ -306,6 +312,9 @@ class RelationshipType(
             'NORMALIZED_FROM',
             'PART_OF_HYPERGRAPH',
             'DEVIATES_FROM_BASELINE',
+            'RECURSIVELY_REFINES',
+            'COMPOUNDS_INTO',
+            'HOSTS_WIDGET',
         ]
     ]
 ):
@@ -407,6 +416,9 @@ class RelationshipType(
         'NORMALIZED_FROM',
         'PART_OF_HYPERGRAPH',
         'DEVIATES_FROM_BASELINE',
+        'RECURSIVELY_REFINES',
+        'COMPOUNDS_INTO',
+        'HOSTS_WIDGET',
     ] = Field(..., description='Canonical Neo4j relationship types')
 
 class StrategicLeverage(BaseModel):
