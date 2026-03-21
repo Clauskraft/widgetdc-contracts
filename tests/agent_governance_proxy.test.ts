@@ -6,7 +6,7 @@ import {
 } from '../scripts/agent-governance-proxy.js'
 
 describe('agent governance proxy surface catalog', () => {
-  it('defines the canonical five governance surfaces', () => {
+  it('defines the canonical governance surfaces including MCP client policy visibility', () => {
     expect(AGENT_GOVERNANCE_PROXY_SURFACES).toEqual([
       {
         id: 'agent-bootstrap',
@@ -37,6 +37,12 @@ describe('agent governance proxy surface catalog', () => {
         route: '/agent-summary',
         backendPath: '/agent-summary',
         contentType: 'text/markdown',
+      },
+      {
+        id: 'mcp-client-policies',
+        route: '/mcp-client-policies',
+        backendPath: '/api/mcp/policies',
+        contentType: 'application/json',
       },
     ])
   })

@@ -22,4 +22,5 @@ export * from './agent/index.js';
 export * from './graph/index.js';
 export * from './orchestrator/index.js';
 export * from './opportunities/index.js';
+export * from './mcp/index.js';
 //# sourceMappingURL=index.js.map

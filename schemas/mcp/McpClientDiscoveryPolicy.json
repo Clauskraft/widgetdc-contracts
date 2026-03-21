@@ -1,0 +1,10 @@
+{
+  "$id": "McpClientDiscoveryPolicy",
+  "description": "Discovery preferences applied after auth-based filtering.",
+  "type": "object",
+  "properties": {
+    "include_deprecated": {
+      "type": "boolean"
+    }
+  }
+}

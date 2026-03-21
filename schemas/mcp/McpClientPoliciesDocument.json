@@ -1,0 +1,273 @@
+{
+  "$id": "McpClientPoliciesDocument",
+  "description": "Canonical policy document for MCP client filtering and enforcement.",
+  "type": "object",
+  "required": [
+    "version"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "defaults": {
+      "$id": "McpClientPolicy",
+      "description": "Per-client MCP discovery and execution policy.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "denied_tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "denied_resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_transports": {
+          "type": "array",
+          "items": {
+            "$id": "McpTransport",
+            "anyOf": [
+              {
+                "const": "streamable_http",
+                "type": "string"
+              },
+              {
+                "const": "rest",
+                "type": "string"
+              },
+              {
+                "const": "sse",
+                "type": "string"
+              },
+              {
+                "const": "stdio",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "limits": {
+          "$id": "McpClientLimits",
+          "description": "Runtime-enforced rate and payload limits for an MCP client.",
+          "type": "object",
+          "properties": {
+            "rate_limit_per_minute": {
+              "type": "integer"
+            }
+          }
+        },
+        "discovery": {
+          "$id": "McpClientDiscoveryPolicy",
+          "description": "Discovery preferences applied after auth-based filtering.",
+          "type": "object",
+          "properties": {
+            "include_deprecated": {
+              "type": "boolean"
+            }
+          }
+        },
+        "owner_contact": {
+          "type": "string"
+        }
+      }
+    },
+    "clients": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "$id": "McpClientPolicy",
+          "description": "Per-client MCP discovery and execution policy.",
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "denied_tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_resources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "denied_resources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "allowed_transports": {
+              "type": "array",
+              "items": {
+                "$id": "McpTransport",
+                "anyOf": [
+                  {
+                    "const": "streamable_http",
+                    "type": "string"
+                  },
+                  {
+                    "const": "rest",
+                    "type": "string"
+                  },
+                  {
+                    "const": "sse",
+                    "type": "string"
+                  },
+                  {
+                    "const": "stdio",
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "limits": {
+              "$id": "McpClientLimits",
+              "description": "Runtime-enforced rate and payload limits for an MCP client.",
+              "type": "object",
+              "properties": {
+                "rate_limit_per_minute": {
+                  "type": "integer"
+                }
+              }
+            },
+            "discovery": {
+              "$id": "McpClientDiscoveryPolicy",
+              "description": "Discovery preferences applied after auth-based filtering.",
+              "type": "object",
+              "properties": {
+                "include_deprecated": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "owner_contact": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "tool_metadata": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "$id": "McpToolPolicyMetadata",
+          "description": "Contract metadata attached to a tool definition for policy-aware discovery.",
+          "type": "object",
+          "properties": {
+            "capability_id": {
+              "type": "string"
+            },
+            "required_scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "risk": {
+              "$id": "McpPolicyRisk",
+              "anyOf": [
+                {
+                  "const": "low",
+                  "type": "string"
+                },
+                {
+                  "const": "moderate",
+                  "type": "string"
+                },
+                {
+                  "const": "high",
+                  "type": "string"
+                },
+                {
+                  "const": "critical",
+                  "type": "string"
+                }
+              ]
+            },
+            "audience": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "deprecated": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "resource_metadata": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "$id": "McpResourcePolicyMetadata",
+          "description": "Contract metadata attached to an MCP resource for policy-aware discovery.",
+          "type": "object",
+          "properties": {
+            "required_scopes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "audience": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$id": "McpTransport",
+  "anyOf": [
+    {
+      "const": "streamable_http",
+      "type": "string"
+    },
+    {
+      "const": "rest",
+      "type": "string"
+    },
+    {
+      "const": "sse",
+      "type": "string"
+    },
+    {
+      "const": "stdio",
+      "type": "string"
+    }
+  ]
+}

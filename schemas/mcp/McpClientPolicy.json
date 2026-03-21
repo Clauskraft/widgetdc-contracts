@@ -1,0 +1,87 @@
+{
+  "$id": "McpClientPolicy",
+  "description": "Per-client MCP discovery and execution policy.",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "denied_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_resources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "denied_resources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_transports": {
+      "type": "array",
+      "items": {
+        "$id": "McpTransport",
+        "anyOf": [
+          {
+            "const": "streamable_http",
+            "type": "string"
+          },
+          {
+            "const": "rest",
+            "type": "string"
+          },
+          {
+            "const": "sse",
+            "type": "string"
+          },
+          {
+            "const": "stdio",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "limits": {
+      "$id": "McpClientLimits",
+      "description": "Runtime-enforced rate and payload limits for an MCP client.",
+      "type": "object",
+      "properties": {
+        "rate_limit_per_minute": {
+          "type": "integer"
+        }
+      }
+    },
+    "discovery": {
+      "$id": "McpClientDiscoveryPolicy",
+      "description": "Discovery preferences applied after auth-based filtering.",
+      "type": "object",
+      "properties": {
+        "include_deprecated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "owner_contact": {
+      "type": "string"
+    }
+  }
+}
