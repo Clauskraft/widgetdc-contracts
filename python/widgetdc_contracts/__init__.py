@@ -9,5 +9,6 @@ from . import consulting
 from . import graph
 from . import health
 from . import http_ as http
+from . import mcp
 from . import opportunities
 from . import orchestrator

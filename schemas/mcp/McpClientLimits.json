@@ -1,0 +1,10 @@
+{
+  "$id": "McpClientLimits",
+  "description": "Runtime-enforced rate and payload limits for an MCP client.",
+  "type": "object",
+  "properties": {
+    "rate_limit_per_minute": {
+      "type": "integer"
+    }
+  }
+}

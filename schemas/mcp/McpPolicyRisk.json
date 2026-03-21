@@ -1,0 +1,21 @@
+{
+  "$id": "McpPolicyRisk",
+  "anyOf": [
+    {
+      "const": "low",
+      "type": "string"
+    },
+    {
+      "const": "moderate",
+      "type": "string"
+    },
+    {
+      "const": "high",
+      "type": "string"
+    },
+    {
+      "const": "critical",
+      "type": "string"
+    }
+  ]
+}

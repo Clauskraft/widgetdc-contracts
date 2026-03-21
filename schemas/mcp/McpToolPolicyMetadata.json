@@ -1,0 +1,46 @@
+{
+  "$id": "McpToolPolicyMetadata",
+  "description": "Contract metadata attached to a tool definition for policy-aware discovery.",
+  "type": "object",
+  "properties": {
+    "capability_id": {
+      "type": "string"
+    },
+    "required_scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risk": {
+      "$id": "McpPolicyRisk",
+      "anyOf": [
+        {
+          "const": "low",
+          "type": "string"
+        },
+        {
+          "const": "moderate",
+          "type": "string"
+        },
+        {
+          "const": "high",
+          "type": "string"
+        },
+        {
+          "const": "critical",
+          "type": "string"
+        }
+      ]
+    },
+    "audience": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deprecated": {
+      "type": "boolean"
+    }
+  }
+}

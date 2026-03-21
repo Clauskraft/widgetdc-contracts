@@ -38,6 +38,10 @@
       "types": "./dist/orchestrator/index.d.ts",
       "import": "./dist/orchestrator/index.js"
     },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "import": "./dist/mcp/index.js"
+    },
     "./opportunities": {
       "types": "./dist/opportunities/index.d.ts",
       "import": "./dist/opportunities/index.js"

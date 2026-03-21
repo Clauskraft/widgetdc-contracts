@@ -29,6 +29,12 @@ export const AGENT_GOVERNANCE_PROXY_SURFACES = [
     backendPath: '/agent-summary',
     contentType: 'text/markdown',
   },
+  {
+    id: 'mcp-client-policies',
+    route: '/mcp-client-policies',
+    backendPath: '/api/mcp/policies',
+    contentType: 'application/json',
+  },
 ] as const
 
 export type AgentGovernanceProxySurfaceId = typeof AGENT_GOVERNANCE_PROXY_SURFACES[number]['id']

@@ -1,0 +1,22 @@
+{
+  "$id": "McpResourcePolicyMetadata",
+  "description": "Contract metadata attached to an MCP resource for policy-aware discovery.",
+  "type": "object",
+  "properties": {
+    "required_scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "audience": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

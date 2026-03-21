@@ -1,0 +1,83 @@
+{
+  "$id": "McpClientSelfResource",
+  "description": "Effective policy surface exposed to an authenticated MCP client via widgetdc://self.",
+  "type": "object",
+  "required": [
+    "generated_at",
+    "client",
+    "policy_version",
+    "policy_checksum",
+    "scopes",
+    "allowed_transports",
+    "limits",
+    "allowed_tools",
+    "allowed_resources"
+  ],
+  "properties": {
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "client": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "policy_checksum": {
+      "type": "string"
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_transports": {
+      "type": "array",
+      "items": {
+        "$id": "McpTransport",
+        "anyOf": [
+          {
+            "const": "streamable_http",
+            "type": "string"
+          },
+          {
+            "const": "rest",
+            "type": "string"
+          },
+          {
+            "const": "sse",
+            "type": "string"
+          },
+          {
+            "const": "stdio",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "limits": {
+      "$id": "McpClientLimits",
+      "description": "Runtime-enforced rate and payload limits for an MCP client.",
+      "type": "object",
+      "properties": {
+        "rate_limit_per_minute": {
+          "type": "integer"
+        }
+      }
+    },
+    "owner_contact": {
+      "type": "string"
+    },
+    "allowed_tools": {
+      "type": "integer"
+    },
+    "allowed_resources": {
+      "type": "integer"
+    }
+  }
+}
