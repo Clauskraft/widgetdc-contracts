@@ -705,6 +705,8 @@ async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
       routes: filtered.filter((r) => r.domain === "routes"),
       agents: filtered.filter((r) => r.domain === "agents"),
       memory: filtered.filter((r) => r.domain === "memory"),
+      contracts: filtered.filter((r) => r.domain === "contracts"),
+      platform: filtered.filter((r) => r.domain === "platform"),
     },
     grouped_by_repo,
     rows: pagedRows,
