@@ -282,7 +282,7 @@
   // --- Fetch and render ---
   fetch('/api/analysis')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(data => render(data))
+    .then(raw => render(raw.data || raw))
     .catch(err => {
       document.getElementById('loading').innerHTML = '<div style="color:#ef4444">Failed to load: ' + err.message + '</div>';
       document.getElementById('error-banner').style.display = 'block';

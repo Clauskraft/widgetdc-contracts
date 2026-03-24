@@ -236,7 +236,8 @@ async function loadHealthData() {
   try {
     const r = await fetch("/api/analysis");
     if (!r.ok) return;
-    const analysis = await r.json();
+    const raw = await r.json();
+    const analysis = raw.data || raw;
     for (const m of analysis.modules) {
       healthMap[m.id] = { healthScore: m.healthScore, risk: m.risk };
     }
