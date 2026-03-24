@@ -407,7 +407,8 @@ async function loadAnalysis() {
       fetch("/api/compliance-matrix?" + cmParams.toString()),
     ]);
     if (!analysisRes.ok) throw new Error("Failed to load analysis");
-    analysisData = await analysisRes.json();
+    const analysisRaw = await analysisRes.json();
+    analysisData = analysisRaw.data || analysisRaw;
     complianceData = complianceRes.ok ? await complianceRes.json() : null;
     // Build index
     moduleIndex = {};

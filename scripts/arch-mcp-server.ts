@@ -1574,10 +1574,22 @@ app.get("/health", (_req, res) => {
 app.get("/api/analysis", (_req, res) => {
   loadGraph();
   if (!analysisResult) {
-    res.status(500).json({ error: "Analysis not ready" });
+    res.status(500).json({ success: false, error: "Analysis not ready", metadata: { service: "arch-mcp-server", timestamp: new Date().toISOString() } });
     return;
   }
-  res.json(analysisResult);
+  // Canonical envelope — fixes omega:platform-arch-analysis-envelope
+  const envelope = _req.query.raw === "true"
+    ? analysisResult  // backward-compat: ?raw=true returns unwrapped
+    : {
+        success: true,
+        data: analysisResult,
+        metadata: {
+          service: "arch-mcp-server",
+          timestamp: new Date().toISOString(),
+          version: "2.0.0",
+        },
+      };
+  res.json(envelope);
 });
 
 app.get("/api/impact/:moduleId", (req, res) => {
