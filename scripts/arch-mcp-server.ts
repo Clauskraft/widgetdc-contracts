@@ -702,9 +702,9 @@ async function buildComplianceMatrix(options: ComplianceMatrixOptions) {
       totalPages: Math.max(1, Math.ceil(total_filtered / options.pageSize)),
     },
     sections: {
-      routes: rows.filter((r) => r.domain === "routes"),
-      agents: rows.filter((r) => r.domain === "agents"),
-      memory: rows.filter((r) => r.domain === "memory"),
+      routes: filtered.filter((r) => r.domain === "routes"),
+      agents: filtered.filter((r) => r.domain === "agents"),
+      memory: filtered.filter((r) => r.domain === "memory"),
     },
     grouped_by_repo,
     rows: pagedRows,
