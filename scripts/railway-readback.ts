@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { FormatRegistry } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
 
@@ -374,6 +374,12 @@ async function main(): Promise<void> {
   console.log('🚀 [Read-back] ALL GATES PASSED. Runtime is aligned with contracts and live probes.')
 }
 
-main().catch((error) => {
-  fail(error instanceof Error ? error.message : String(error))
-})
+const invokedAsScript = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false
+
+if (invokedAsScript) {
+  main().catch((error) => {
+    fail(error instanceof Error ? error.message : String(error))
+  })
+}
