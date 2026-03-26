@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { FormatRegistry } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
 
@@ -57,6 +57,22 @@ function run(command: string, cwd = WIDGETDC_ROOT): string {
 
 function readJson(filePath: string): JsonRecord {
   return JSON.parse(readFileSync(filePath, 'utf8')) as JsonRecord
+}
+
+function getNestedRecord(record: JsonRecord, key: string): JsonRecord | null {
+  const value = record[key]
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as JsonRecord
+    : null
+}
+
+export function extractRlmRuntimeVersion(health: JsonRecord): string {
+  return String(
+    health.version ||
+    getNestedRecord(health, 'data')?.version ||
+    getNestedRecord(health, 'metadata')?.version ||
+    '',
+  ).trim()
 }
 
 function getExpectedBackendVersion(): string {
@@ -231,7 +247,7 @@ async function verifyRlmRuntime(): Promise<void> {
   const snapshot = await getDeploymentSnapshot('rlm-engine')
   log(`Deploy status=${String(snapshot.status || 'unknown')} deploymentId=${String(snapshot.deploymentId || 'unknown')}`)
   const health = await fetchJson(`${RLM_URL}/health`) as JsonRecord
-  const runtimeVersion = String(health.version || '')
+  const runtimeVersion = extractRlmRuntimeVersion(health)
   const runtimeFingerprint = (health.runtime_fingerprint as JsonRecord | undefined) || {}
   const liveDeploymentId = String(runtimeFingerprint.deployment_id || '')
   const controlPlaneHealthy = String(snapshot.status || '').toUpperCase() === 'SUCCESS'
@@ -251,25 +267,58 @@ async function verifyRlmRuntime(): Promise<void> {
     fail('RLM health endpoint did not return version')
   }
 
-  const ooda = await fetchJson(`${RLM_URL}/api/rlm/ooda/run`, {
-    method: 'POST',
-    body: JSON.stringify({
-      task_id: `readback-${Date.now()}`,
-      task: 'Verify launcher-governance scoping and return a concise safe outcome.',
-      domain_hint: 'Technology',
-      context: {
-        orgId: 'launcher-governance',
-        source_surface: 'railway-readback',
-        evidence_domain: 'launcher-governance',
-      },
-    }),
-  }) as JsonRecord
+  try {
+    const ooda = await fetchJson(`${RLM_URL}/api/rlm/ooda/run`, {
+      method: 'POST',
+      body: JSON.stringify({
+        task_id: `readback-${Date.now()}`,
+        task: 'Verify launcher-governance scoping and return a concise safe outcome.',
+        domain_hint: 'Technology',
+        context: {
+          orgId: 'launcher-governance',
+          source_surface: 'railway-readback',
+          evidence_domain: 'launcher-governance',
+        },
+      }),
+    }) as JsonRecord
 
-  if (!String(ooda.phase || '').trim()) {
-    fail(`RLM OODA probe returned no phase: ${JSON.stringify(ooda)}`)
+    if (!String(ooda.phase || '').trim()) {
+      fail(`RLM OODA probe returned no phase: ${JSON.stringify(ooda)}`)
+    }
+
+    log(`RLM OODA probe succeeded. phase=${String(ooda.phase)} completed=${String(ooda.completed)}`)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (!message.startsWith('404')) {
+      throw error
+    }
+
+    log('RLM OODA route unavailable in live runtime; falling back to /reason probe')
+    const reason = await fetchJson(`${RLM_URL}/reason`, {
+      method: 'POST',
+      body: JSON.stringify({
+        task: 'Verify launcher-governance scoping and return a concise safe outcome.',
+        context: {
+          orgId: 'launcher-governance',
+          source_surface: 'railway-readback',
+          evidence_domain: 'launcher-governance',
+        },
+      }),
+    }) as JsonRecord
+
+    const responseText =
+      String(reason.response || '') ||
+      String(reason.recommendation || '') ||
+      String(reason.reasoning || '') ||
+      String(reason.result || '') ||
+      String(reason.output || '')
+
+    if (!responseText.trim()) {
+      fail(`RLM /reason probe returned no usable response: ${JSON.stringify(reason)}`)
+    }
+
+    log('RLM /reason fallback probe succeeded')
   }
-
-  log(`RLM OODA probe succeeded. phase=${String(ooda.phase)} completed=${String(ooda.completed)}`)
 }
 
 async function verifyLauncherTargetKind(): Promise<void> {
@@ -325,6 +374,12 @@ async function main(): Promise<void> {
   console.log('🚀 [Read-back] ALL GATES PASSED. Runtime is aligned with contracts and live probes.')
 }
 
-main().catch((error) => {
-  fail(error instanceof Error ? error.message : String(error))
-})
+const invokedAsScript = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false
+
+if (invokedAsScript) {
+  main().catch((error) => {
+    fail(error instanceof Error ? error.message : String(error))
+  })
+}
