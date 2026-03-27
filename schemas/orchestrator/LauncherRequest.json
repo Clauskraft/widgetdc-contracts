@@ -1,0 +1,52 @@
+{
+  "$id": "LauncherRequest",
+  "description": "Shared request contract for launcher surfaces. Surface-local UX payload fields belong outside this schema.",
+  "type": "object",
+  "required": [
+    "input",
+    "intent"
+  ],
+  "properties": {
+    "input": {
+      "minLength": 1,
+      "description": "User-provided launcher task or question.",
+      "type": "string"
+    },
+    "intent": {
+      "$id": "LauncherIntent",
+      "description": "Intent values supported by the WidgeTDC launcher surface.",
+      "anyOf": [
+        {
+          "const": "info",
+          "type": "string"
+        },
+        {
+          "const": "analyze",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "type": "string"
+        },
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "orchestrate",
+          "type": "string"
+        }
+      ]
+    },
+    "instruction": {
+      "minLength": 1,
+      "description": "Canonical single instruction override field for orchestrated requests.",
+      "type": "string"
+    },
+    "instructions": {
+      "minLength": 1,
+      "description": "Compatibility alias for instruction. Retained until all consumers converge.",
+      "type": "string"
+    }
+  }
+}

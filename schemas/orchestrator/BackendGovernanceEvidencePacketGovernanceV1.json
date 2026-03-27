@@ -1,0 +1,32 @@
+{
+  "$id": "BackendGovernanceEvidencePacketGovernanceV1",
+  "description": "Governance subsection of backend evidence packet responses.",
+  "type": "object",
+  "required": [
+    "blocking_reasons"
+  ],
+  "properties": {
+    "blocking_reasons": {
+      "description": "Coverage or governance blockers detected while composing the packet.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "promotion_status": {
+      "anyOf": [
+        {
+          "const": "not_promoted",
+          "type": "string"
+        },
+        {
+          "const": "blocked",
+          "type": "string"
+        }
+      ]
+    },
+    "can_promote": {
+      "type": "boolean"
+    }
+  }
+}

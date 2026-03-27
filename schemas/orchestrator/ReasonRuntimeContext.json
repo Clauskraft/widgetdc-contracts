@@ -1,0 +1,74 @@
+{
+  "$id": "ReasonRuntimeContext",
+  "description": "Context passed to the /reason runtime. Compatibility fields are temporary until callers converge on typed fields.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "response_contract"
+  ],
+  "properties": {
+    "response_contract": {
+      "$id": "ReasonRuntimeResponseContract",
+      "description": "Structured response contract guidance passed into the runtime request context.",
+      "type": "object",
+      "required": [
+        "jobStatement",
+        "successShape",
+        "requiredSections",
+        "boundaryRules",
+        "fallbackPolicy"
+      ],
+      "properties": {
+        "jobStatement": {
+          "type": "string"
+        },
+        "successShape": {
+          "type": "string"
+        },
+        "requiredSections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "boundaryRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallbackPolicy": {
+          "type": "string"
+        }
+      }
+    },
+    "evidence_domain": {
+      "type": "string"
+    },
+    "reason_domain": {
+      "type": "string"
+    },
+    "enriched_prompt": {
+      "type": "string"
+    },
+    "_quality_task": {
+      "description": "Compatibility field retained during migration from local launcher runtime behavior.",
+      "type": "string"
+    },
+    "_skip_knowledge_enrichment": {
+      "description": "Compatibility field retained during migration from local launcher runtime behavior.",
+      "type": "boolean"
+    },
+    "_output_mode": {
+      "description": "Compatibility field retained during migration from local launcher runtime behavior.",
+      "type": "string"
+    },
+    "_expected_format": {
+      "description": "Compatibility field retained during migration from local launcher runtime behavior.",
+      "type": "string"
+    },
+    "require_swarm": {
+      "type": "boolean"
+    }
+  }
+}

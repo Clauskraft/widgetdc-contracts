@@ -1,0 +1,42 @@
+{
+  "$id": "LauncherGovernanceGate",
+  "description": "One launcher-local governance gate result.",
+  "type": "object",
+  "required": [
+    "gate",
+    "status",
+    "reasonCode"
+  ],
+  "properties": {
+    "gate": {
+      "minLength": 1,
+      "description": "Stable gate identifier.",
+      "type": "string"
+    },
+    "status": {
+      "anyOf": [
+        {
+          "const": "pass",
+          "type": "string"
+        },
+        {
+          "const": "fail",
+          "type": "string"
+        },
+        {
+          "const": "skip",
+          "type": "string"
+        },
+        {
+          "const": "coverage_gap",
+          "type": "string"
+        }
+      ]
+    },
+    "reasonCode": {
+      "minLength": 1,
+      "description": "Machine-readable reason code for the gate outcome.",
+      "type": "string"
+    }
+  }
+}

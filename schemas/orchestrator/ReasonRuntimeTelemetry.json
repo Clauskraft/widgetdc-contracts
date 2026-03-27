@@ -1,0 +1,17 @@
+{
+  "$id": "ReasonRuntimeTelemetry",
+  "description": "Minimal runtime telemetry returned by the /reason runtime.",
+  "type": "object",
+  "required": [
+    "used_swarm",
+    "used_rag"
+  ],
+  "properties": {
+    "used_swarm": {
+      "type": "boolean"
+    },
+    "used_rag": {
+      "type": "boolean"
+    }
+  }
+}

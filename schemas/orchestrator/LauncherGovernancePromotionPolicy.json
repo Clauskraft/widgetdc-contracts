@@ -1,0 +1,29 @@
+{
+  "$id": "LauncherGovernancePromotionPolicy",
+  "description": "Launcher-local promotion policy summary. Read-only and non-canonical.",
+  "type": "object",
+  "required": [
+    "qualityGate",
+    "policyAlignment",
+    "graphWriteVerification",
+    "readBackVerification",
+    "looseEndGenerationOnFailureOrBlock"
+  ],
+  "properties": {
+    "qualityGate": {
+      "type": "boolean"
+    },
+    "policyAlignment": {
+      "type": "boolean"
+    },
+    "graphWriteVerification": {
+      "type": "boolean"
+    },
+    "readBackVerification": {
+      "type": "boolean"
+    },
+    "looseEndGenerationOnFailureOrBlock": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$id": "LauncherRequestEcho",
+  "description": "Normalized launcher request echo returned by orchestrated launcher flows.",
+  "type": "object",
+  "required": [
+    "input",
+    "intent"
+  ],
+  "properties": {
+    "input": {
+      "minLength": 1,
+      "description": "Echo of normalized launcher input.",
+      "type": "string"
+    },
+    "intent": {
+      "$id": "LauncherIntent",
+      "description": "Intent values supported by the WidgeTDC launcher surface.",
+      "anyOf": [
+        {
+          "const": "info",
+          "type": "string"
+        },
+        {
+          "const": "analyze",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "type": "string"
+        },
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "orchestrate",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

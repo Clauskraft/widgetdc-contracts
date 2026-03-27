@@ -1,0 +1,163 @@
+{
+  "$id": "backend.governance.evidence_packet.response.v1",
+  "description": "Shared backend governance evidence packet response contract for launcher-like consumers.",
+  "type": "object",
+  "required": [
+    "packet_id",
+    "tri_source_ready",
+    "governance",
+    "families"
+  ],
+  "properties": {
+    "packet_id": {
+      "minLength": 1,
+      "description": "Stable packet id for routing and read-back.",
+      "type": "string"
+    },
+    "tri_source_ready": {
+      "description": "True when enough evidence exists for multi-signal launcher use.",
+      "type": "boolean"
+    },
+    "governance": {
+      "$id": "BackendGovernanceEvidencePacketGovernanceV1",
+      "description": "Governance subsection of backend evidence packet responses.",
+      "type": "object",
+      "required": [
+        "blocking_reasons"
+      ],
+      "properties": {
+        "blocking_reasons": {
+          "description": "Coverage or governance blockers detected while composing the packet.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "promotion_status": {
+          "anyOf": [
+            {
+              "const": "not_promoted",
+              "type": "string"
+            },
+            {
+              "const": "blocked",
+              "type": "string"
+            }
+          ]
+        },
+        "can_promote": {
+          "type": "boolean"
+        }
+      }
+    },
+    "families": {
+      "minItems": 1,
+      "description": "Family evidence summaries returned by backend governance surfaces.",
+      "type": "array",
+      "items": {
+        "$id": "BackendGovernanceEvidenceFamilyResponseV1",
+        "description": "Minimal family packet returned inside backend governance evidence packet responses.",
+        "type": "object",
+        "required": [
+          "family",
+          "summary",
+          "evidence_items"
+        ],
+        "properties": {
+          "family": {
+            "$id": "LauncherEvidenceFamily",
+            "description": "Canonical evidence families used by the launcher routing surface.",
+            "anyOf": [
+              {
+                "const": "research",
+                "type": "string"
+              },
+              {
+                "const": "regulatory",
+                "type": "string"
+              },
+              {
+                "const": "enterprise",
+                "type": "string"
+              }
+            ]
+          },
+          "status": {
+            "$id": "LauncherEvidenceStatus",
+            "description": "Availability state for one evidence family inside the launcher packet.",
+            "anyOf": [
+              {
+                "const": "grounded",
+                "type": "string"
+              },
+              {
+                "const": "coverage_gap",
+                "type": "string"
+              },
+              {
+                "const": "unavailable",
+                "type": "string"
+              }
+            ]
+          },
+          "summary": {
+            "minLength": 1,
+            "description": "Family summary consumed by launcher-like surfaces.",
+            "type": "string"
+          },
+          "evidence_items": {
+            "type": "array",
+            "items": {
+              "$id": "BackendGovernanceEvidenceItemResponseV1",
+              "description": "Minimal evidence item shape returned inside backend governance evidence packet responses.",
+              "type": "object",
+              "required": [
+                "id",
+                "summary"
+              ],
+              "properties": {
+                "id": {
+                  "minLength": 1,
+                  "description": "Stable evidence item id.",
+                  "type": "string"
+                },
+                "summary": {
+                  "minLength": 1,
+                  "description": "Short evidence summary consumed by launcher-like surfaces.",
+                  "type": "string"
+                },
+                "score": {
+                  "minimum": 0,
+                  "description": "Relative evidence relevance score when available.",
+                  "type": "number"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "source_type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "question": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

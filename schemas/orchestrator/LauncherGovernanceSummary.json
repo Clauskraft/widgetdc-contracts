@@ -1,0 +1,155 @@
+{
+  "$id": "LauncherGovernanceSummary",
+  "description": "Read-only launcher governance rendering contract. Local-only governance context; not platform truth.",
+  "type": "object",
+  "required": [
+    "promotionStatus",
+    "gates",
+    "targetKind",
+    "boundaryOwner",
+    "routePolicy",
+    "promotionPolicy",
+    "disclaimer"
+  ],
+  "properties": {
+    "promotionStatus": {
+      "anyOf": [
+        {
+          "const": "not_promoted",
+          "type": "string"
+        },
+        {
+          "const": "blocked",
+          "type": "string"
+        }
+      ]
+    },
+    "looseEnd": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gates": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$id": "LauncherGovernanceGate",
+        "description": "One launcher-local governance gate result.",
+        "type": "object",
+        "required": [
+          "gate",
+          "status",
+          "reasonCode"
+        ],
+        "properties": {
+          "gate": {
+            "minLength": 1,
+            "description": "Stable gate identifier.",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "const": "pass",
+                "type": "string"
+              },
+              {
+                "const": "fail",
+                "type": "string"
+              },
+              {
+                "const": "skip",
+                "type": "string"
+              },
+              {
+                "const": "coverage_gap",
+                "type": "string"
+              }
+            ]
+          },
+          "reasonCode": {
+            "minLength": 1,
+            "description": "Machine-readable reason code for the gate outcome.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "targetKind": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "boundaryOwner": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "routePolicy": {
+      "$id": "LauncherGovernanceRoutePolicy",
+      "description": "Launcher-local route policy summary for operator visibility.",
+      "type": "object",
+      "required": [
+        "foldingRequired",
+        "retrievalRequired",
+        "governanceRequired",
+        "graphVerificationRequired",
+        "renderValidationRequired"
+      ],
+      "properties": {
+        "foldingRequired": {
+          "type": "boolean"
+        },
+        "retrievalRequired": {
+          "type": "boolean"
+        },
+        "governanceRequired": {
+          "type": "boolean"
+        },
+        "graphVerificationRequired": {
+          "type": "boolean"
+        },
+        "renderValidationRequired": {
+          "type": "boolean"
+        }
+      }
+    },
+    "promotionPolicy": {
+      "$id": "LauncherGovernancePromotionPolicy",
+      "description": "Launcher-local promotion policy summary. Read-only and non-canonical.",
+      "type": "object",
+      "required": [
+        "qualityGate",
+        "policyAlignment",
+        "graphWriteVerification",
+        "readBackVerification",
+        "looseEndGenerationOnFailureOrBlock"
+      ],
+      "properties": {
+        "qualityGate": {
+          "type": "boolean"
+        },
+        "policyAlignment": {
+          "type": "boolean"
+        },
+        "graphWriteVerification": {
+          "type": "boolean"
+        },
+        "readBackVerification": {
+          "type": "boolean"
+        },
+        "looseEndGenerationOnFailureOrBlock": {
+          "type": "boolean"
+        }
+      }
+    },
+    "disclaimer": {
+      "minLength": 1,
+      "description": "Must state that launcher governance checks are local and not canonical promotion authority.",
+      "type": "string"
+    }
+  }
+}

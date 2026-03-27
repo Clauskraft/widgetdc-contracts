@@ -1,0 +1,18 @@
+{
+  "$id": "LauncherMode",
+  "description": "Execution modes exposed by launcher planning.",
+  "anyOf": [
+    {
+      "const": "tool_only",
+      "type": "string"
+    },
+    {
+      "const": "single",
+      "type": "string"
+    },
+    {
+      "const": "swarm",
+      "type": "string"
+    }
+  ]
+}

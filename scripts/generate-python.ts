@@ -85,18 +85,43 @@ function listSchemaModules(): string[] {
     .sort()
 }
 
-function generateModuleFiles(moduleName: string, datamodelCodegen: string): { outputName: string, schemaNames: string[], generatedFiles: string[] } {
+function toPythonClassName(schemaName: string): string {
+  if (/^[A-Z][A-Za-z0-9]*$/.test(schemaName)) {
+    return schemaName
+  }
+
+  return schemaName
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((part) => {
+      const normalized = part.replace(/^[^A-Za-z]+/, '')
+      if (!normalized) {
+        return ''
+      }
+      return normalized[0].toUpperCase() + normalized.slice(1)
+    })
+    .filter(Boolean)
+    .join('')
+}
+
+function generateModuleFiles(moduleName: string, datamodelCodegen: string): {
+  outputName: string,
+  schemaNames: string[],
+  classNames: string[],
+  generatedFiles: string[],
+} {
   const moduleDir = join(schemasDir, moduleName)
   const schemaNames = readdirSync(moduleDir)
     .filter((name) => name.endsWith('.json'))
     .sort()
     .map((name) => basename(name, '.json'))
+  const classNames = schemaNames.map(toPythonClassName)
 
   const outputName = moduleName === 'http' ? 'http_' : moduleName
   const moduleTempDir = join(tempDir, moduleName)
   mkdirSync(moduleTempDir, { recursive: true })
 
-  for (const schemaName of schemaNames) {
+  for (const [index, schemaName] of schemaNames.entries()) {
     const result = spawnSync(
       datamodelCodegen,
       [
@@ -110,7 +135,7 @@ function generateModuleFiles(moduleName: string, datamodelCodegen: string): { ou
         '--field-constraints',
         '--enum-field-as-literal', 'all',
         '--collapse-root-models',
-        '--class-name', schemaName,
+        '--class-name', classNames[index],
       ],
       { encoding: 'utf-8' },
     )
@@ -123,6 +148,7 @@ function generateModuleFiles(moduleName: string, datamodelCodegen: string): { ou
   return {
     outputName,
     schemaNames,
+    classNames,
     generatedFiles: schemaNames.map((schemaName) => join(moduleTempDir, `${schemaName}.py`)),
   }
 }
@@ -138,7 +164,7 @@ function extractBody(filePath: string): string {
   return lines.slice(classIndex).join('\n').trimEnd()
 }
 
-function mergeModule(moduleName: string, outputName: string, schemaNames: string[], generatedFiles: string[]): void {
+function mergeModule(moduleName: string, outputName: string, classNames: string[], generatedFiles: string[]): void {
   const imports = new Set<string>()
 
   for (const filePath of generatedFiles) {
@@ -160,7 +186,7 @@ function mergeModule(moduleName: string, outputName: string, schemaNames: string
     '',
     ...Array.from(imports).sort(),
     '',
-    `__all__ = [${schemaNames.map((name) => `"${name}"`).join(', ')}]`,
+    `__all__ = [${classNames.map((name) => `"${name}"`).join(', ')}]`,
     '',
   ]
 
@@ -198,8 +224,8 @@ function main(): void {
 
   const modules = listSchemaModules()
   for (const moduleName of modules) {
-    const { outputName, schemaNames, generatedFiles } = generateModuleFiles(moduleName, datamodelCodegen)
-    mergeModule(moduleName, outputName, schemaNames, generatedFiles)
+    const { outputName, classNames, generatedFiles } = generateModuleFiles(moduleName, datamodelCodegen)
+    mergeModule(moduleName, outputName, classNames, generatedFiles)
   }
 
   writeInit(modules)

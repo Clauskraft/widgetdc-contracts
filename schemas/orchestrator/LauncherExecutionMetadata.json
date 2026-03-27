@@ -1,0 +1,53 @@
+{
+  "$id": "LauncherExecutionMetadata",
+  "description": "Shared launcher execution metadata used for runtime transparency. Surface-only wording fields belong elsewhere.",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "evidenceDomain": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reasonDomain": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "canonicalGovernance": {
+      "description": "Canonical backend governance snapshot. Exact shape should converge in dedicated backend schemas."
+    },
+    "retrievalSummary": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "degradedReasoning": {
+      "type": "boolean"
+    },
+    "fallbackToReason": {
+      "type": "boolean"
+    },
+    "fallbackFrom": {
+      "type": "string"
+    },
+    "fallbackError": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,437 @@
+{
+  "$id": "LauncherResponse",
+  "description": "Shared launcher response contract. Surface-local fields such as greeting and launcher-specific UX labels are intentionally excluded.",
+  "type": "object",
+  "required": [
+    "request",
+    "plan",
+    "execution"
+  ],
+  "properties": {
+    "request": {
+      "$id": "LauncherRequestEcho",
+      "description": "Normalized launcher request echo returned by orchestrated launcher flows.",
+      "type": "object",
+      "required": [
+        "input",
+        "intent"
+      ],
+      "properties": {
+        "input": {
+          "minLength": 1,
+          "description": "Echo of normalized launcher input.",
+          "type": "string"
+        },
+        "intent": {
+          "$id": "LauncherIntent",
+          "description": "Intent values supported by the WidgeTDC launcher surface.",
+          "anyOf": [
+            {
+              "const": "info",
+              "type": "string"
+            },
+            {
+              "const": "analyze",
+              "type": "string"
+            },
+            {
+              "const": "report",
+              "type": "string"
+            },
+            {
+              "const": "research",
+              "type": "string"
+            },
+            {
+              "const": "orchestrate",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "plan": {
+      "$id": "LauncherPlanCore",
+      "description": "Shared launcher plan fields. Surface-local UX fields such as title, nextStep, openedSurface, and launchTarget stay outside this schema.",
+      "type": "object",
+      "required": [
+        "intent",
+        "mode",
+        "lineageId",
+        "status",
+        "source",
+        "executionPath",
+        "handoffPayload"
+      ],
+      "properties": {
+        "intent": {
+          "$id": "LauncherIntent",
+          "description": "Intent values supported by the WidgeTDC launcher surface.",
+          "anyOf": [
+            {
+              "const": "info",
+              "type": "string"
+            },
+            {
+              "const": "analyze",
+              "type": "string"
+            },
+            {
+              "const": "report",
+              "type": "string"
+            },
+            {
+              "const": "research",
+              "type": "string"
+            },
+            {
+              "const": "orchestrate",
+              "type": "string"
+            }
+          ]
+        },
+        "mode": {
+          "$id": "LauncherMode",
+          "description": "Execution modes exposed by launcher planning.",
+          "anyOf": [
+            {
+              "const": "tool_only",
+              "type": "string"
+            },
+            {
+              "const": "single",
+              "type": "string"
+            },
+            {
+              "const": "swarm",
+              "type": "string"
+            }
+          ]
+        },
+        "lineageId": {
+          "minLength": 1,
+          "description": "Stable lineage id for launcher planning and runtime traceability.",
+          "type": "string"
+        },
+        "status": {
+          "description": "Plan state visible to downstream systems.",
+          "anyOf": [
+            {
+              "const": "planned",
+              "type": "string"
+            },
+            {
+              "const": "in_progress",
+              "type": "string"
+            },
+            {
+              "const": "completed",
+              "type": "string"
+            },
+            {
+              "const": "failed",
+              "type": "string"
+            }
+          ]
+        },
+        "source": {
+          "description": "Current launcher source surface.",
+          "const": "widgetdc-launcher-prototype",
+          "type": "string"
+        },
+        "executionPath": {
+          "minLength": 1,
+          "description": "Runtime path selected for the launcher task.",
+          "type": "string"
+        },
+        "handoffPayload": {
+          "$id": "LauncherHandoffPayload",
+          "description": "Shared handoff payload from launcher to downstream workspace/runtime surfaces.",
+          "type": "object",
+          "required": [
+            "intent",
+            "prompt",
+            "executionPath"
+          ],
+          "properties": {
+            "intent": {
+              "$id": "LauncherIntent",
+              "description": "Intent values supported by the WidgeTDC launcher surface.",
+              "anyOf": [
+                {
+                  "const": "info",
+                  "type": "string"
+                },
+                {
+                  "const": "analyze",
+                  "type": "string"
+                },
+                {
+                  "const": "report",
+                  "type": "string"
+                },
+                {
+                  "const": "research",
+                  "type": "string"
+                },
+                {
+                  "const": "orchestrate",
+                  "type": "string"
+                }
+              ]
+            },
+            "prompt": {
+              "minLength": 1,
+              "description": "Prompt payload handed to the deeper workspace surface.",
+              "type": "string"
+            },
+            "executionPath": {
+              "minLength": 1,
+              "description": "Canonical runtime path selected for the task.",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "execution": {
+      "$id": "LauncherExecution",
+      "description": "Shared launcher execution contract.",
+      "type": "object",
+      "required": [
+        "source",
+        "summary",
+        "trace",
+        "metadata",
+        "governance"
+      ],
+      "properties": {
+        "source": {
+          "minLength": 1,
+          "description": "Execution source path, for example /reason or /api/rlm/ooda/run.",
+          "type": "string"
+        },
+        "summary": {
+          "minLength": 1,
+          "description": "Execution summary text returned by the current runtime path.",
+          "type": "string"
+        },
+        "trace": {
+          "description": "Runtime trace snippets suitable for cross-service debugging.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "$id": "LauncherExecutionMetadata",
+          "description": "Shared launcher execution metadata used for runtime transparency. Surface-only wording fields belong elsewhere.",
+          "additionalProperties": true,
+          "type": "object",
+          "properties": {
+            "evidenceDomain": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reasonDomain": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "canonicalGovernance": {
+              "description": "Canonical backend governance snapshot. Exact shape should converge in dedicated backend schemas."
+            },
+            "retrievalSummary": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "degradedReasoning": {
+              "type": "boolean"
+            },
+            "fallbackToReason": {
+              "type": "boolean"
+            },
+            "fallbackFrom": {
+              "type": "string"
+            },
+            "fallbackError": {
+              "type": "string"
+            }
+          }
+        },
+        "governance": {
+          "$id": "LauncherGovernanceSummary",
+          "description": "Read-only launcher governance rendering contract. Local-only governance context; not platform truth.",
+          "type": "object",
+          "required": [
+            "promotionStatus",
+            "gates",
+            "targetKind",
+            "boundaryOwner",
+            "routePolicy",
+            "promotionPolicy",
+            "disclaimer"
+          ],
+          "properties": {
+            "promotionStatus": {
+              "anyOf": [
+                {
+                  "const": "not_promoted",
+                  "type": "string"
+                },
+                {
+                  "const": "blocked",
+                  "type": "string"
+                }
+              ]
+            },
+            "looseEnd": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "gates": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$id": "LauncherGovernanceGate",
+                "description": "One launcher-local governance gate result.",
+                "type": "object",
+                "required": [
+                  "gate",
+                  "status",
+                  "reasonCode"
+                ],
+                "properties": {
+                  "gate": {
+                    "minLength": 1,
+                    "description": "Stable gate identifier.",
+                    "type": "string"
+                  },
+                  "status": {
+                    "anyOf": [
+                      {
+                        "const": "pass",
+                        "type": "string"
+                      },
+                      {
+                        "const": "fail",
+                        "type": "string"
+                      },
+                      {
+                        "const": "skip",
+                        "type": "string"
+                      },
+                      {
+                        "const": "coverage_gap",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "reasonCode": {
+                    "minLength": 1,
+                    "description": "Machine-readable reason code for the gate outcome.",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "targetKind": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "boundaryOwner": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "routePolicy": {
+              "$id": "LauncherGovernanceRoutePolicy",
+              "description": "Launcher-local route policy summary for operator visibility.",
+              "type": "object",
+              "required": [
+                "foldingRequired",
+                "retrievalRequired",
+                "governanceRequired",
+                "graphVerificationRequired",
+                "renderValidationRequired"
+              ],
+              "properties": {
+                "foldingRequired": {
+                  "type": "boolean"
+                },
+                "retrievalRequired": {
+                  "type": "boolean"
+                },
+                "governanceRequired": {
+                  "type": "boolean"
+                },
+                "graphVerificationRequired": {
+                  "type": "boolean"
+                },
+                "renderValidationRequired": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "promotionPolicy": {
+              "$id": "LauncherGovernancePromotionPolicy",
+              "description": "Launcher-local promotion policy summary. Read-only and non-canonical.",
+              "type": "object",
+              "required": [
+                "qualityGate",
+                "policyAlignment",
+                "graphWriteVerification",
+                "readBackVerification",
+                "looseEndGenerationOnFailureOrBlock"
+              ],
+              "properties": {
+                "qualityGate": {
+                  "type": "boolean"
+                },
+                "policyAlignment": {
+                  "type": "boolean"
+                },
+                "graphWriteVerification": {
+                  "type": "boolean"
+                },
+                "readBackVerification": {
+                  "type": "boolean"
+                },
+                "looseEndGenerationOnFailureOrBlock": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "disclaimer": {
+              "minLength": 1,
+              "description": "Must state that launcher governance checks are local and not canonical promotion authority.",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

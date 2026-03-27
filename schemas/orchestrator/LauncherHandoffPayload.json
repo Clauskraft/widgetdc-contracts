@@ -1,0 +1,48 @@
+{
+  "$id": "LauncherHandoffPayload",
+  "description": "Shared handoff payload from launcher to downstream workspace/runtime surfaces.",
+  "type": "object",
+  "required": [
+    "intent",
+    "prompt",
+    "executionPath"
+  ],
+  "properties": {
+    "intent": {
+      "$id": "LauncherIntent",
+      "description": "Intent values supported by the WidgeTDC launcher surface.",
+      "anyOf": [
+        {
+          "const": "info",
+          "type": "string"
+        },
+        {
+          "const": "analyze",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "type": "string"
+        },
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "orchestrate",
+          "type": "string"
+        }
+      ]
+    },
+    "prompt": {
+      "minLength": 1,
+      "description": "Prompt payload handed to the deeper workspace surface.",
+      "type": "string"
+    },
+    "executionPath": {
+      "minLength": 1,
+      "description": "Canonical runtime path selected for the task.",
+      "type": "string"
+    }
+  }
+}

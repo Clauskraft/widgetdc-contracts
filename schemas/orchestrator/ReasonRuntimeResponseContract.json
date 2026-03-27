@@ -1,0 +1,35 @@
+{
+  "$id": "ReasonRuntimeResponseContract",
+  "description": "Structured response contract guidance passed into the runtime request context.",
+  "type": "object",
+  "required": [
+    "jobStatement",
+    "successShape",
+    "requiredSections",
+    "boundaryRules",
+    "fallbackPolicy"
+  ],
+  "properties": {
+    "jobStatement": {
+      "type": "string"
+    },
+    "successShape": {
+      "type": "string"
+    },
+    "requiredSections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "boundaryRules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fallbackPolicy": {
+      "type": "string"
+    }
+  }
+}

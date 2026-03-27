@@ -1,0 +1,23 @@
+{
+  "$id": "ReasonRuntimeRouting",
+  "description": "Routing metadata returned by the /reason runtime.",
+  "type": "object",
+  "required": [
+    "provider",
+    "model"
+  ],
+  "properties": {
+    "provider": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "model": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "latency_ms": {
+      "minimum": 0,
+      "type": "number"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$id": "OodaRuntimeContext",
+  "description": "Context object supplied to the OODA runtime from launcher-like surfaces.",
+  "type": "object",
+  "required": [
+    "graph_summary",
+    "source_surface",
+    "grounding_directive",
+    "evidence_domain",
+    "reason_domain"
+  ],
+  "properties": {
+    "graph_summary": {
+      "minLength": 1,
+      "description": "Folded or direct graph summary supplied to the OODA runtime.",
+      "type": "string"
+    },
+    "source_surface": {
+      "minLength": 1,
+      "description": "Surface invoking the OODA runtime.",
+      "type": "string"
+    },
+    "grounding_directive": {
+      "minLength": 1,
+      "description": "Grounding constraints applied to the runtime call.",
+      "type": "string"
+    },
+    "evidence_domain": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "reason_domain": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "report_layout_contract": {
+      "type": "string"
+    },
+    "evidence_context": {
+      "type": "string"
+    }
+  }
+}

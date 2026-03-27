@@ -1,0 +1,29 @@
+{
+  "$id": "LauncherGovernanceRoutePolicy",
+  "description": "Launcher-local route policy summary for operator visibility.",
+  "type": "object",
+  "required": [
+    "foldingRequired",
+    "retrievalRequired",
+    "governanceRequired",
+    "graphVerificationRequired",
+    "renderValidationRequired"
+  ],
+  "properties": {
+    "foldingRequired": {
+      "type": "boolean"
+    },
+    "retrievalRequired": {
+      "type": "boolean"
+    },
+    "governanceRequired": {
+      "type": "boolean"
+    },
+    "graphVerificationRequired": {
+      "type": "boolean"
+    },
+    "renderValidationRequired": {
+      "type": "boolean"
+    }
+  }
+}

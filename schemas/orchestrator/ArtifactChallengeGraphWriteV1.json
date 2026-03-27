@@ -1,0 +1,25 @@
+{
+  "$id": "ArtifactChallengeGraphWriteV1",
+  "description": "Graph write instruction for artifact challenge envelopes.",
+  "type": "object",
+  "required": [
+    "outcome_label",
+    "relation_type",
+    "target_identity"
+  ],
+  "properties": {
+    "outcome_label": {
+      "const": "Outcome",
+      "type": "string"
+    },
+    "relation_type": {
+      "const": "CHALLENGES",
+      "type": "string"
+    },
+    "target_identity": {
+      "minLength": 1,
+      "description": "Target artifact identity for the challenge relation.",
+      "type": "string"
+    }
+  }
+}

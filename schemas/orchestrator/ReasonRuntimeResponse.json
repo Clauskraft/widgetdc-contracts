@@ -1,0 +1,71 @@
+{
+  "$id": "ReasonRuntimeResponse",
+  "description": "Shared /reason runtime response contract used by launcher-like surfaces.",
+  "type": "object",
+  "properties": {
+    "recommendation": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reasoning": {
+      "type": "string"
+    },
+    "confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "routing": {
+      "$id": "ReasonRuntimeRouting",
+      "description": "Routing metadata returned by the /reason runtime.",
+      "type": "object",
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "type": "number"
+        }
+      }
+    },
+    "telemetry": {
+      "$id": "ReasonRuntimeTelemetry",
+      "description": "Minimal runtime telemetry returned by the /reason runtime.",
+      "type": "object",
+      "required": [
+        "used_swarm",
+        "used_rag"
+      ],
+      "properties": {
+        "used_swarm": {
+          "type": "boolean"
+        },
+        "used_rag": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reasoning_chain": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "$id": "LauncherPlanCore",
+  "description": "Shared launcher plan fields. Surface-local UX fields such as title, nextStep, openedSurface, and launchTarget stay outside this schema.",
+  "type": "object",
+  "required": [
+    "intent",
+    "mode",
+    "lineageId",
+    "status",
+    "source",
+    "executionPath",
+    "handoffPayload"
+  ],
+  "properties": {
+    "intent": {
+      "$id": "LauncherIntent",
+      "description": "Intent values supported by the WidgeTDC launcher surface.",
+      "anyOf": [
+        {
+          "const": "info",
+          "type": "string"
+        },
+        {
+          "const": "analyze",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "type": "string"
+        },
+        {
+          "const": "research",
+          "type": "string"
+        },
+        {
+          "const": "orchestrate",
+          "type": "string"
+        }
+      ]
+    },
+    "mode": {
+      "$id": "LauncherMode",
+      "description": "Execution modes exposed by launcher planning.",
+      "anyOf": [
+        {
+          "const": "tool_only",
+          "type": "string"
+        },
+        {
+          "const": "single",
+          "type": "string"
+        },
+        {
+          "const": "swarm",
+          "type": "string"
+        }
+      ]
+    },
+    "lineageId": {
+      "minLength": 1,
+      "description": "Stable lineage id for launcher planning and runtime traceability.",
+      "type": "string"
+    },
+    "status": {
+      "description": "Plan state visible to downstream systems.",
+      "anyOf": [
+        {
+          "const": "planned",
+          "type": "string"
+        },
+        {
+          "const": "in_progress",
+          "type": "string"
+        },
+        {
+          "const": "completed",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        }
+      ]
+    },
+    "source": {
+      "description": "Current launcher source surface.",
+      "const": "widgetdc-launcher-prototype",
+      "type": "string"
+    },
+    "executionPath": {
+      "minLength": 1,
+      "description": "Runtime path selected for the launcher task.",
+      "type": "string"
+    },
+    "handoffPayload": {
+      "$id": "LauncherHandoffPayload",
+      "description": "Shared handoff payload from launcher to downstream workspace/runtime surfaces.",
+      "type": "object",
+      "required": [
+        "intent",
+        "prompt",
+        "executionPath"
+      ],
+      "properties": {
+        "intent": {
+          "$id": "LauncherIntent",
+          "description": "Intent values supported by the WidgeTDC launcher surface.",
+          "anyOf": [
+            {
+              "const": "info",
+              "type": "string"
+            },
+            {
+              "const": "analyze",
+              "type": "string"
+            },
+            {
+              "const": "report",
+              "type": "string"
+            },
+            {
+              "const": "research",
+              "type": "string"
+            },
+            {
+              "const": "orchestrate",
+              "type": "string"
+            }
+          ]
+        },
+        "prompt": {
+          "minLength": 1,
+          "description": "Prompt payload handed to the deeper workspace surface.",
+          "type": "string"
+        },
+        "executionPath": {
+          "minLength": 1,
+          "description": "Canonical runtime path selected for the task.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -6,15 +6,19 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AnyUrl, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
+from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, Field
 from pydantic import Field, RootModel
+from typing import Any
 from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "FabricProof", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
 
 class AgentCapability(
     RootModel[
@@ -471,6 +475,86 @@ class AgentWorkflowEnvelope(BaseModel):
         ..., description='Last workflow state update timestamp.'
     )
 
+class ArtifactChallengeGraphWriteV1(BaseModel):
+    outcome_label: Literal['Outcome']
+    relation_type: Literal['CHALLENGES']
+    target_identity: str = Field(
+        ...,
+        description='Target artifact identity for the challenge relation.',
+        min_length=1,
+    )
+
+class ArtifactChallengeOutcomeV1(BaseModel):
+    trace_id: str = Field(
+        ...,
+        description='Trace id or outcome id emitted for the challenge action.',
+        min_length=1,
+    )
+    status: Literal['CHALLENGED']
+    reason: str = Field(
+        ...,
+        description='Challenge reason supplied by the surface or operator.',
+        min_length=1,
+    )
+    evidence_uri: AnyUrl | None = None
+
+class ArtifactRequestReviewGraphWriteV1(BaseModel):
+    type: Literal['ConstructionRequest']
+    request_kind: Literal['REVIEW']
+    requested_by: str = Field(..., description='Actor requesting review.', min_length=1)
+    artifact_id: str = Field(..., min_length=1)
+
+class EvidenceItem(BaseModel):
+    id: str = Field(..., description='Stable evidence item id.', min_length=1)
+    summary: str = Field(
+        ...,
+        description='Short evidence summary consumed by launcher-like surfaces.',
+        min_length=1,
+    )
+    score: float | None = Field(
+        None, description='Relative evidence relevance score when available.', ge=0.0
+    )
+    title: str | None = None
+    source_type: str | None = None
+
+
+class BackendGovernanceEvidenceFamilyResponseV1(BaseModel):
+    family: Literal['research', 'regulatory', 'enterprise'] = Field(
+        ...,
+        description='Canonical evidence families used by the launcher routing surface.',
+    )
+    status: Literal['grounded', 'coverage_gap', 'unavailable'] | None = Field(
+        None,
+        description='Availability state for one evidence family inside the launcher packet.',
+    )
+    summary: str = Field(
+        ...,
+        description='Family summary consumed by launcher-like surfaces.',
+        min_length=1,
+    )
+    evidence_items: list[EvidenceItem]
+
+class BackendGovernanceEvidenceItemResponseV1(BaseModel):
+    id: str = Field(..., description='Stable evidence item id.', min_length=1)
+    summary: str = Field(
+        ...,
+        description='Short evidence summary consumed by launcher-like surfaces.',
+        min_length=1,
+    )
+    score: float | None = Field(
+        None, description='Relative evidence relevance score when available.', ge=0.0
+    )
+    title: str | None = None
+    source_type: str | None = None
+
+class BackendGovernanceEvidencePacketGovernanceV1(BaseModel):
+    blocking_reasons: list[str] = Field(
+        ...,
+        description='Coverage or governance blockers detected while composing the packet.',
+    )
+    promotion_status: Literal['not_promoted', 'blocked'] | None = None
+    can_promote: bool | None = None
+
 class FabricProof(BaseModel):
     proof_id: UUID = Field(
         ..., description='Unique identifier for the issued fabric proof'
@@ -670,6 +754,474 @@ class LauncherEvidenceStatus(
         description='Availability state for one evidence family inside the launcher packet.',
     )
 
+class Metadata(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    evidenceDomain: str | None = None
+    reasonDomain: str | None = None
+    canonicalGovernance: Any | None = Field(
+        None,
+        description='Canonical backend governance snapshot. Exact shape should converge in dedicated backend schemas.',
+    )
+    retrievalSummary: str | None = None
+    degradedReasoning: bool | None = None
+    fallbackToReason: bool | None = None
+    fallbackFrom: str | None = None
+    fallbackError: str | None = None
+
+
+class Gate(BaseModel):
+    gate: str = Field(..., description='Stable gate identifier.', min_length=1)
+    status: Literal['pass', 'fail', 'skip', 'coverage_gap']
+    reasonCode: str = Field(
+        ...,
+        description='Machine-readable reason code for the gate outcome.',
+        min_length=1,
+    )
+
+
+class RoutePolicy(BaseModel):
+    foldingRequired: bool
+    retrievalRequired: bool
+    governanceRequired: bool
+    graphVerificationRequired: bool
+    renderValidationRequired: bool
+
+
+class PromotionPolicy(BaseModel):
+    qualityGate: bool
+    policyAlignment: bool
+    graphWriteVerification: bool
+    readBackVerification: bool
+    looseEndGenerationOnFailureOrBlock: bool
+
+
+class Governance(BaseModel):
+    promotionStatus: Literal['not_promoted', 'blocked']
+    looseEnd: str | None = None
+    gates: list[Gate] = Field(..., min_length=1)
+    targetKind: str = Field(..., min_length=1)
+    boundaryOwner: str = Field(..., min_length=1)
+    routePolicy: RoutePolicy = Field(
+        ..., description='Launcher-local route policy summary for operator visibility.'
+    )
+    promotionPolicy: PromotionPolicy = Field(
+        ...,
+        description='Launcher-local promotion policy summary. Read-only and non-canonical.',
+    )
+    disclaimer: str = Field(
+        ...,
+        description='Must state that launcher governance checks are local and not canonical promotion authority.',
+        min_length=1,
+    )
+
+
+class LauncherExecution(BaseModel):
+    source: str = Field(
+        ...,
+        description='Execution source path, for example /reason or /api/rlm/ooda/run.',
+        min_length=1,
+    )
+    summary: str = Field(
+        ...,
+        description='Execution summary text returned by the current runtime path.',
+        min_length=1,
+    )
+    trace: list[str] = Field(
+        ..., description='Runtime trace snippets suitable for cross-service debugging.'
+    )
+    metadata: Metadata = Field(
+        ...,
+        description='Shared launcher execution metadata used for runtime transparency. Surface-only wording fields belong elsewhere.',
+    )
+    governance: Governance = Field(
+        ...,
+        description='Read-only launcher governance rendering contract. Local-only governance context; not platform truth.',
+    )
+
+class LauncherExecutionMetadata(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    evidenceDomain: str | None = None
+    reasonDomain: str | None = None
+    canonicalGovernance: Any | None = Field(
+        None,
+        description='Canonical backend governance snapshot. Exact shape should converge in dedicated backend schemas.',
+    )
+    retrievalSummary: str | None = None
+    degradedReasoning: bool | None = None
+    fallbackToReason: bool | None = None
+    fallbackFrom: str | None = None
+    fallbackError: str | None = None
+
+class LauncherGovernanceGate(BaseModel):
+    gate: str = Field(..., description='Stable gate identifier.', min_length=1)
+    status: Literal['pass', 'fail', 'skip', 'coverage_gap']
+    reasonCode: str = Field(
+        ...,
+        description='Machine-readable reason code for the gate outcome.',
+        min_length=1,
+    )
+
+class LauncherGovernancePromotionPolicy(BaseModel):
+    qualityGate: bool
+    policyAlignment: bool
+    graphWriteVerification: bool
+    readBackVerification: bool
+    looseEndGenerationOnFailureOrBlock: bool
+
+class LauncherGovernanceRoutePolicy(BaseModel):
+    foldingRequired: bool
+    retrievalRequired: bool
+    governanceRequired: bool
+    graphVerificationRequired: bool
+    renderValidationRequired: bool
+
+class Gate(BaseModel):
+    gate: str = Field(..., description='Stable gate identifier.', min_length=1)
+    status: Literal['pass', 'fail', 'skip', 'coverage_gap']
+    reasonCode: str = Field(
+        ...,
+        description='Machine-readable reason code for the gate outcome.',
+        min_length=1,
+    )
+
+
+class RoutePolicy(BaseModel):
+    foldingRequired: bool
+    retrievalRequired: bool
+    governanceRequired: bool
+    graphVerificationRequired: bool
+    renderValidationRequired: bool
+
+
+class PromotionPolicy(BaseModel):
+    qualityGate: bool
+    policyAlignment: bool
+    graphWriteVerification: bool
+    readBackVerification: bool
+    looseEndGenerationOnFailureOrBlock: bool
+
+
+class LauncherGovernanceSummary(BaseModel):
+    promotionStatus: Literal['not_promoted', 'blocked']
+    looseEnd: str | None = None
+    gates: list[Gate] = Field(..., min_length=1)
+    targetKind: str = Field(..., min_length=1)
+    boundaryOwner: str = Field(..., min_length=1)
+    routePolicy: RoutePolicy = Field(
+        ..., description='Launcher-local route policy summary for operator visibility.'
+    )
+    promotionPolicy: PromotionPolicy = Field(
+        ...,
+        description='Launcher-local promotion policy summary. Read-only and non-canonical.',
+    )
+    disclaimer: str = Field(
+        ...,
+        description='Must state that launcher governance checks are local and not canonical promotion authority.',
+        min_length=1,
+    )
+
+class LauncherHandoffPayload(BaseModel):
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    prompt: str = Field(
+        ...,
+        description='Prompt payload handed to the deeper workspace surface.',
+        min_length=1,
+    )
+    executionPath: str = Field(
+        ..., description='Canonical runtime path selected for the task.', min_length=1
+    )
+
+class LauncherIntent(
+    RootModel[Literal['info', 'analyze', 'report', 'research', 'orchestrate']]
+):
+    root: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+
+class LauncherMode(RootModel[Literal['tool_only', 'single', 'swarm']]):
+    root: Literal['tool_only', 'single', 'swarm'] = Field(
+        ..., description='Execution modes exposed by launcher planning.'
+    )
+
+class HandoffPayload(BaseModel):
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    prompt: str = Field(
+        ...,
+        description='Prompt payload handed to the deeper workspace surface.',
+        min_length=1,
+    )
+    executionPath: str = Field(
+        ..., description='Canonical runtime path selected for the task.', min_length=1
+    )
+
+
+class LauncherPlanCore(BaseModel):
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    mode: Literal['tool_only', 'single', 'swarm'] = Field(
+        ..., description='Execution modes exposed by launcher planning.'
+    )
+    lineageId: str = Field(
+        ...,
+        description='Stable lineage id for launcher planning and runtime traceability.',
+        min_length=1,
+    )
+    status: Literal['planned', 'in_progress', 'completed', 'failed'] = Field(
+        ..., description='Plan state visible to downstream systems.'
+    )
+    source: Literal['widgetdc-launcher-prototype'] = Field(
+        ..., description='Current launcher source surface.'
+    )
+    executionPath: str = Field(
+        ..., description='Runtime path selected for the launcher task.', min_length=1
+    )
+    handoffPayload: HandoffPayload = Field(
+        ...,
+        description='Shared handoff payload from launcher to downstream workspace/runtime surfaces.',
+    )
+
+class LauncherRequest(BaseModel):
+    input: str = Field(
+        ..., description='User-provided launcher task or question.', min_length=1
+    )
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    instruction: str | None = Field(
+        None,
+        description='Canonical single instruction override field for orchestrated requests.',
+        min_length=1,
+    )
+    instructions: str | None = Field(
+        None,
+        description='Compatibility alias for instruction. Retained until all consumers converge.',
+        min_length=1,
+    )
+
+class LauncherRequestEcho(BaseModel):
+    input: str = Field(
+        ..., description='Echo of normalized launcher input.', min_length=1
+    )
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+
+class Request(BaseModel):
+    input: str = Field(
+        ..., description='Echo of normalized launcher input.', min_length=1
+    )
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+
+
+class HandoffPayload(BaseModel):
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    prompt: str = Field(
+        ...,
+        description='Prompt payload handed to the deeper workspace surface.',
+        min_length=1,
+    )
+    executionPath: str = Field(
+        ..., description='Canonical runtime path selected for the task.', min_length=1
+    )
+
+
+class Plan(BaseModel):
+    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
+        ..., description='Intent values supported by the WidgeTDC launcher surface.'
+    )
+    mode: Literal['tool_only', 'single', 'swarm'] = Field(
+        ..., description='Execution modes exposed by launcher planning.'
+    )
+    lineageId: str = Field(
+        ...,
+        description='Stable lineage id for launcher planning and runtime traceability.',
+        min_length=1,
+    )
+    status: Literal['planned', 'in_progress', 'completed', 'failed'] = Field(
+        ..., description='Plan state visible to downstream systems.'
+    )
+    source: Literal['widgetdc-launcher-prototype'] = Field(
+        ..., description='Current launcher source surface.'
+    )
+    executionPath: str = Field(
+        ..., description='Runtime path selected for the launcher task.', min_length=1
+    )
+    handoffPayload: HandoffPayload = Field(
+        ...,
+        description='Shared handoff payload from launcher to downstream workspace/runtime surfaces.',
+    )
+
+
+class Metadata(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    evidenceDomain: str | None = None
+    reasonDomain: str | None = None
+    canonicalGovernance: Any | None = Field(
+        None,
+        description='Canonical backend governance snapshot. Exact shape should converge in dedicated backend schemas.',
+    )
+    retrievalSummary: str | None = None
+    degradedReasoning: bool | None = None
+    fallbackToReason: bool | None = None
+    fallbackFrom: str | None = None
+    fallbackError: str | None = None
+
+
+class Gate(BaseModel):
+    gate: str = Field(..., description='Stable gate identifier.', min_length=1)
+    status: Literal['pass', 'fail', 'skip', 'coverage_gap']
+    reasonCode: str = Field(
+        ...,
+        description='Machine-readable reason code for the gate outcome.',
+        min_length=1,
+    )
+
+
+class RoutePolicy(BaseModel):
+    foldingRequired: bool
+    retrievalRequired: bool
+    governanceRequired: bool
+    graphVerificationRequired: bool
+    renderValidationRequired: bool
+
+
+class PromotionPolicy(BaseModel):
+    qualityGate: bool
+    policyAlignment: bool
+    graphWriteVerification: bool
+    readBackVerification: bool
+    looseEndGenerationOnFailureOrBlock: bool
+
+
+class Governance(BaseModel):
+    promotionStatus: Literal['not_promoted', 'blocked']
+    looseEnd: str | None = None
+    gates: list[Gate] = Field(..., min_length=1)
+    targetKind: str = Field(..., min_length=1)
+    boundaryOwner: str = Field(..., min_length=1)
+    routePolicy: RoutePolicy = Field(
+        ..., description='Launcher-local route policy summary for operator visibility.'
+    )
+    promotionPolicy: PromotionPolicy = Field(
+        ...,
+        description='Launcher-local promotion policy summary. Read-only and non-canonical.',
+    )
+    disclaimer: str = Field(
+        ...,
+        description='Must state that launcher governance checks are local and not canonical promotion authority.',
+        min_length=1,
+    )
+
+
+class Execution(BaseModel):
+    source: str = Field(
+        ...,
+        description='Execution source path, for example /reason or /api/rlm/ooda/run.',
+        min_length=1,
+    )
+    summary: str = Field(
+        ...,
+        description='Execution summary text returned by the current runtime path.',
+        min_length=1,
+    )
+    trace: list[str] = Field(
+        ..., description='Runtime trace snippets suitable for cross-service debugging.'
+    )
+    metadata: Metadata = Field(
+        ...,
+        description='Shared launcher execution metadata used for runtime transparency. Surface-only wording fields belong elsewhere.',
+    )
+    governance: Governance = Field(
+        ...,
+        description='Read-only launcher governance rendering contract. Local-only governance context; not platform truth.',
+    )
+
+
+class LauncherResponse(BaseModel):
+    request: Request = Field(
+        ...,
+        description='Normalized launcher request echo returned by orchestrated launcher flows.',
+    )
+    plan: Plan = Field(
+        ...,
+        description='Shared launcher plan fields. Surface-local UX fields such as title, nextStep, openedSurface, and launchTarget stay outside this schema.',
+    )
+    execution: Execution = Field(..., description='Shared launcher execution contract.')
+
+class OodaRuntimeContext(BaseModel):
+    graph_summary: str = Field(
+        ...,
+        description='Folded or direct graph summary supplied to the OODA runtime.',
+        min_length=1,
+    )
+    source_surface: str = Field(
+        ..., description='Surface invoking the OODA runtime.', min_length=1
+    )
+    grounding_directive: str = Field(
+        ...,
+        description='Grounding constraints applied to the runtime call.',
+        min_length=1,
+    )
+    evidence_domain: str = Field(..., min_length=1)
+    reason_domain: str = Field(..., min_length=1)
+    report_layout_contract: str | None = None
+    evidence_context: str | None = None
+
+class Context(BaseModel):
+    graph_summary: str = Field(
+        ...,
+        description='Folded or direct graph summary supplied to the OODA runtime.',
+        min_length=1,
+    )
+    source_surface: str = Field(
+        ..., description='Surface invoking the OODA runtime.', min_length=1
+    )
+    grounding_directive: str = Field(
+        ...,
+        description='Grounding constraints applied to the runtime call.',
+        min_length=1,
+    )
+    evidence_domain: str = Field(..., min_length=1)
+    reason_domain: str = Field(..., min_length=1)
+    report_layout_contract: str | None = None
+    evidence_context: str | None = None
+
+
+class OodaRuntimeRequest(BaseModel):
+    task: str = Field(..., description='Task passed to the OODA runtime.', min_length=1)
+    task_id: str = Field(
+        ..., description='Stable task id for runtime tracking.', min_length=1
+    )
+    instruction: str = Field(
+        ...,
+        description='Canonical instruction field for OODA runtime requests.',
+        min_length=1,
+    )
+    instructions: str = Field(
+        ...,
+        description='Compatibility alias retained until all consumers converge on instruction.',
+        min_length=1,
+    )
+    context: Context = Field(
+        ...,
+        description='Context object supplied to the OODA runtime from launcher-like surfaces.',
+    )
+
 class OrchestratorTaskDomain(
     RootModel[
         Literal[
@@ -767,6 +1319,140 @@ class OrchestratorToolStatus(
     root: Literal['success', 'error', 'timeout', 'rate_limited', 'unauthorized'] = (
         Field(..., description='Outcome status of an Orchestrator tool call')
     )
+
+class ResponseContract(BaseModel):
+    jobStatement: str
+    successShape: str
+    requiredSections: list[str]
+    boundaryRules: list[str]
+    fallbackPolicy: str
+
+
+class ReasonRuntimeContext(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    response_contract: ResponseContract = Field(
+        ...,
+        description='Structured response contract guidance passed into the runtime request context.',
+    )
+    evidence_domain: str | None = None
+    reason_domain: str | None = None
+    enriched_prompt: str | None = None
+    field_quality_task: str | None = Field(
+        None,
+        alias='_quality_task',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_skip_knowledge_enrichment: bool | None = Field(
+        None,
+        alias='_skip_knowledge_enrichment',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_output_mode: str | None = Field(
+        None,
+        alias='_output_mode',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_expected_format: str | None = Field(
+        None,
+        alias='_expected_format',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    require_swarm: bool | None = None
+
+class ResponseContract(BaseModel):
+    jobStatement: str
+    successShape: str
+    requiredSections: list[str]
+    boundaryRules: list[str]
+    fallbackPolicy: str
+
+
+class Context(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    response_contract: ResponseContract = Field(
+        ...,
+        description='Structured response contract guidance passed into the runtime request context.',
+    )
+    evidence_domain: str | None = None
+    reason_domain: str | None = None
+    enriched_prompt: str | None = None
+    field_quality_task: str | None = Field(
+        None,
+        alias='_quality_task',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_skip_knowledge_enrichment: bool | None = Field(
+        None,
+        alias='_skip_knowledge_enrichment',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_output_mode: str | None = Field(
+        None,
+        alias='_output_mode',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    field_expected_format: str | None = Field(
+        None,
+        alias='_expected_format',
+        description='Compatibility field retained during migration from local launcher runtime behavior.',
+    )
+    require_swarm: bool | None = None
+
+
+class ReasonRuntimeRequest(BaseModel):
+    task: str = Field(
+        ..., description='Task passed to the /reason runtime.', min_length=1
+    )
+    domain: str = Field(
+        ..., description='Resolved domain passed to the /reason runtime.', min_length=1
+    )
+    context: Context = Field(
+        ...,
+        description='Context passed to the /reason runtime. Compatibility fields are temporary until callers converge on typed fields.',
+    )
+
+class Routing(BaseModel):
+    provider: str = Field(..., min_length=1)
+    model: str = Field(..., min_length=1)
+    latency_ms: float | None = Field(None, ge=0.0)
+
+
+class Telemetry(BaseModel):
+    used_swarm: bool
+    used_rag: bool
+
+
+class ReasonRuntimeResponse(BaseModel):
+    recommendation: str | None = None
+    reasoning: str | None = None
+    confidence: float | None = Field(None, ge=0.0, le=1.0)
+    routing: Routing | None = Field(
+        None, description='Routing metadata returned by the /reason runtime.'
+    )
+    telemetry: Telemetry | None = Field(
+        None, description='Minimal runtime telemetry returned by the /reason runtime.'
+    )
+    reasoning_chain: list[str] | None = None
+
+class ReasonRuntimeResponseContract(BaseModel):
+    jobStatement: str
+    successShape: str
+    requiredSections: list[str]
+    boundaryRules: list[str]
+    fallbackPolicy: str
+
+class ReasonRuntimeRouting(BaseModel):
+    provider: str = Field(..., min_length=1)
+    model: str = Field(..., min_length=1)
+    latency_ms: float | None = Field(None, ge=0.0)
+
+class ReasonRuntimeTelemetry(BaseModel):
+    used_swarm: bool
+    used_rag: bool
 
 class RoutingCapability(
     RootModel[
@@ -1403,3 +2089,120 @@ class WorkflowType(RootModel[Literal['research', 'delivery', 'audit', 'debate']]
     root: Literal['research', 'delivery', 'audit', 'debate'] = Field(
         ..., description='Workflow families allowed for the scoped orchestration layer.'
     )
+
+class Outcome(BaseModel):
+    trace_id: str = Field(
+        ...,
+        description='Trace id or outcome id emitted for the challenge action.',
+        min_length=1,
+    )
+    status: Literal['CHALLENGED']
+    reason: str = Field(
+        ...,
+        description='Challenge reason supplied by the surface or operator.',
+        min_length=1,
+    )
+    evidence_uri: AnyUrl | None = None
+
+
+class GraphWrite(BaseModel):
+    outcome_label: Literal['Outcome']
+    relation_type: Literal['CHALLENGES']
+    target_identity: str = Field(
+        ...,
+        description='Target artifact identity for the challenge relation.',
+        min_length=1,
+    )
+
+
+class ArtifactChallengeEnvelopeV1(BaseModel):
+    tool: Literal['artifacts.challenge']
+    artifact_id: str = Field(..., min_length=1)
+    artifact_slug: str | None = Field(
+        None,
+        description='Compatibility metadata field retained during migration.',
+        min_length=1,
+    )
+    outcome: Outcome = Field(
+        ..., description='Outcome payload generated by artifact challenge requests.'
+    )
+    graph_write: GraphWrite = Field(
+        ..., description='Graph write instruction for artifact challenge envelopes.'
+    )
+
+class GraphWrite(BaseModel):
+    type: Literal['ConstructionRequest']
+    request_kind: Literal['REVIEW']
+    requested_by: str = Field(..., description='Actor requesting review.', min_length=1)
+    artifact_id: str = Field(..., min_length=1)
+
+
+class ArtifactRequestReviewEnvelopeV1(BaseModel):
+    tool: Literal['artifacts.action']
+    action: Literal['request-review']
+    artifact_id: str = Field(..., min_length=1)
+    graph_write: GraphWrite = Field(
+        ...,
+        description='Graph write instruction for artifact request-review envelopes.',
+    )
+
+class Governance(BaseModel):
+    blocking_reasons: list[str] = Field(
+        ...,
+        description='Coverage or governance blockers detected while composing the packet.',
+    )
+    promotion_status: Literal['not_promoted', 'blocked'] | None = None
+    can_promote: bool | None = None
+
+
+class EvidenceItem(BaseModel):
+    id: str = Field(..., description='Stable evidence item id.', min_length=1)
+    summary: str = Field(
+        ...,
+        description='Short evidence summary consumed by launcher-like surfaces.',
+        min_length=1,
+    )
+    score: float | None = Field(
+        None, description='Relative evidence relevance score when available.', ge=0.0
+    )
+    title: str | None = None
+    source_type: str | None = None
+
+
+class Family(BaseModel):
+    family: Literal['research', 'regulatory', 'enterprise'] = Field(
+        ...,
+        description='Canonical evidence families used by the launcher routing surface.',
+    )
+    status: Literal['grounded', 'coverage_gap', 'unavailable'] | None = Field(
+        None,
+        description='Availability state for one evidence family inside the launcher packet.',
+    )
+    summary: str = Field(
+        ...,
+        description='Family summary consumed by launcher-like surfaces.',
+        min_length=1,
+    )
+    evidence_items: list[EvidenceItem]
+
+
+class BackendGovernanceEvidencePacketResponseV1(BaseModel):
+    packet_id: str = Field(
+        ..., description='Stable packet id for routing and read-back.', min_length=1
+    )
+    tri_source_ready: bool = Field(
+        ...,
+        description='True when enough evidence exists for multi-signal launcher use.',
+    )
+    governance: Governance = Field(
+        ..., description='Governance subsection of backend evidence packet responses.'
+    )
+    families: list[Family] = Field(
+        ...,
+        description='Family evidence summaries returned by backend governance surfaces.',
+        min_length=1,
+    )
+    question: str | None = None
+    domain: str | None = None
+    created_at: AwareDatetime | None = None
+    evidence_refs: list[str] | None = None

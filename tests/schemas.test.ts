@@ -20,6 +20,14 @@ import {
   AgentTrustProfile,
   ScorecardEntry,
   TelemetryEntry,
+  LauncherRequest,
+  LauncherResponse,
+  OodaRuntimeRequest,
+  ReasonRuntimeRequest,
+  ReasonRuntimeResponse,
+  BackendGovernanceEvidencePacketResponseV1,
+  ArtifactChallengeEnvelopeV1,
+  ArtifactRequestReviewEnvelopeV1,
   NodeLabel,
   RelationshipType,
   DOMAIN_SHORT_IDS,
@@ -275,6 +283,217 @@ describe('graph/', () => {
     for (const rel of rels) {
       expect(Value.Check(RelationshipType, rel)).toBe(true)
     }
+  })
+})
+
+describe('orchestrator launcher contracts/', () => {
+  it('LauncherRequest validates a minimal info request', () => {
+    const req = {
+      input: 'Forklar governance status',
+      intent: 'info',
+    }
+    expect(Value.Check(LauncherRequest, req)).toBe(true)
+  })
+
+  it('LauncherRequest accepts compatibility instruction aliasing', () => {
+    const req = {
+      input: 'Kør en orkestreret task',
+      intent: 'orchestrate',
+      instruction: 'Returner faseplan',
+      instructions: 'Returner faseplan',
+    }
+    expect(Value.Check(LauncherRequest, req)).toBe(true)
+  })
+
+  it('LauncherResponse validates shared response core without surface-local fields', () => {
+    const res = {
+      request: {
+        input: 'Lav en analyse',
+        intent: 'analyze',
+      },
+      plan: {
+        intent: 'analyze',
+        mode: 'single',
+        lineageId: 'lineage_20260327120000',
+        status: 'planned',
+        source: 'widgetdc-launcher-prototype',
+        executionPath: 'backend:/api/mcp/route -> rlm:/reason',
+        handoffPayload: {
+          intent: 'analyze',
+          prompt: 'Lav en analyse',
+          executionPath: 'backend:/api/mcp/route -> rlm:/reason',
+        },
+      },
+      execution: {
+        source: '/reason',
+        summary: 'Vurdering: Contracted recommendation',
+        trace: ['retrieve', 'reason'],
+        metadata: {
+          evidenceDomain: 'widgetdc-launcher',
+          reasonDomain: 'Strategy',
+          degradedReasoning: false,
+          canonicalGovernance: {
+            arbitrationBacklog: {
+              status: 'green',
+            },
+          },
+        },
+        governance: {
+          promotionStatus: 'not_promoted',
+          looseEnd: null,
+          gates: [
+            { gate: 'quality_check', status: 'pass', reasonCode: 'summary_present' },
+          ],
+          targetKind: 'LooseEnd',
+          boundaryOwner: 'WidgeTDC',
+          routePolicy: {
+            foldingRequired: true,
+            retrievalRequired: true,
+            governanceRequired: true,
+            graphVerificationRequired: false,
+            renderValidationRequired: false,
+          },
+          promotionPolicy: {
+            qualityGate: true,
+            policyAlignment: true,
+            graphWriteVerification: true,
+            readBackVerification: true,
+            looseEndGenerationOnFailureOrBlock: true,
+          },
+          disclaimer: 'These are launcher-local governance checks. They are not canonical LegoFactory decisions and must not be treated as promotion authority.',
+        },
+      },
+    }
+    expect(Value.Check(LauncherResponse, res)).toBe(true)
+  })
+
+  it('OodaRuntimeRequest validates transitional dual instruction fields', () => {
+    const req = {
+      task: 'Kør en orkestreret task',
+      task_id: 'launcher-ooda-123',
+      instruction: 'Returner en faseplan',
+      instructions: 'Returner en faseplan',
+      context: {
+        graph_summary: 'Folded graph summary',
+        source_surface: 'widgetdc-launcher-prototype',
+        grounding_directive: 'Use only relevant evidence',
+        evidence_domain: 'widgetdc-launcher',
+        reason_domain: 'Strategy',
+      },
+    }
+    expect(Value.Check(OodaRuntimeRequest, req)).toBe(true)
+  })
+
+  it('ReasonRuntimeRequest validates current launcher-compatible context fields', () => {
+    const req = {
+      task: 'Lav en analyse af kontraktshape',
+      domain: 'Strategy',
+      context: {
+        response_contract: {
+          jobStatement: 'Lever en vurdering med tydelig verificering og næste trin.',
+          successShape: 'Vurdering, hvad der bør verificeres, og næste trin.',
+          requiredSections: ['Vurdering', 'Hvad bør verificeres', 'Næste trin'],
+          boundaryRules: ['Ingen falsk sikkerhed'],
+          fallbackPolicy: 'Ved degradering skal begrænsning og næste trin siges eksplicit.',
+        },
+        evidence_domain: 'widgetdc-launcher',
+        reason_domain: 'Strategy',
+        enriched_prompt: 'Use grounded evidence only.',
+        _quality_task: 'Lav en analyse af kontraktshape',
+        _skip_knowledge_enrichment: false,
+        _output_mode: 'analyze',
+        _expected_format: 'structured',
+      },
+    }
+    expect(Value.Check(ReasonRuntimeRequest, req)).toBe(true)
+  })
+
+  it('ReasonRuntimeResponse validates launcher-consumed reason output', () => {
+    const res = {
+      recommendation: 'Contracted recommendation',
+      confidence: 0.82,
+      routing: {
+        provider: 'gemini',
+        model: 'gemini-2.5-flash',
+        latency_ms: 1234,
+      },
+      telemetry: {
+        used_swarm: false,
+        used_rag: true,
+      },
+      reasoning_chain: ['retrieve', 'reason'],
+    }
+    expect(Value.Check(ReasonRuntimeResponse, res)).toBe(true)
+  })
+})
+
+describe('orchestrator artifact contracts/', () => {
+  it('BackendGovernanceEvidencePacketResponseV1 validates shared evidence packet response', () => {
+    const res = {
+      packet_id: 'packet-evidence-contract',
+      tri_source_ready: true,
+      governance: {
+        blocking_reasons: [],
+        promotion_status: 'not_promoted',
+        can_promote: false,
+      },
+      families: [
+        {
+          family: 'research',
+          status: 'grounded',
+          summary: 'Research evidence is grounded and ready for launcher consumption.',
+          evidence_items: [
+            {
+              id: 'ev-1',
+              summary: 'Primary evidence summary',
+              score: 0.91,
+              title: 'Research packet',
+              source_type: 'brief',
+            },
+          ],
+        },
+      ],
+      question: 'What is the current governance posture?',
+      domain: 'widgetdc-launcher',
+      created_at: '2026-03-27T10:00:00Z',
+      evidence_refs: ['graph://evidence/ev-1'],
+    }
+    expect(Value.Check(BackendGovernanceEvidencePacketResponseV1, res)).toBe(true)
+  })
+
+  it('ArtifactChallengeEnvelopeV1 validates shared challenge envelope', () => {
+    const envelope = {
+      tool: 'artifacts.challenge',
+      artifact_id: 'artifact-contract-001',
+      artifact_slug: 'artifact-contract',
+      outcome: {
+        trace_id: 'trace-1',
+        status: 'CHALLENGED',
+        reason: 'Lineage mismatch detected',
+        evidence_uri: null,
+      },
+      graph_write: {
+        outcome_label: 'Outcome',
+        relation_type: 'CHALLENGES',
+        target_identity: 'artifact-contract-001',
+      },
+    }
+    expect(Value.Check(ArtifactChallengeEnvelopeV1, envelope)).toBe(true)
+  })
+
+  it('ArtifactRequestReviewEnvelopeV1 validates shared request-review envelope', () => {
+    const envelope = {
+      tool: 'artifacts.action',
+      action: 'request-review',
+      artifact_id: 'artifact-contract-001',
+      graph_write: {
+        type: 'ConstructionRequest',
+        request_kind: 'REVIEW',
+        requested_by: 'launcher-user',
+        artifact_id: 'artifact-contract-001',
+      },
+    }
+    expect(Value.Check(ArtifactRequestReviewEnvelopeV1, envelope)).toBe(true)
   })
 })
 

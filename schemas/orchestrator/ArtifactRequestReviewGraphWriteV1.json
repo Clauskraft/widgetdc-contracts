@@ -1,0 +1,30 @@
+{
+  "$id": "ArtifactRequestReviewGraphWriteV1",
+  "description": "Graph write instruction for artifact request-review envelopes.",
+  "type": "object",
+  "required": [
+    "type",
+    "request_kind",
+    "requested_by",
+    "artifact_id"
+  ],
+  "properties": {
+    "type": {
+      "const": "ConstructionRequest",
+      "type": "string"
+    },
+    "request_kind": {
+      "const": "REVIEW",
+      "type": "string"
+    },
+    "requested_by": {
+      "minLength": 1,
+      "description": "Actor requesting review.",
+      "type": "string"
+    },
+    "artifact_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}
