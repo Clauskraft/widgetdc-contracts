@@ -258,8 +258,8 @@ function main(): void {
     return idx >= 0 && args[idx + 1] ? args[idx + 1] : fallback;
   }
 
-  // Default paths assume sibling repos: ../WidgeTDC_fresh, ../widgetdc-consulting-frontend, ../widgetdc-rlm-engine
-  const backendPath = getArg("--backend", "../WidgeTDC_fresh/arch/backend-graph.json");
+  // Default paths assume sibling repos: ../WidgeTDC, ../widgetdc-consulting-frontend, ../widgetdc-rlm-engine
+  const backendPath = getArg("--backend", "../WidgeTDC/arch/backend-graph.json");
   const frontendPath = getArg("--frontend", "../widgetdc-consulting-frontend/arch/frontend-graph.json");
   const contractsPath = getArg("--contracts", "arch/contracts-graph.json");
   const rlmPath = getArg("--rlm", "../widgetdc-rlm-engine/arch/rlm-graph.json");
