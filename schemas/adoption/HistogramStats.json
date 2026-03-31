@@ -1,0 +1,34 @@
+{
+  "$id": "HistogramStats",
+  "description": "Histogram percentile statistics",
+  "type": "object",
+  "required": [
+    "count",
+    "sum",
+    "avg",
+    "p50",
+    "p95",
+    "p99"
+  ],
+  "properties": {
+    "count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sum": {
+      "type": "number"
+    },
+    "avg": {
+      "type": "number"
+    },
+    "p50": {
+      "type": "number"
+    },
+    "p95": {
+      "type": "number"
+    },
+    "p99": {
+      "type": "number"
+    }
+  }
+}

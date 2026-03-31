@@ -23,4 +23,6 @@ export * from './graph/index.js';
 export * from './orchestrator/index.js';
 export * from './opportunities/index.js';
 export * from './mcp/index.js';
+export * from './normalization/index.js';
+export * from './adoption/index.js';
 //# sourceMappingURL=index.d.ts.map

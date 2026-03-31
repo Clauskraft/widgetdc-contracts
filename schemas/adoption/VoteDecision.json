@@ -1,0 +1,18 @@
+{
+  "$id": "VoteDecision",
+  "description": "Consensus vote decision",
+  "anyOf": [
+    {
+      "const": "approve",
+      "type": "string"
+    },
+    {
+      "const": "reject",
+      "type": "string"
+    },
+    {
+      "const": "abstain",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "ConsensusOutcome",
+  "description": "Consensus proposal outcome",
+  "anyOf": [
+    {
+      "const": "committed",
+      "type": "string"
+    },
+    {
+      "const": "aborted",
+      "type": "string"
+    },
+    {
+      "const": "pending",
+      "type": "string"
+    },
+    {
+      "const": "expired",
+      "type": "string"
+    }
+  ]
+}

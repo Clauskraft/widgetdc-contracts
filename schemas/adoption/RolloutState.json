@@ -1,0 +1,22 @@
+{
+  "$id": "RolloutState",
+  "description": "Feature rollout state",
+  "anyOf": [
+    {
+      "const": "active",
+      "type": "string"
+    },
+    {
+      "const": "degraded",
+      "type": "string"
+    },
+    {
+      "const": "disabled",
+      "type": "string"
+    },
+    {
+      "const": "canary",
+      "type": "string"
+    }
+  ]
+}

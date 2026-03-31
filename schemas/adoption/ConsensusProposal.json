@@ -1,0 +1,129 @@
+{
+  "$id": "ConsensusProposal",
+  "description": "Multi-agent consensus proposal",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "description",
+    "proposed_by",
+    "quorum",
+    "confidence_threshold",
+    "expiry_ms",
+    "created_at",
+    "outcome",
+    "votes"
+  ],
+  "properties": {
+    "id": {
+      "description": "Proposal ID",
+      "type": "string"
+    },
+    "title": {
+      "description": "Proposal title",
+      "type": "string"
+    },
+    "description": {
+      "description": "Detailed description",
+      "type": "string"
+    },
+    "proposed_by": {
+      "description": "Proposer agent ID",
+      "type": "string"
+    },
+    "quorum": {
+      "minimum": 1,
+      "description": "Required voters for quorum",
+      "type": "integer"
+    },
+    "confidence_threshold": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Min weighted confidence for approval",
+      "type": "number"
+    },
+    "expiry_ms": {
+      "description": "Expiry duration in ms",
+      "type": "integer"
+    },
+    "created_at": {
+      "description": "Unix timestamp ms",
+      "type": "number"
+    },
+    "outcome": {
+      "$id": "ConsensusOutcome",
+      "description": "Consensus proposal outcome",
+      "anyOf": [
+        {
+          "const": "committed",
+          "type": "string"
+        },
+        {
+          "const": "aborted",
+          "type": "string"
+        },
+        {
+          "const": "pending",
+          "type": "string"
+        },
+        {
+          "const": "expired",
+          "type": "string"
+        }
+      ]
+    },
+    "votes": {
+      "type": "array",
+      "items": {
+        "$id": "ConsensusVote",
+        "description": "Individual vote on a consensus proposal",
+        "type": "object",
+        "required": [
+          "voter",
+          "decision",
+          "confidence",
+          "rationale",
+          "timestamp"
+        ],
+        "properties": {
+          "voter": {
+            "description": "Voter agent ID",
+            "type": "string"
+          },
+          "decision": {
+            "$id": "VoteDecision",
+            "description": "Consensus vote decision",
+            "anyOf": [
+              {
+                "const": "approve",
+                "type": "string"
+              },
+              {
+                "const": "reject",
+                "type": "string"
+              },
+              {
+                "const": "abstain",
+                "type": "string"
+              }
+            ]
+          },
+          "confidence": {
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence 0.0-1.0",
+            "type": "number"
+          },
+          "rationale": {
+            "description": "Reason for decision",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Unix timestamp ms",
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

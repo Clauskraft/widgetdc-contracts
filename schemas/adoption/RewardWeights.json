@@ -1,0 +1,39 @@
+{
+  "$id": "RewardWeights",
+  "description": "Reward dimension weights (should sum to 1.0)",
+  "type": "object",
+  "required": [
+    "quality",
+    "latency",
+    "cost",
+    "satisfaction",
+    "reliability"
+  ],
+  "properties": {
+    "quality": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "latency": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "cost": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "satisfaction": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "reliability": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "$id": "ConsensusResult",
+  "description": "Consensus evaluation result",
+  "type": "object",
+  "required": [
+    "proposal_id",
+    "outcome",
+    "total_votes",
+    "approvals",
+    "rejections",
+    "abstentions",
+    "weighted_confidence",
+    "quorum_met",
+    "threshold_met"
+  ],
+  "properties": {
+    "proposal_id": {
+      "type": "string"
+    },
+    "outcome": {
+      "$id": "ConsensusOutcome",
+      "description": "Consensus proposal outcome",
+      "anyOf": [
+        {
+          "const": "committed",
+          "type": "string"
+        },
+        {
+          "const": "aborted",
+          "type": "string"
+        },
+        {
+          "const": "pending",
+          "type": "string"
+        },
+        {
+          "const": "expired",
+          "type": "string"
+        }
+      ]
+    },
+    "total_votes": {
+      "type": "integer"
+    },
+    "approvals": {
+      "type": "integer"
+    },
+    "rejections": {
+      "type": "integer"
+    },
+    "abstentions": {
+      "type": "integer"
+    },
+    "weighted_confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "quorum_met": {
+      "type": "boolean"
+    },
+    "threshold_met": {
+      "type": "boolean"
+    }
+  }
+}
