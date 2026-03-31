@@ -1,0 +1,22 @@
+{
+  "$id": "ComplexityTier",
+  "description": "MCP tool complexity classification",
+  "anyOf": [
+    {
+      "const": "simple",
+      "type": "string"
+    },
+    {
+      "const": "moderate",
+      "type": "string"
+    },
+    {
+      "const": "advanced",
+      "type": "string"
+    },
+    {
+      "const": "complex",
+      "type": "string"
+    }
+  ]
+}

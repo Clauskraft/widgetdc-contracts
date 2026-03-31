@@ -1,0 +1,75 @@
+{
+  "$id": "MetricsSummary",
+  "description": "Platform metrics summary snapshot",
+  "type": "object",
+  "required": [
+    "counters",
+    "gauges",
+    "histograms",
+    "collected_at"
+  ],
+  "properties": {
+    "counters": {
+      "description": "Counter metrics",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "type": "number"
+        }
+      }
+    },
+    "gauges": {
+      "description": "Gauge metrics",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "type": "number"
+        }
+      }
+    },
+    "histograms": {
+      "description": "Histogram metrics with percentiles",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "$id": "HistogramStats",
+          "description": "Histogram percentile statistics",
+          "type": "object",
+          "required": [
+            "count",
+            "sum",
+            "avg",
+            "p50",
+            "p95",
+            "p99"
+          ],
+          "properties": {
+            "count": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sum": {
+              "type": "number"
+            },
+            "avg": {
+              "type": "number"
+            },
+            "p50": {
+              "type": "number"
+            },
+            "p95": {
+              "type": "number"
+            },
+            "p99": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "collected_at": {
+      "description": "Unix timestamp ms",
+      "type": "number"
+    }
+  }
+}

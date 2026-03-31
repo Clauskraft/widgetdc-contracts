@@ -1,0 +1,88 @@
+{
+  "$id": "RolloutEntry",
+  "description": "Feature rollout state entry",
+  "type": "object",
+  "required": [
+    "feature_id",
+    "state",
+    "rollout_pct",
+    "updated_at",
+    "changed_by",
+    "reason",
+    "metrics"
+  ],
+  "properties": {
+    "feature_id": {
+      "description": "Feature/tool identifier",
+      "type": "string"
+    },
+    "state": {
+      "$id": "RolloutState",
+      "description": "Feature rollout state",
+      "anyOf": [
+        {
+          "const": "active",
+          "type": "string"
+        },
+        {
+          "const": "degraded",
+          "type": "string"
+        },
+        {
+          "const": "disabled",
+          "type": "string"
+        },
+        {
+          "const": "canary",
+          "type": "string"
+        }
+      ]
+    },
+    "rollout_pct": {
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Traffic percentage",
+      "type": "number"
+    },
+    "updated_at": {
+      "description": "Unix timestamp ms of last state change",
+      "type": "number"
+    },
+    "changed_by": {
+      "description": "Who/what changed state",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Reason for current state",
+      "type": "string"
+    },
+    "expires_at": {
+      "description": "Auto-disable timestamp",
+      "type": "number"
+    },
+    "metrics": {
+      "$id": "RolloutMetrics",
+      "description": "Rollout invocation metrics",
+      "type": "object",
+      "required": [
+        "invocations",
+        "failures",
+        "avg_latency_ms"
+      ],
+      "properties": {
+        "invocations": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "failures": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "avg_latency_ms": {
+          "minimum": 0,
+          "type": "number"
+        }
+      }
+    }
+  }
+}

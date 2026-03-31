@@ -1,0 +1,24 @@
+{
+  "$id": "RolloutMetrics",
+  "description": "Rollout invocation metrics",
+  "type": "object",
+  "required": [
+    "invocations",
+    "failures",
+    "avg_latency_ms"
+  ],
+  "properties": {
+    "invocations": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "failures": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "avg_latency_ms": {
+      "minimum": 0,
+      "type": "number"
+    }
+  }
+}

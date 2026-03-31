@@ -1,0 +1,26 @@
+{
+  "$id": "RewardDimension",
+  "description": "Reward signal dimension",
+  "anyOf": [
+    {
+      "const": "quality",
+      "type": "string"
+    },
+    {
+      "const": "latency",
+      "type": "string"
+    },
+    {
+      "const": "cost",
+      "type": "string"
+    },
+    {
+      "const": "satisfaction",
+      "type": "string"
+    },
+    {
+      "const": "reliability",
+      "type": "string"
+    }
+  ]
+}

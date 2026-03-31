@@ -1,0 +1,50 @@
+{
+  "$id": "ConsensusVote",
+  "description": "Individual vote on a consensus proposal",
+  "type": "object",
+  "required": [
+    "voter",
+    "decision",
+    "confidence",
+    "rationale",
+    "timestamp"
+  ],
+  "properties": {
+    "voter": {
+      "description": "Voter agent ID",
+      "type": "string"
+    },
+    "decision": {
+      "$id": "VoteDecision",
+      "description": "Consensus vote decision",
+      "anyOf": [
+        {
+          "const": "approve",
+          "type": "string"
+        },
+        {
+          "const": "reject",
+          "type": "string"
+        },
+        {
+          "const": "abstain",
+          "type": "string"
+        }
+      ]
+    },
+    "confidence": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence 0.0-1.0",
+      "type": "number"
+    },
+    "rationale": {
+      "description": "Reason for decision",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "Unix timestamp ms",
+      "type": "number"
+    }
+  }
+}

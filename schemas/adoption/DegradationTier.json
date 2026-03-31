@@ -1,0 +1,26 @@
+{
+  "$id": "DegradationTier",
+  "description": "Service degradation tier",
+  "anyOf": [
+    {
+      "const": "full",
+      "type": "string"
+    },
+    {
+      "const": "cached",
+      "type": "string"
+    },
+    {
+      "const": "fallback",
+      "type": "string"
+    },
+    {
+      "const": "static",
+      "type": "string"
+    },
+    {
+      "const": "unavailable",
+      "type": "string"
+    }
+  ]
+}

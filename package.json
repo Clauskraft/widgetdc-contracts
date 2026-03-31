@@ -46,6 +46,10 @@
       "types": "./dist/opportunities/index.d.ts",
       "import": "./dist/opportunities/index.js"
     },
+    "./adoption": {
+      "types": "./dist/adoption/index.d.ts",
+      "import": "./dist/adoption/index.js"
+    },
     "./schemas/*": "./schemas/*"
   },
   "files": [

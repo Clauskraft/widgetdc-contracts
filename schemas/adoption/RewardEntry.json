@@ -1,0 +1,79 @@
+{
+  "$id": "RewardEntry",
+  "description": "Recorded reward observation",
+  "type": "object",
+  "required": [
+    "task_id",
+    "agent_id",
+    "action",
+    "vector",
+    "composite",
+    "timestamp"
+  ],
+  "properties": {
+    "task_id": {
+      "description": "Task/decision ID",
+      "type": "string"
+    },
+    "agent_id": {
+      "description": "Agent persona that executed",
+      "type": "string"
+    },
+    "action": {
+      "description": "Action taken (tool or persona)",
+      "type": "string"
+    },
+    "vector": {
+      "$id": "RewardVector",
+      "description": "Multi-dimensional Q-learning reward signal",
+      "type": "object",
+      "required": [
+        "quality",
+        "latency",
+        "cost",
+        "satisfaction",
+        "reliability"
+      ],
+      "properties": {
+        "quality": {
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Output quality score",
+          "type": "number"
+        },
+        "latency": {
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Speed score (10=fastest)",
+          "type": "number"
+        },
+        "cost": {
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Cost efficiency (10=cheapest)",
+          "type": "number"
+        },
+        "satisfaction": {
+          "minimum": 0,
+          "maximum": 10,
+          "description": "User/agent satisfaction",
+          "type": "number"
+        },
+        "reliability": {
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Completion without errors",
+          "type": "number"
+        }
+      }
+    },
+    "composite": {
+      "description": "Weighted composite score 0-10",
+      "type": "number"
+    },
+    "timestamp": {
+      "description": "Unix timestamp ms",
+      "type": "number"
+    }
+  }
+}
