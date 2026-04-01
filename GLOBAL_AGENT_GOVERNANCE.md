@@ -47,6 +47,24 @@ Define the minimum governance contract that applies to all agents across all rep
 - A contract-sensitive or architecture-sensitive task is not done until relevant contracts, mappings, and runtime assumptions are checked.
 - A governance claim is not done until it is both enforced and verified.
 
+## Memory Hydration and Write-Back (Strategic Batches)
+
+Strategic batches (multi-step agent chains, scheduled loops, and any batch execution touching governance, compliance, or architecture scope) must follow mandatory memory protocol:
+
+### Pre-Batch Hydration
+- Before execution begins, the agent must hydrate from canonical state: fetch pending lessons (`audit.lessons`), load relevant `AgentMemory` nodes, and read the latest governance directives from the graph.
+- If canonical state is unavailable (Redis down, graph unreachable, or network timeout), the agent must log a traceable exception stating which memory sources were unavailable, proceed with stale-safe defaults, and flag the batch output as `memory_degraded: true`.
+- Agents must not start strategic batches with empty or assumed state when canonical sources exist.
+
+### Post-Batch Write-Back
+- After batch completion, the agent must checkpoint results back to canonical state: persist material findings as `AgentMemory` nodes, update `Lesson` nodes for cross-agent learning, and record batch outcome in the audit trail.
+- Write-back must include: batch identifier, agent identity, outcome status, and a summary of state mutations.
+- If write-back fails, the agent must retry once, then log a traceable exception and emit a `memory_writeback_failed` event. The batch result remains valid but must be flagged as `writeback_pending: true`.
+
+### Exception Handling
+- Memory unavailability is not a silent failure. All memory exceptions must be logged with: source attempted, error type, fallback action taken, and degradation flag applied.
+- Batches running under `memory_degraded` must not make irreversible governance decisions (e.g., compliance status changes, architecture approvals). They may proceed with read-only or advisory actions.
+
 ## Agent Coordination Rules
 
 - Record material status, ACK/NACK, and implementation outcomes in the system of operational truth.

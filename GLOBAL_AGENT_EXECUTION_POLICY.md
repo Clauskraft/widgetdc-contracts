@@ -28,6 +28,17 @@ If a task type has a canonical execution path, agents must use it or emit a trac
 - Knowledge synthesis, report writing, research packaging -> `skill-knowledge-work`
 - Multi-model disagreement or major tradeoff resolution -> `skill-debate` or `octo.debate`
 
+## Memory Protocol for Strategic Batches
+
+Strategic batches (multi-step chains, scheduled loops, governance/compliance/architecture scope) must follow the memory hydration and write-back protocol defined in `GLOBAL_AGENT_GOVERNANCE.md`:
+
+1. **Pre-batch**: Hydrate from canonical state (lessons, AgentMemory, governance directives).
+2. **Execute**: Run with hydrated context. Flag `memory_degraded: true` if hydration failed.
+3. **Post-batch**: Checkpoint results to canonical state (AgentMemory, Lesson nodes, audit trail).
+4. **Exception**: Log all memory failures with source, error, fallback action, and degradation flag. Do not make irreversible governance decisions under degraded memory.
+
+Batch execution that skips memory hydration or write-back without a traceable exception is a compliance gap.
+
 ## Enforcement Expectations
 
 - Intent detection should map task types to canonical skills.

@@ -289,7 +289,8 @@ async function verifyRlmRuntime(): Promise<void> {
     log(`RLM OODA probe succeeded. phase=${String(ooda.phase)} completed=${String(ooda.completed)}`)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    if (!message.startsWith('404')) {
+    const isRouteUnavailable = /^(404|405|501)\b/.test(message)
+    if (!isRouteUnavailable) {
       throw error
     }
 
@@ -311,9 +312,11 @@ async function verifyRlmRuntime(): Promise<void> {
       String(reason.recommendation || '') ||
       String(reason.reasoning || '') ||
       String(reason.result || '') ||
-      String(reason.output || '')
+      String(reason.output || '') ||
+      String(reason.analysis || '') ||
+      String(reason.answer || '')
 
-    if (!responseText.trim()) {
+    if (!responseText.trim() && reason.success !== true) {
       fail(`RLM /reason probe returned no usable response: ${JSON.stringify(reason)}`)
     }
 

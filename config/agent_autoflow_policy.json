@@ -14,8 +14,30 @@
     "code_qa_execution_fallback": "qwen_code_smith",
     "deploy_test_gate": "claude"
   },
+  "memory_protocol": {
+    "strategic_batch_requires_hydration": true,
+    "strategic_batch_requires_writeback": true,
+    "hydration_sources": [
+      "audit.lessons",
+      "AgentMemory_nodes",
+      "governance_directives"
+    ],
+    "writeback_targets": [
+      "AgentMemory_nodes",
+      "Lesson_nodes",
+      "audit_trail"
+    ],
+    "degraded_memory_restrictions": [
+      "no_irreversible_governance_decisions",
+      "no_compliance_status_changes",
+      "no_architecture_approvals"
+    ],
+    "writeback_retry_count": 1,
+    "writeback_failure_event": "memory_writeback_failed"
+  },
   "autoflow": {
     "code_change_sequence": [
+      "hydrate_canonical_state",
       "implement",
       "local_targeted_verification",
       "post_linear_status",
@@ -23,7 +45,8 @@
       "handle_qwen_feedback",
       "request_claude_gate_if_deploy_or_contract_sensitive",
       "push_main",
-      "verify_runtime"
+      "verify_runtime",
+      "checkpoint_writeback"
     ],
     "mandatory_qwen_qa_fields": [
       "issue_identifier",
