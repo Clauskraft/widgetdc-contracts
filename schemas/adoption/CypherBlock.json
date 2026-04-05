@@ -1,0 +1,30 @@
+{
+  "$id": "CypherBlock",
+  "description": "Neo4j Cypher query block",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "query"
+  ],
+  "properties": {
+    "type": {
+      "const": "cypher",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "query": {
+      "type": "string"
+    },
+    "cached_result": {
+      "additionalProperties": true,
+      "type": "object",
+      "properties": {}
+    }
+  }
+}

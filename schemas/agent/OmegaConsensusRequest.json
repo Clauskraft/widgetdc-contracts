@@ -1,0 +1,165 @@
+{
+  "$id": "OmegaConsensusRequest",
+  "description": "Omega swarm consensus request",
+  "type": "object",
+  "required": [
+    "proposal",
+    "required_agents",
+    "threshold",
+    "votes"
+  ],
+  "properties": {
+    "proposal": {
+      "type": "string"
+    },
+    "required_agents": {
+      "type": "array",
+      "items": {
+        "$id": "SubAgentId",
+        "description": "Omega Sentinel sub-agent identifier",
+        "anyOf": [
+          {
+            "const": "CLAUSE",
+            "type": "string"
+          },
+          {
+            "const": "SIGNAL",
+            "type": "string"
+          },
+          {
+            "const": "ARGUS",
+            "type": "string"
+          },
+          {
+            "const": "NEXUS",
+            "type": "string"
+          },
+          {
+            "const": "FISCAL",
+            "type": "string"
+          },
+          {
+            "const": "PIPELINE",
+            "type": "string"
+          },
+          {
+            "const": "SYNAPSE",
+            "type": "string"
+          },
+          {
+            "const": "ENGRAM",
+            "type": "string"
+          },
+          {
+            "const": "AEGIS",
+            "type": "string"
+          },
+          {
+            "const": "CLAW",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "threshold": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Required approval ratio",
+      "type": "number"
+    },
+    "votes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "agent_id",
+          "vote",
+          "reason"
+        ],
+        "properties": {
+          "agent_id": {
+            "$id": "SubAgentId",
+            "description": "Omega Sentinel sub-agent identifier",
+            "anyOf": [
+              {
+                "const": "CLAUSE",
+                "type": "string"
+              },
+              {
+                "const": "SIGNAL",
+                "type": "string"
+              },
+              {
+                "const": "ARGUS",
+                "type": "string"
+              },
+              {
+                "const": "NEXUS",
+                "type": "string"
+              },
+              {
+                "const": "FISCAL",
+                "type": "string"
+              },
+              {
+                "const": "PIPELINE",
+                "type": "string"
+              },
+              {
+                "const": "SYNAPSE",
+                "type": "string"
+              },
+              {
+                "const": "ENGRAM",
+                "type": "string"
+              },
+              {
+                "const": "AEGIS",
+                "type": "string"
+              },
+              {
+                "const": "CLAW",
+                "type": "string"
+              }
+            ]
+          },
+          "vote": {
+            "anyOf": [
+              {
+                "const": "APPROVE",
+                "type": "string"
+              },
+              {
+                "const": "REJECT",
+                "type": "string"
+              },
+              {
+                "const": "ABSTAIN",
+                "type": "string"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "result": {
+      "anyOf": [
+        {
+          "const": "APPROVED",
+          "type": "string"
+        },
+        {
+          "const": "REJECTED",
+          "type": "string"
+        },
+        {
+          "const": "PENDING",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

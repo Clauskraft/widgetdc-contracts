@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "required": [
+    "rule",
+    "entity",
+    "message",
+    "severity",
+    "auto_fixable"
+  ],
+  "properties": {
+    "rule": {
+      "type": "string"
+    },
+    "entity": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "severity": {
+      "$id": "ThreatLevel",
+      "description": "Omega Sentinel threat severity level",
+      "anyOf": [
+        {
+          "const": "P0",
+          "type": "string"
+        },
+        {
+          "const": "P1",
+          "type": "string"
+        },
+        {
+          "const": "P2",
+          "type": "string"
+        },
+        {
+          "const": "P3",
+          "type": "string"
+        },
+        {
+          "const": "GREEN",
+          "type": "string"
+        }
+      ]
+    },
+    "auto_fixable": {
+      "type": "boolean"
+    }
+  },
+  "$id": "ComplianceViolation"
+}

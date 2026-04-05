@@ -1,0 +1,42 @@
+{
+  "$id": "DeepLinkBlock",
+  "description": "Deep link to Obsidian or Open WebUI",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "target",
+    "uri",
+    "label"
+  ],
+  "properties": {
+    "type": {
+      "const": "deep_link",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "target": {
+      "anyOf": [
+        {
+          "const": "obsidian",
+          "type": "string"
+        },
+        {
+          "const": "open-webui",
+          "type": "string"
+        }
+      ]
+    },
+    "uri": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    }
+  }
+}

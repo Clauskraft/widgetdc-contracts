@@ -1,0 +1,22 @@
+{
+  "$id": "PheromoneType",
+  "description": "Pheromone signal type for stigmergic communication",
+  "anyOf": [
+    {
+      "const": "INTEL",
+      "type": "string"
+    },
+    {
+      "const": "ALERT",
+      "type": "string"
+    },
+    {
+      "const": "STATUS",
+      "type": "string"
+    },
+    {
+      "const": "REQUEST",
+      "type": "string"
+    }
+  ]
+}

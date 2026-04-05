@@ -1,0 +1,23 @@
+{
+  "$id": "GraphRefs",
+  "description": "Neo4j graph node and domain references",
+  "type": "object",
+  "required": [
+    "node_ids",
+    "domains"
+  ],
+  "properties": {
+    "node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

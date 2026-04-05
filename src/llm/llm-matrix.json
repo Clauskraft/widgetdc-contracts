@@ -174,11 +174,11 @@
   "tasks": {
     "attestation": {
       "description": "Validate tool output as structured JSON {valid, confidence, issues[]}. Must return parseable JSON reliably.",
-      "chain": ["qwen-plus", "deepseek-chat", "gemini-2.0-flash"],
+      "chain": ["qwen-plus", "deepseek-chat", "gpt-4o-mini"],
       "override_env": "ATTESTATION_MODEL",
       "disable_env": "ATTESTATION_DISABLED",
       "default_disabled": true,
-      "rationale": "Mercury's diffusion architecture exhausts reasoning token budget on structured JSON output, producing empty/malformed responses and high-confidence false positives. Qwen-plus verified better in session 2026-04-05. Defaults to disabled until consumers migrate and a model is verified for this task."
+      "rationale": "Mercury's diffusion architecture exhausts reasoning token budget on structured JSON output, producing empty/malformed responses and high-confidence false positives. Qwen-plus verified better in session 2026-04-05. Defaults to disabled until consumers migrate and a model is verified for this task. Note: All models in chain must be openai_compatible=true for callModelFromMatrix to work."
     },
     "extraction_short": {
       "description": "Short-prompt entity/field extraction (prompt < 500 tokens). Speed matters, quality is acceptable with short outputs.",
