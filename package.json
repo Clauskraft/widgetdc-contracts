@@ -1,6 +1,6 @@
 {
   "name": "@widgetdc/contracts",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Shared type contracts for the WidgeTDC platform — single source of truth across backend, RLM engine, and frontend",
   "type": "module",
   "main": "./dist/index.js",
@@ -50,6 +50,12 @@
       "types": "./dist/adoption/index.d.ts",
       "import": "./dist/adoption/index.js"
     },
+    "./llm": {
+      "types": "./dist/llm/index.d.ts",
+      "import": "./dist/llm/index.js"
+    },
+    "./llm/llm-matrix.json": "./dist/llm/llm-matrix.json",
+    "./llm/llm_matrix.py": "./src/llm/llm_matrix.py",
     "./schemas/*": "./schemas/*"
   },
   "files": [
@@ -58,7 +64,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-llm-assets.mjs",
     "schemas": "tsx scripts/export-schemas.ts",
     "python": "tsx scripts/generate-python.ts",
     "generate": "npm run build && npm run schemas",

@@ -1,0 +1,277 @@
+{
+  "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
+  "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
+  "version": "1.0.0",
+  "updated_at": "2026-04-05",
+  "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
+
+  "providers": {
+    "qwen": {
+      "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "auth_env": "DASHSCOPE_API_KEY",
+      "openai_compatible": true,
+      "daily_request_cap": 1000
+    },
+    "deepseek": {
+      "base_url": "https://api.deepseek.com/v1",
+      "auth_env": "DEEPSEEK_API_KEY",
+      "openai_compatible": true
+    },
+    "gemini": {
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "auth_env": "GEMINI_API_KEY",
+      "openai_compatible": false
+    },
+    "openai": {
+      "base_url": "https://api.openai.com/v1",
+      "auth_env": "OPENAI_API_KEY",
+      "openai_compatible": true
+    },
+    "anthropic": {
+      "base_url": "https://api.anthropic.com/v1",
+      "auth_env": "ANTHROPIC_API_KEY",
+      "openai_compatible": false
+    },
+    "inception": {
+      "base_url": "https://api.inceptionlabs.ai/v1",
+      "auth_env": "INCEPTION_API_KEY",
+      "openai_compatible": true
+    },
+    "groq": {
+      "base_url": "https://api.groq.com/openai/v1",
+      "auth_env": "GROQ_API_KEY",
+      "openai_compatible": true
+    },
+    "local": {
+      "base_url": "local",
+      "auth_env": null,
+      "openai_compatible": false
+    }
+  },
+
+  "models": {
+    "qwen-plus": {
+      "provider": "qwen",
+      "context_window": 128000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.0,
+      "cost_per_1k_output_usd": 0.0,
+      "avg_latency_ms": 800,
+      "strengths": ["structured_json", "classification", "chat", "code"],
+      "weaknesses": []
+    },
+    "deepseek-chat": {
+      "provider": "deepseek",
+      "context_window": 64000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.00014,
+      "cost_per_1k_output_usd": 0.00028,
+      "avg_latency_ms": 1200,
+      "strengths": ["chat", "code", "structured_json", "planning"],
+      "weaknesses": ["multimodal"]
+    },
+    "deepseek-reasoner": {
+      "provider": "deepseek",
+      "context_window": 64000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.00055,
+      "cost_per_1k_output_usd": 0.00219,
+      "avg_latency_ms": 3000,
+      "strengths": ["reasoning", "planning", "math"],
+      "weaknesses": ["latency", "multimodal"]
+    },
+    "deepseek-coder": {
+      "provider": "deepseek",
+      "context_window": 128000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.00014,
+      "cost_per_1k_output_usd": 0.00028,
+      "avg_latency_ms": 1200,
+      "strengths": ["code_generation", "code_review", "refactoring"],
+      "weaknesses": ["multimodal"]
+    },
+    "gemini-2.0-flash": {
+      "provider": "gemini",
+      "context_window": 1048576,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.000125,
+      "cost_per_1k_output_usd": 0.000375,
+      "avg_latency_ms": 600,
+      "strengths": ["multimodal", "large_context", "ner", "speed"],
+      "weaknesses": []
+    },
+    "gpt-4o": {
+      "provider": "openai",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "cost_per_1k_input_usd": 0.0025,
+      "cost_per_1k_output_usd": 0.01,
+      "avg_latency_ms": 900,
+      "strengths": ["reasoning", "multimodal", "planning", "structured_json"],
+      "weaknesses": ["cost"]
+    },
+    "gpt-4o-mini": {
+      "provider": "openai",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "cost_per_1k_input_usd": 0.00015,
+      "cost_per_1k_output_usd": 0.0006,
+      "avg_latency_ms": 700,
+      "strengths": ["chat", "classification", "cost_efficiency"],
+      "weaknesses": []
+    },
+    "claude-sonnet-4-20250514": {
+      "provider": "anthropic",
+      "context_window": 200000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.003,
+      "cost_per_1k_output_usd": 0.015,
+      "avg_latency_ms": 1100,
+      "strengths": ["planning", "reasoning", "code_generation", "long_context"],
+      "weaknesses": ["cost"]
+    },
+    "claude-haiku-4-5-20251001": {
+      "provider": "anthropic",
+      "context_window": 200000,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.0008,
+      "cost_per_1k_output_usd": 0.004,
+      "avg_latency_ms": 600,
+      "strengths": ["chat", "classification", "fold"],
+      "weaknesses": []
+    },
+    "mercury-2": {
+      "provider": "inception",
+      "context_window": 128000,
+      "max_output_tokens": 50000,
+      "cost_per_1k_input_usd": 0.00025,
+      "cost_per_1k_output_usd": 0.00075,
+      "avg_latency_ms": 100,
+      "throughput_tokens_per_sec": 1000,
+      "strengths": ["speed", "short_extraction", "fold", "classification"],
+      "weaknesses": ["structured_json_extraction", "long_prompts", "reasoning_token_budget"]
+    },
+    "text-embedding-004": {
+      "provider": "gemini",
+      "embedding_dims": 768,
+      "cost_per_1k_input_usd": 0.0,
+      "avg_latency_ms": 200
+    },
+    "text-embedding-3-small": {
+      "provider": "openai",
+      "embedding_dims": 1536,
+      "cost_per_1k_input_usd": 0.00002,
+      "avg_latency_ms": 200
+    },
+    "all-MiniLM-L6-v2": {
+      "provider": "local",
+      "embedding_dims": 384,
+      "cost_per_1k_input_usd": 0.0,
+      "avg_latency_ms": 50
+    }
+  },
+
+  "tasks": {
+    "attestation": {
+      "description": "Validate tool output as structured JSON {valid, confidence, issues[]}. Must return parseable JSON reliably.",
+      "chain": ["qwen-plus", "deepseek-chat", "gemini-2.0-flash"],
+      "override_env": "ATTESTATION_MODEL",
+      "disable_env": "ATTESTATION_DISABLED",
+      "default_disabled": true,
+      "rationale": "Mercury's diffusion architecture exhausts reasoning token budget on structured JSON output, producing empty/malformed responses and high-confidence false positives. Qwen-plus verified better in session 2026-04-05. Defaults to disabled until consumers migrate and a model is verified for this task."
+    },
+    "extraction_short": {
+      "description": "Short-prompt entity/field extraction (prompt < 500 tokens). Speed matters, quality is acceptable with short outputs.",
+      "chain": ["mercury-2", "qwen-plus", "deepseek-chat"],
+      "override_env": "EXTRACTION_SHORT_MODEL",
+      "disable_env": null,
+      "default_disabled": false,
+      "rationale": "Mercury excels at short prompts where the reasoning budget isn't exhausted. Documented in feedback_llm_routing.md — keep prompts SHORT and direct for Mercury."
+    },
+    "extraction_long": {
+      "description": "Long-prompt entity extraction with detailed rules or many fields. Mercury unsafe here.",
+      "chain": ["deepseek-chat", "qwen-plus", "gpt-4o-mini"],
+      "override_env": "EXTRACTION_LONG_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "classification": {
+      "description": "Short-label classification (sentiment, intent, category).",
+      "chain": ["mercury-2", "gemini-2.0-flash", "qwen-plus"],
+      "override_env": "CLASSIFICATION_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "fold_context": {
+      "description": "Context folding / compression — reduce large context to fit downstream token budget.",
+      "chain": ["mercury-2", "claude-haiku-4-5-20251001", "deepseek-chat"],
+      "override_env": "FOLD_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "chat_standard": {
+      "description": "Standard chat / conversational responses. Balance cost and quality.",
+      "chain": ["deepseek-chat", "qwen-plus", "gemini-2.0-flash"],
+      "override_env": "CHAT_STANDARD_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "chat_premium": {
+      "description": "Premium chat — highest-quality conversational output for critical user interactions.",
+      "chain": ["claude-sonnet-4-20250514", "gpt-4o", "deepseek-reasoner"],
+      "override_env": "CHAT_PREMIUM_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "code_generation": {
+      "description": "Generate code from natural language or spec.",
+      "chain": ["deepseek-coder", "claude-sonnet-4-20250514", "gpt-4o"],
+      "override_env": "CODE_GEN_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "planning": {
+      "description": "Task decomposition, multi-step planning, architecture design.",
+      "chain": ["claude-sonnet-4-20250514", "deepseek-reasoner", "gpt-4o"],
+      "override_env": "PLANNING_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "reasoning_deep": {
+      "description": "Deep reasoning over complex problems. Latency acceptable.",
+      "chain": ["deepseek-reasoner", "claude-sonnet-4-20250514", "gpt-4o"],
+      "override_env": "REASONING_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "multimodal": {
+      "description": "Image / document / vision input. Requires multimodal-capable provider.",
+      "chain": ["gemini-2.0-flash", "gpt-4o"],
+      "override_env": "MULTIMODAL_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "ner": {
+      "description": "Named entity recognition over domain text.",
+      "chain": ["gemini-2.0-flash", "qwen-plus", "deepseek-chat"],
+      "override_env": "NER_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "self_healing": {
+      "description": "Auto-repair of broken code / failed tests / runtime errors.",
+      "chain": ["deepseek-coder", "claude-sonnet-4-20250514", "gpt-4o"],
+      "override_env": "SELF_HEALING_MODEL",
+      "disable_env": null,
+      "default_disabled": false
+    },
+    "embedding_text": {
+      "description": "Generate text embeddings for semantic search / RAG.",
+      "chain": ["text-embedding-004", "text-embedding-3-small", "all-MiniLM-L6-v2"],
+      "override_env": "EMBEDDING_MODEL",
+      "disable_env": null,
+      "default_disabled": false,
+      "rationale": "Embedding dims MUST match consumer index. NEXUS graph = 384D (all-MiniLM-L6-v2), Non-NEXUS = 1536D (text-embedding-3-small). NEVER mix dimensions within one index."
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://widgetdc.com/schemas/llm-matrix.schema.json",
+  "title": "WidgeTDC LLM Matrix",
+  "description": "Canonical task-to-model routing matrix for all WidgeTDC services. Single source of truth — all LLM calls resolve through this matrix. See src/llm/LlmMatrix.ts and src/llm/llm_matrix.py for loaders.",
+  "type": "object",
+  "required": ["$id", "version", "updated_at", "providers", "models", "tasks"],
+  "additionalProperties": false,
+  "properties": {
+    "$id": { "type": "string", "format": "uri" },
+    "$schema": { "type": "string", "format": "uri" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "updated_at": { "type": "string", "format": "date" },
+    "description": { "type": "string" },
+    "providers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["base_url", "auth_env", "openai_compatible"],
+        "additionalProperties": false,
+        "properties": {
+          "base_url": { "type": "string" },
+          "auth_env": { "type": ["string", "null"] },
+          "openai_compatible": { "type": "boolean" },
+          "daily_request_cap": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["provider", "cost_per_1k_input_usd", "avg_latency_ms"],
+        "additionalProperties": false,
+        "properties": {
+          "provider": { "type": "string" },
+          "context_window": { "type": "integer", "minimum": 1 },
+          "max_output_tokens": { "type": "integer", "minimum": 1 },
+          "embedding_dims": { "type": "integer", "minimum": 1 },
+          "cost_per_1k_input_usd": { "type": "number", "minimum": 0 },
+          "cost_per_1k_output_usd": { "type": "number", "minimum": 0 },
+          "avg_latency_ms": { "type": "integer", "minimum": 0 },
+          "throughput_tokens_per_sec": { "type": "integer", "minimum": 1 },
+          "strengths": { "type": "array", "items": { "type": "string" } },
+          "weaknesses": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "tasks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["description", "chain", "override_env", "disable_env", "default_disabled"],
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string" },
+          "chain": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "override_env": { "type": ["string", "null"] },
+          "disable_env": { "type": ["string", "null"] },
+          "default_disabled": { "type": "boolean" },
+          "rationale": { "type": "string" }
+        }
+      }
+    }
+  }
+}

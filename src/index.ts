@@ -13,6 +13,7 @@
  *   import { NodeLabel } from '@widgetdc/contracts/graph'
  *   import { AgentHandshake } from '@widgetdc/contracts/orchestrator'
  *   import { SalienceVector } from '@widgetdc/contracts/opportunities'
+ *   import { LlmMatrix, TaskType } from '@widgetdc/contracts/llm'
  */
 
 export * from './cognitive/index.js'
@@ -26,3 +27,4 @@ export * from './opportunities/index.js'
 export * from './mcp/index.js'
 export * from './normalization/index.js'
 export * from './adoption/index.js'
+export * from './llm/index.js'
