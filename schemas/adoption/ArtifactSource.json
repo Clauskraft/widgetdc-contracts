@@ -1,0 +1,18 @@
+{
+  "$id": "ArtifactSource",
+  "description": "System that created the artifact",
+  "anyOf": [
+    {
+      "const": "open-webui",
+      "type": "string"
+    },
+    {
+      "const": "obsidian",
+      "type": "string"
+    },
+    {
+      "const": "orchestrator",
+      "type": "string"
+    }
+  ]
+}

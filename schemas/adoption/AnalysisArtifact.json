@@ -1,0 +1,386 @@
+{
+  "$id": "AnalysisArtifact",
+  "description": "WidgeTDC Analysis Document (WAD) — portable analysis artifact",
+  "type": "object",
+  "required": [
+    "$id",
+    "$schema",
+    "title",
+    "source",
+    "created_at",
+    "updated_at",
+    "created_by",
+    "blocks",
+    "tags",
+    "status"
+  ],
+  "properties": {
+    "$id": {
+      "description": "widgetdc:artifact:{uuid}",
+      "type": "string"
+    },
+    "$schema": {
+      "const": "widgetdc:analysis:v1",
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "source": {
+      "$id": "ArtifactSource",
+      "description": "System that created the artifact",
+      "anyOf": [
+        {
+          "const": "open-webui",
+          "type": "string"
+        },
+        {
+          "const": "obsidian",
+          "type": "string"
+        },
+        {
+          "const": "orchestrator",
+          "type": "string"
+        }
+      ]
+    },
+    "created_at": {
+      "format": "date-time",
+      "description": "ISO 8601 timestamp",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "description": "ISO 8601 timestamp",
+      "type": "string"
+    },
+    "created_by": {
+      "description": "Agent or user ID",
+      "type": "string"
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "$id": "AnalysisBlock",
+        "description": "Analysis content block (discriminated on type)",
+        "anyOf": [
+          {
+            "$id": "TextBlock",
+            "description": "Plain text content block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "content"
+            ],
+            "properties": {
+              "type": {
+                "const": "text",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "$id": "TableBlock",
+            "description": "Tabular data block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "headers",
+              "rows"
+            ],
+            "properties": {
+              "type": {
+                "const": "table",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "$id": "ChartBlock",
+            "description": "Chart visualization block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "chart_type",
+              "data"
+            ],
+            "properties": {
+              "type": {
+                "const": "chart",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "chart_type": {
+                "anyOf": [
+                  {
+                    "const": "bar",
+                    "type": "string"
+                  },
+                  {
+                    "const": "line",
+                    "type": "string"
+                  },
+                  {
+                    "const": "radar",
+                    "type": "string"
+                  },
+                  {
+                    "const": "sankey",
+                    "type": "string"
+                  }
+                ]
+              },
+              "data": {
+                "additionalProperties": true,
+                "type": "object",
+                "properties": {}
+              },
+              "config": {
+                "additionalProperties": true,
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          {
+            "$id": "CypherBlock",
+            "description": "Neo4j Cypher query block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "query"
+            ],
+            "properties": {
+              "type": {
+                "const": "cypher",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "cached_result": {
+                "additionalProperties": true,
+                "type": "object",
+                "properties": {}
+              }
+            }
+          },
+          {
+            "$id": "MermaidBlock",
+            "description": "Mermaid diagram source block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "source"
+            ],
+            "properties": {
+              "type": {
+                "const": "mermaid",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "$id": "KpiCardBlock",
+            "description": "Key performance indicator card block",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "label",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "const": "kpi_card",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "unit": {
+                "type": "string"
+              },
+              "trend": {
+                "anyOf": [
+                  {
+                    "const": "up",
+                    "type": "string"
+                  },
+                  {
+                    "const": "down",
+                    "type": "string"
+                  },
+                  {
+                    "const": "flat",
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "$id": "DeepLinkBlock",
+            "description": "Deep link to Obsidian or Open WebUI",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "target",
+              "uri",
+              "label"
+            ],
+            "properties": {
+              "type": {
+                "const": "deep_link",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "target": {
+                "anyOf": [
+                  {
+                    "const": "obsidian",
+                    "type": "string"
+                  },
+                  {
+                    "const": "open-webui",
+                    "type": "string"
+                  }
+                ]
+              },
+              "uri": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "graph_refs": {
+      "$id": "GraphRefs",
+      "description": "Neo4j graph node and domain references",
+      "type": "object",
+      "required": [
+        "node_ids",
+        "domains"
+      ],
+      "properties": {
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "$id": "ArtifactStatus",
+      "description": "Artifact lifecycle status",
+      "anyOf": [
+        {
+          "const": "draft",
+          "type": "string"
+        },
+        {
+          "const": "published",
+          "type": "string"
+        },
+        {
+          "const": "archived",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$id": "CircuitState",
+  "description": "Circuit breaker state",
+  "anyOf": [
+    {
+      "const": "CLOSED",
+      "type": "string"
+    },
+    {
+      "const": "OPEN",
+      "type": "string"
+    },
+    {
+      "const": "HALF_OPEN",
+      "type": "string"
+    }
+  ]
+}

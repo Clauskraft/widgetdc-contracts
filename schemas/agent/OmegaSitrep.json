@@ -1,0 +1,332 @@
+{
+  "$id": "OmegaSitrep",
+  "description": "Full Omega Sentinel situation report",
+  "type": "object",
+  "required": [
+    "threat_level",
+    "sub_agents",
+    "active_alarms",
+    "pheromone_board",
+    "generated_at"
+  ],
+  "properties": {
+    "threat_level": {
+      "$id": "ThreatLevel",
+      "description": "Omega Sentinel threat severity level",
+      "anyOf": [
+        {
+          "const": "P0",
+          "type": "string"
+        },
+        {
+          "const": "P1",
+          "type": "string"
+        },
+        {
+          "const": "P2",
+          "type": "string"
+        },
+        {
+          "const": "P3",
+          "type": "string"
+        },
+        {
+          "const": "GREEN",
+          "type": "string"
+        }
+      ]
+    },
+    "sub_agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "agent_id",
+          "name",
+          "domain",
+          "circuit_state",
+          "failure_count"
+        ],
+        "properties": {
+          "agent_id": {
+            "$id": "SubAgentId",
+            "description": "Omega Sentinel sub-agent identifier",
+            "anyOf": [
+              {
+                "const": "CLAUSE",
+                "type": "string"
+              },
+              {
+                "const": "SIGNAL",
+                "type": "string"
+              },
+              {
+                "const": "ARGUS",
+                "type": "string"
+              },
+              {
+                "const": "NEXUS",
+                "type": "string"
+              },
+              {
+                "const": "FISCAL",
+                "type": "string"
+              },
+              {
+                "const": "PIPELINE",
+                "type": "string"
+              },
+              {
+                "const": "SYNAPSE",
+                "type": "string"
+              },
+              {
+                "const": "ENGRAM",
+                "type": "string"
+              },
+              {
+                "const": "AEGIS",
+                "type": "string"
+              },
+              {
+                "const": "CLAW",
+                "type": "string"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "circuit_state": {
+            "$id": "CircuitState",
+            "description": "Circuit breaker state",
+            "anyOf": [
+              {
+                "const": "CLOSED",
+                "type": "string"
+              },
+              {
+                "const": "OPEN",
+                "type": "string"
+              },
+              {
+                "const": "HALF_OPEN",
+                "type": "string"
+              }
+            ]
+          },
+          "last_success": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failure_count": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "active_alarms": {
+      "type": "number"
+    },
+    "pheromone_board": {
+      "type": "array",
+      "items": {
+        "$id": "PheromoneSignal",
+        "description": "Stigmergic signal on the Omega blackboard",
+        "type": "object",
+        "required": [
+          "id",
+          "agent_id",
+          "type",
+          "domain",
+          "content",
+          "intensity",
+          "ttl_hours",
+          "deposited_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "$id": "SubAgentId",
+                "description": "Omega Sentinel sub-agent identifier",
+                "anyOf": [
+                  {
+                    "const": "CLAUSE",
+                    "type": "string"
+                  },
+                  {
+                    "const": "SIGNAL",
+                    "type": "string"
+                  },
+                  {
+                    "const": "ARGUS",
+                    "type": "string"
+                  },
+                  {
+                    "const": "NEXUS",
+                    "type": "string"
+                  },
+                  {
+                    "const": "FISCAL",
+                    "type": "string"
+                  },
+                  {
+                    "const": "PIPELINE",
+                    "type": "string"
+                  },
+                  {
+                    "const": "SYNAPSE",
+                    "type": "string"
+                  },
+                  {
+                    "const": "ENGRAM",
+                    "type": "string"
+                  },
+                  {
+                    "const": "AEGIS",
+                    "type": "string"
+                  },
+                  {
+                    "const": "CLAW",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "const": "OMEGA",
+                "type": "string"
+              }
+            ]
+          },
+          "type": {
+            "$id": "PheromoneType",
+            "description": "Pheromone signal type for stigmergic communication",
+            "anyOf": [
+              {
+                "const": "INTEL",
+                "type": "string"
+              },
+              {
+                "const": "ALERT",
+                "type": "string"
+              },
+              {
+                "const": "STATUS",
+                "type": "string"
+              },
+              {
+                "const": "REQUEST",
+                "type": "string"
+              }
+            ]
+          },
+          "domain": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "intensity": {
+            "minimum": 0,
+            "maximum": 1,
+            "type": "number"
+          },
+          "ttl_hours": {
+            "type": "number"
+          },
+          "deposited_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "compliance_status": {
+      "$id": "ComplianceResult",
+      "description": "Omega compliance check result",
+      "type": "object",
+      "required": [
+        "compliant",
+        "violations",
+        "checked_at",
+        "rules_checked"
+      ],
+      "properties": {
+        "compliant": {
+          "type": "boolean"
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "rule",
+              "entity",
+              "message",
+              "severity",
+              "auto_fixable"
+            ],
+            "properties": {
+              "rule": {
+                "type": "string"
+              },
+              "entity": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "severity": {
+                "$id": "ThreatLevel",
+                "description": "Omega Sentinel threat severity level",
+                "anyOf": [
+                  {
+                    "const": "P0",
+                    "type": "string"
+                  },
+                  {
+                    "const": "P1",
+                    "type": "string"
+                  },
+                  {
+                    "const": "P2",
+                    "type": "string"
+                  },
+                  {
+                    "const": "P3",
+                    "type": "string"
+                  },
+                  {
+                    "const": "GREEN",
+                    "type": "string"
+                  }
+                ]
+              },
+              "auto_fixable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "checked_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "rules_checked": {
+          "type": "number"
+        }
+      }
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

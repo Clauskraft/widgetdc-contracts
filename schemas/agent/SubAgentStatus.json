@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "required": [
+    "agent_id",
+    "name",
+    "domain",
+    "circuit_state",
+    "failure_count"
+  ],
+  "properties": {
+    "agent_id": {
+      "$id": "SubAgentId",
+      "description": "Omega Sentinel sub-agent identifier",
+      "anyOf": [
+        {
+          "const": "CLAUSE",
+          "type": "string"
+        },
+        {
+          "const": "SIGNAL",
+          "type": "string"
+        },
+        {
+          "const": "ARGUS",
+          "type": "string"
+        },
+        {
+          "const": "NEXUS",
+          "type": "string"
+        },
+        {
+          "const": "FISCAL",
+          "type": "string"
+        },
+        {
+          "const": "PIPELINE",
+          "type": "string"
+        },
+        {
+          "const": "SYNAPSE",
+          "type": "string"
+        },
+        {
+          "const": "ENGRAM",
+          "type": "string"
+        },
+        {
+          "const": "AEGIS",
+          "type": "string"
+        },
+        {
+          "const": "CLAW",
+          "type": "string"
+        }
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "circuit_state": {
+      "$id": "CircuitState",
+      "description": "Circuit breaker state",
+      "anyOf": [
+        {
+          "const": "CLOSED",
+          "type": "string"
+        },
+        {
+          "const": "OPEN",
+          "type": "string"
+        },
+        {
+          "const": "HALF_OPEN",
+          "type": "string"
+        }
+      ]
+    },
+    "last_success": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "failure_count": {
+      "type": "number"
+    }
+  },
+  "$id": "SubAgentStatus"
+}

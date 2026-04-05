@@ -1,0 +1,53 @@
+{
+  "$id": "ChartBlock",
+  "description": "Chart visualization block",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "chart_type",
+    "data"
+  ],
+  "properties": {
+    "type": {
+      "const": "chart",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "chart_type": {
+      "anyOf": [
+        {
+          "const": "bar",
+          "type": "string"
+        },
+        {
+          "const": "line",
+          "type": "string"
+        },
+        {
+          "const": "radar",
+          "type": "string"
+        },
+        {
+          "const": "sankey",
+          "type": "string"
+        }
+      ]
+    },
+    "data": {
+      "additionalProperties": true,
+      "type": "object",
+      "properties": {}
+    },
+    "config": {
+      "additionalProperties": true,
+      "type": "object",
+      "properties": {}
+    }
+  }
+}

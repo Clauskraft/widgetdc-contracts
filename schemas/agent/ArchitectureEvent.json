@@ -1,0 +1,115 @@
+{
+  "$id": "ArchitectureEvent",
+  "description": "Omega Sentinel architecture event",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "severity",
+    "source",
+    "message",
+    "data",
+    "timestamp"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "severity": {
+      "$id": "ThreatLevel",
+      "description": "Omega Sentinel threat severity level",
+      "anyOf": [
+        {
+          "const": "P0",
+          "type": "string"
+        },
+        {
+          "const": "P1",
+          "type": "string"
+        },
+        {
+          "const": "P2",
+          "type": "string"
+        },
+        {
+          "const": "P3",
+          "type": "string"
+        },
+        {
+          "const": "GREEN",
+          "type": "string"
+        }
+      ]
+    },
+    "source": {
+      "anyOf": [
+        {
+          "$id": "SubAgentId",
+          "description": "Omega Sentinel sub-agent identifier",
+          "anyOf": [
+            {
+              "const": "CLAUSE",
+              "type": "string"
+            },
+            {
+              "const": "SIGNAL",
+              "type": "string"
+            },
+            {
+              "const": "ARGUS",
+              "type": "string"
+            },
+            {
+              "const": "NEXUS",
+              "type": "string"
+            },
+            {
+              "const": "FISCAL",
+              "type": "string"
+            },
+            {
+              "const": "PIPELINE",
+              "type": "string"
+            },
+            {
+              "const": "SYNAPSE",
+              "type": "string"
+            },
+            {
+              "const": "ENGRAM",
+              "type": "string"
+            },
+            {
+              "const": "AEGIS",
+              "type": "string"
+            },
+            {
+              "const": "CLAW",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "const": "OMEGA",
+          "type": "string"
+        }
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "timestamp": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

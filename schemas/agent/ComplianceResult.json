@@ -1,0 +1,76 @@
+{
+  "$id": "ComplianceResult",
+  "description": "Omega compliance check result",
+  "type": "object",
+  "required": [
+    "compliant",
+    "violations",
+    "checked_at",
+    "rules_checked"
+  ],
+  "properties": {
+    "compliant": {
+      "type": "boolean"
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "rule",
+          "entity",
+          "message",
+          "severity",
+          "auto_fixable"
+        ],
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "severity": {
+            "$id": "ThreatLevel",
+            "description": "Omega Sentinel threat severity level",
+            "anyOf": [
+              {
+                "const": "P0",
+                "type": "string"
+              },
+              {
+                "const": "P1",
+                "type": "string"
+              },
+              {
+                "const": "P2",
+                "type": "string"
+              },
+              {
+                "const": "P3",
+                "type": "string"
+              },
+              {
+                "const": "GREEN",
+                "type": "string"
+              }
+            ]
+          },
+          "auto_fixable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "checked_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "rules_checked": {
+      "type": "number"
+    }
+  }
+}

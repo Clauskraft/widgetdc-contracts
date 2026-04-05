@@ -1,0 +1,18 @@
+{
+  "$id": "ArtifactStatus",
+  "description": "Artifact lifecycle status",
+  "anyOf": [
+    {
+      "const": "draft",
+      "type": "string"
+    },
+    {
+      "const": "published",
+      "type": "string"
+    },
+    {
+      "const": "archived",
+      "type": "string"
+    }
+  ]
+}

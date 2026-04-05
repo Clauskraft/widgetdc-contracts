@@ -1,0 +1,25 @@
+{
+  "$id": "MermaidBlock",
+  "description": "Mermaid diagram source block",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "source"
+  ],
+  "properties": {
+    "type": {
+      "const": "mermaid",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    }
+  }
+}

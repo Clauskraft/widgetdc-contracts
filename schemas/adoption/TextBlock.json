@@ -1,0 +1,25 @@
+{
+  "$id": "TextBlock",
+  "description": "Plain text content block",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "content"
+  ],
+  "properties": {
+    "type": {
+      "const": "text",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    }
+  }
+}

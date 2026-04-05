@@ -1,0 +1,55 @@
+{
+  "$id": "KpiCardBlock",
+  "description": "Key performance indicator card block",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "label",
+    "value"
+  ],
+  "properties": {
+    "type": {
+      "const": "kpi_card",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "unit": {
+      "type": "string"
+    },
+    "trend": {
+      "anyOf": [
+        {
+          "const": "up",
+          "type": "string"
+        },
+        {
+          "const": "down",
+          "type": "string"
+        },
+        {
+          "const": "flat",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

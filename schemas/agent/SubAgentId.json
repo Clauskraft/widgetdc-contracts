@@ -1,0 +1,46 @@
+{
+  "$id": "SubAgentId",
+  "description": "Omega Sentinel sub-agent identifier",
+  "anyOf": [
+    {
+      "const": "CLAUSE",
+      "type": "string"
+    },
+    {
+      "const": "SIGNAL",
+      "type": "string"
+    },
+    {
+      "const": "ARGUS",
+      "type": "string"
+    },
+    {
+      "const": "NEXUS",
+      "type": "string"
+    },
+    {
+      "const": "FISCAL",
+      "type": "string"
+    },
+    {
+      "const": "PIPELINE",
+      "type": "string"
+    },
+    {
+      "const": "SYNAPSE",
+      "type": "string"
+    },
+    {
+      "const": "ENGRAM",
+      "type": "string"
+    },
+    {
+      "const": "AEGIS",
+      "type": "string"
+    },
+    {
+      "const": "CLAW",
+      "type": "string"
+    }
+  ]
+}
