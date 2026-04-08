@@ -2,7 +2,7 @@
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
   "version": "1.0.0",
-  "updated_at": "2026-04-05",
+  "updated_at": "2026-04-09",
   "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
@@ -120,15 +120,15 @@
       "strengths": ["chat", "classification", "cost_efficiency"],
       "weaknesses": []
     },
-    "claude-sonnet-4-20250514": {
-      "provider": "anthropic",
-      "context_window": 200000,
-      "max_output_tokens": 8192,
-      "cost_per_1k_input_usd": 0.003,
-      "cost_per_1k_output_usd": 0.015,
-      "avg_latency_ms": 1100,
-      "strengths": ["planning", "reasoning", "code_generation", "long_context"],
-      "weaknesses": ["cost"]
+    "qwen3-235b-a22b": {
+      "provider": "qwen",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "cost_per_1k_input_usd": 0.0,
+      "cost_per_1k_output_usd": 0.0,
+      "avg_latency_ms": 900,
+      "strengths": ["planning", "reasoning", "code_generation", "long_context", "multilingual"],
+      "weaknesses": []
     },
     "claude-haiku-4-5-20251001": {
       "provider": "anthropic",
@@ -218,28 +218,28 @@
     },
     "chat_premium": {
       "description": "Premium chat — highest-quality conversational output for critical user interactions.",
-      "chain": ["claude-sonnet-4-20250514", "gpt-4o", "deepseek-reasoner"],
+      "chain": ["qwen3-235b-a22b", "gpt-4o", "deepseek-reasoner"],
       "override_env": "CHAT_PREMIUM_MODEL",
       "disable_env": null,
       "default_disabled": false
     },
     "code_generation": {
       "description": "Generate code from natural language or spec.",
-      "chain": ["deepseek-coder", "claude-sonnet-4-20250514", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen3-235b-a22b", "gpt-4o"],
       "override_env": "CODE_GEN_MODEL",
       "disable_env": null,
       "default_disabled": false
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
-      "chain": ["claude-sonnet-4-20250514", "deepseek-reasoner", "gpt-4o"],
+      "chain": ["qwen3-235b-a22b", "deepseek-reasoner", "gpt-4o"],
       "override_env": "PLANNING_MODEL",
       "disable_env": null,
       "default_disabled": false
     },
     "reasoning_deep": {
       "description": "Deep reasoning over complex problems. Latency acceptable.",
-      "chain": ["deepseek-reasoner", "claude-sonnet-4-20250514", "gpt-4o"],
+      "chain": ["deepseek-reasoner", "qwen3-235b-a22b", "gpt-4o"],
       "override_env": "REASONING_MODEL",
       "disable_env": null,
       "default_disabled": false
@@ -260,7 +260,7 @@
     },
     "self_healing": {
       "description": "Auto-repair of broken code / failed tests / runtime errors.",
-      "chain": ["deepseek-coder", "claude-sonnet-4-20250514", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen3-235b-a22b", "gpt-4o"],
       "override_env": "SELF_HEALING_MODEL",
       "disable_env": null,
       "default_disabled": false
