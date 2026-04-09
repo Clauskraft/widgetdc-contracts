@@ -1,9 +1,9 @@
 {
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "updated_at": "2026-04-09",
-  "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation. v1.1.0: DeepSeek-first policy for agentic tasks (planning, fold_context) per operator order.",
+  "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
     "qwen": {
@@ -204,11 +204,11 @@
     },
     "fold_context": {
       "description": "Context folding / compression — reduce large context to fit downstream token budget.",
-      "chain": ["deepseek-chat", "gemini-2.0-flash", "qwen-plus"],
+      "chain": ["gemini-2.0-flash", "deepseek-chat", "qwen-plus"],
       "override_env": "FOLD_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "DeepSeek-chat promoted to #1 per operator order 2026-04-09: DeepSeek must run agentic tasks. Gemini retained as #2 for large-context fallback (1M window). deepseek-chat 64K context sufficient for most folding jobs."
+      "rationale": "Mercury-2 was never wired to LLM folding (only local compressors used). Gemini-2.0-flash tested 2026-04-09 — 1M context window ideal for large context compression, fast (600ms avg), multimodal strength aligns with polyglot input. Haiku removed: chain now tests real LLM summarization path."
     },
     "chat_standard": {
       "description": "Standard chat / conversational responses. Balance cost and quality.",
@@ -219,11 +219,10 @@
     },
     "chat_premium": {
       "description": "Premium chat — highest-quality conversational output for critical user interactions.",
-      "chain": ["deepseek-reasoner", "qwen3-235b-a22b", "gpt-4o"],
+      "chain": ["qwen3-235b-a22b", "gpt-4o", "deepseek-reasoner"],
       "override_env": "CHAT_PREMIUM_MODEL",
       "disable_env": null,
-      "default_disabled": false,
-      "rationale": "DeepSeek-reasoner promoted to #1 per operator order 2026-04-09. Extended reasoning chain ideal for premium interactions requiring depth. qwen3-235b retained as fallback for multilingual/long-context."
+      "default_disabled": false
     },
     "code_generation": {
       "description": "Generate code from natural language or spec.",
@@ -234,11 +233,10 @@
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
-      "chain": ["deepseek-reasoner", "qwen3-235b-a22b", "gpt-4o"],
+      "chain": ["qwen3-235b-a22b", "deepseek-reasoner", "gpt-4o"],
       "override_env": "PLANNING_MODEL",
       "disable_env": null,
-      "default_disabled": false,
-      "rationale": "DeepSeek-reasoner promoted to #1 per operator order 2026-04-09: DeepSeek must run agentic tasks. deepseek-reasoner best fits planning (extended reasoning, multi-step decomposition). qwen3-235b retained as fallback."
+      "default_disabled": false
     },
     "reasoning_deep": {
       "description": "Deep reasoning over complex problems. Latency acceptable.",
