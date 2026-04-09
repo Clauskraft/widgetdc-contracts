@@ -71,6 +71,13 @@ ls schemas/cognitive/
 
 All contracts use **snake_case** JSON on the wire, matching the existing RLM Engine production API.
 
+**Full wire format rules**: [`WIRE_FORMAT.md`](./WIRE_FORMAT.md) — includes `$id` requirements, snake_case enforcement, version pinning rules, and violation codes.
+
+Key rules at a glance:
+- All payloads crossing service boundaries **MUST** include `$id`
+- Property names **MUST** use `snake_case` (never camelCase)
+- See `ARCHITECTURE.md Section 9` in the WidgeTDC monorepo for architecture reference
+
 ## Development
 
 ```bash
