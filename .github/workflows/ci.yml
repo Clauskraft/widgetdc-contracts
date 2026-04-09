@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Typecheck, Test & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: npm ci
+
+      - name: Install Python code generation dependency
+        run: python -m pip install datamodel-code-generator
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build + schema sync check
+        run: |
+          npm run build
+          npm run validate
+
+  version-tag-alignment:
+    name: Version tag alignment (BLOCKS deploy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify package.json version matches HEAD git tag
+        run: |
+          PKG_VERSION=$(node --input-type=module -e "
+            import { readFileSync } from 'fs';
+            const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+            process.stdout.write(pkg.version);
+          ")
+          echo "package.json version: v${PKG_VERSION}"
+
+          # Get the highest vX.Y.Z tag on HEAD commit
+          HEAD_TAGS=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          if [ -z "$HEAD_TAGS" ]; then
+            echo "::warning::No version tag on HEAD — package.json version v${PKG_VERSION} cannot be verified against a tag"
+            echo "This is expected on development PRs. Tag HEAD with v${PKG_VERSION} before releasing."
+          elif [ "$HEAD_TAGS" = "v${PKG_VERSION}" ]; then
+            echo "OK: package.json v${PKG_VERSION} matches HEAD tag ${HEAD_TAGS}"
+          else
+            echo "::error::VERSION MISMATCH: package.json says v${PKG_VERSION} but HEAD git tag is ${HEAD_TAGS}"
+            echo "::error::Fix: update package.json version to match the latest tag, or re-tag HEAD."
+            exit 1
+          fi
+
+      - name: Verify all $id fields present in TypeBox schemas
+        run: |
+          MISSING=$(grep -rL '"\$id"' src/ --include='*.ts' | grep -v index.ts | grep -v '__tests__' || true)
+          if [ -n "$MISSING" ]; then
+            echo "::error::The following TypeBox schema files are missing \$id:"
+            echo "$MISSING"
+            echo "::error::Every schema exported from @widgetdc/contracts MUST have a \$id field."
+            exit 1
+          fi
+          echo "OK: All schema files contain \$id"
+
+      - name: Verify wire format is snake_case (no camelCase keys in schema objects)
+        run: |
+          # Check for camelCase property names in TypeBox schema definitions
+          # Flags properties like requestId, sessionId etc. that should be request_id, session_id
+          BAD=$(grep -rn 'Type\.Object' src/ --include='*.ts' -A 30 | \
+            grep -E '^\s+[a-z][a-zA-Z]*[A-Z][a-zA-Z]*\s*:' | \
+            grep -v '//.*camelCase OK' || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::Potential camelCase property names found in wire schemas (must be snake_case):"
+            echo "$BAD"
+            echo "::error::See WIRE_FORMAT.md for wire format rules."
+            exit 1
+          fi
+          echo "OK: No camelCase property names detected in schema definitions"
