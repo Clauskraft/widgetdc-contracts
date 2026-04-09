@@ -204,10 +204,11 @@
     },
     "fold_context": {
       "description": "Context folding / compression — reduce large context to fit downstream token budget.",
-      "chain": ["mercury-2", "claude-haiku-4-5-20251001", "deepseek-chat"],
+      "chain": ["gemini-2.0-flash", "deepseek-chat", "qwen-plus"],
       "override_env": "FOLD_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "Mercury-2 was never wired to LLM folding (only local compressors used). Gemini-2.0-flash tested 2026-04-09 — 1M context window ideal for large context compression, fast (600ms avg), multimodal strength aligns with polyglot input. Haiku removed: chain now tests real LLM summarization path."
     },
     "chat_standard": {
       "description": "Standard chat / conversational responses. Balance cost and quality.",
