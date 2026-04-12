@@ -79,7 +79,8 @@ jobs:
         run: |
           # Matches both quoted form "$id" and object-shorthand $id: forms
           # formats.ts registers FormatRegistry entries (no schema $id needed)
-          MISSING=$(grep -rL '\$id' src/ --include='*.ts' | grep -v index.ts | grep -v '__tests__' | grep -v 'formats.ts' || true)
+          # LlmMatrix.ts is a pure resolver class with no TypeBox schemas
+          MISSING=$(grep -rL '\$id' src/ --include='*.ts' | grep -v index.ts | grep -v '__tests__' | grep -v 'formats.ts' | grep -v 'LlmMatrix.ts' || true)
           if [ -n "$MISSING" ]; then
             echo "::error::The following TypeBox schema files are missing \$id:"
             echo "$MISSING"

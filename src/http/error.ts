@@ -8,7 +8,7 @@ export const ApiErrorCode = Type.Union([
   Type.Literal('INTERNAL_ERROR'),
   Type.Literal('TIMEOUT'),
   Type.Literal('SERVICE_UNAVAILABLE'),
-])
+], { $id: 'ApiErrorCode', description: 'Canonical API error code enumeration' })
 
 export type ApiErrorCode = Static<typeof ApiErrorCode>
 
@@ -18,6 +18,6 @@ export const ApiError = Type.Object({
   status_code: Type.Integer({ minimum: 400, maximum: 599 }),
   details: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
   correlation_id: Type.Optional(Type.String()),
-})
+}, { $id: 'ApiError', description: 'Canonical API error envelope' })
 
 export type ApiError = Static<typeof ApiError>

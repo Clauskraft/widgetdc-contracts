@@ -1,4 +1,6 @@
 {
+  "$id": "ApiErrorCode",
+  "description": "Canonical API error code enumeration",
   "anyOf": [
     {
       "const": "VALIDATION_ERROR",
@@ -28,6 +30,5 @@
       "const": "SERVICE_UNAVAILABLE",
       "type": "string"
     }
-  ],
-  "$id": "ApiErrorCode"
+  ]
 }
