@@ -1,0 +1,20 @@
+{
+  "$id": "TokenUsage",
+  "description": "Token accounting for cost attribution",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "input",
+    "output"
+  ],
+  "properties": {
+    "input": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "output": {
+      "minimum": 0,
+      "type": "integer"
+    }
+  }
+}

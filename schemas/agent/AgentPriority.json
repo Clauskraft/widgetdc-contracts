@@ -1,0 +1,22 @@
+{
+  "$id": "AgentPriority",
+  "description": "Agent request priority level",
+  "anyOf": [
+    {
+      "const": "low",
+      "type": "string"
+    },
+    {
+      "const": "normal",
+      "type": "string"
+    },
+    {
+      "const": "high",
+      "type": "string"
+    },
+    {
+      "const": "critical",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "$id": "AgentRequest",
+  "description": "Canonical agent request envelope — wire format for orchestrator dispatch",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "request_id",
+    "agent_id",
+    "task",
+    "capabilities",
+    "context",
+    "priority"
+  ],
+  "properties": {
+    "request_id": {
+      "format": "uuid",
+      "description": "Correlation ID — echoed in response",
+      "type": "string"
+    },
+    "agent_id": {
+      "minLength": 1,
+      "description": "Logical agent identifier (e.g. \"omega-sentinel\")",
+      "type": "string"
+    },
+    "task": {
+      "minLength": 1,
+      "description": "Natural-language task description",
+      "type": "string"
+    },
+    "capabilities": {
+      "description": "Required capabilities — e.g. [\"reasoning\",\"code\",\"multilingual\"]",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context": {
+      "description": "Opaque key/value context passed to the handler",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "priority": {
+      "$id": "AgentPriority",
+      "description": "Agent request priority level",
+      "anyOf": [
+        {
+          "const": "low",
+          "type": "string"
+        },
+        {
+          "const": "normal",
+          "type": "string"
+        },
+        {
+          "const": "high",
+          "type": "string"
+        },
+        {
+          "const": "critical",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}
