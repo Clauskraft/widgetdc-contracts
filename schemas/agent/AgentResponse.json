@@ -1,0 +1,125 @@
+{
+  "$id": "AgentResponse",
+  "description": "Canonical agent response envelope — all handlers must emit this shape",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "request_id",
+    "agent_id",
+    "status",
+    "output",
+    "tokens_used",
+    "cost_dkk",
+    "conflicts"
+  ],
+  "properties": {
+    "request_id": {
+      "format": "uuid",
+      "description": "Echo of AgentRequest.request_id",
+      "type": "string"
+    },
+    "agent_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "$id": "AgentResponseStatus",
+      "description": "Agent response outcome status",
+      "anyOf": [
+        {
+          "const": "success",
+          "type": "string"
+        },
+        {
+          "const": "partial",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        },
+        {
+          "const": "conflict",
+          "type": "string"
+        }
+      ]
+    },
+    "output": {
+      "description": "Task output payload (may be empty on failure)",
+      "type": "string"
+    },
+    "tokens_used": {
+      "$id": "TokenUsage",
+      "description": "Token accounting for cost attribution",
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "input",
+        "output"
+      ],
+      "properties": {
+        "input": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "output": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      }
+    },
+    "cost_dkk": {
+      "minimum": 0,
+      "description": "Cost in DKK (Danish kroner), see LLM matrix",
+      "type": "number"
+    },
+    "conflicts": {
+      "description": "Populated when status=conflict; empty otherwise (Gate 4: advisory by default)",
+      "type": "array",
+      "items": {
+        "$id": "AgentConflict",
+        "description": "Conflict detected with another agent's active WIP",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "other_agent_id",
+          "other_task",
+          "similarity",
+          "mode"
+        ],
+        "properties": {
+          "other_agent_id": {
+            "description": "Agent whose WIP conflicts with this request",
+            "type": "string"
+          },
+          "other_task": {
+            "description": "Conflicting task description",
+            "type": "string"
+          },
+          "similarity": {
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Jaccard or semantic similarity score",
+            "type": "number"
+          },
+          "mode": {
+            "description": "Per Gate 4: default is advisory; blocking requires explicit opt-in",
+            "anyOf": [
+              {
+                "const": "advisory",
+                "type": "string"
+              },
+              {
+                "const": "blocking",
+                "type": "string"
+              }
+            ]
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$id": "AgentResponseStatus",
+  "description": "Agent response outcome status",
+  "anyOf": [
+    {
+      "const": "success",
+      "type": "string"
+    },
+    {
+      "const": "partial",
+      "type": "string"
+    },
+    {
+      "const": "failed",
+      "type": "string"
+    },
+    {
+      "const": "conflict",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$id": "AgentConflict",
+  "description": "Conflict detected with another agent's active WIP",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "other_agent_id",
+    "other_task",
+    "similarity",
+    "mode"
+  ],
+  "properties": {
+    "other_agent_id": {
+      "description": "Agent whose WIP conflicts with this request",
+      "type": "string"
+    },
+    "other_task": {
+      "description": "Conflicting task description",
+      "type": "string"
+    },
+    "similarity": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Jaccard or semantic similarity score",
+      "type": "number"
+    },
+    "mode": {
+      "description": "Per Gate 4: default is advisory; blocking requires explicit opt-in",
+      "anyOf": [
+        {
+          "const": "advisory",
+          "type": "string"
+        },
+        {
+          "const": "blocking",
+          "type": "string"
+        }
+      ]
+    },
+    "suggestion": {
+      "type": "string"
+    }
+  }
+}

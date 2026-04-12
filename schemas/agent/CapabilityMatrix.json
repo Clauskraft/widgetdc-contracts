@@ -1,0 +1,80 @@
+{
+  "$id": "CapabilityMatrix",
+  "description": "Full capability matrix — versioned for drift detection",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "version",
+    "entries"
+  ],
+  "properties": {
+    "version": {
+      "description": "Semver, e.g. \"1.0.0\"",
+      "type": "string"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$id": "CapabilityEntry",
+        "description": "Single row in the capability matrix — maps model to capabilities + cost + fallback",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "provider",
+          "model",
+          "capabilities",
+          "max_tokens",
+          "cost_per_1k",
+          "latency_p50_ms"
+        ],
+        "properties": {
+          "provider": {
+            "description": "e.g. \"deepseek\" | \"claude\" | \"openai\" | \"gemini\"",
+            "type": "string"
+          },
+          "model": {
+            "description": "Provider-specific model id",
+            "type": "string"
+          },
+          "capabilities": {
+            "description": "Capabilities this model satisfies",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "max_tokens": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "cost_per_1k": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "input",
+              "output"
+            ],
+            "properties": {
+              "input": {
+                "minimum": 0,
+                "type": "number"
+              },
+              "output": {
+                "minimum": 0,
+                "type": "number"
+              }
+            }
+          },
+          "latency_p50_ms": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "fallback_to": {
+            "description": "Next model id to try if this one fails (empty = terminal)",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
