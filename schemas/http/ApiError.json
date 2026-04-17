@@ -1,4 +1,6 @@
 {
+  "$id": "ApiError",
+  "description": "Standard API error envelope payload.",
   "type": "object",
   "required": [
     "code",
@@ -7,6 +9,8 @@
   ],
   "properties": {
     "code": {
+      "$id": "ApiErrorCode",
+      "description": "Canonical error code enum for API error envelopes.",
       "anyOf": [
         {
           "const": "VALIDATION_ERROR",
@@ -55,6 +59,5 @@
     "correlation_id": {
       "type": "string"
     }
-  },
-  "$id": "ApiError"
+  }
 }

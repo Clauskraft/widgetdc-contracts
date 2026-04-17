@@ -7,12 +7,12 @@ export const ApiErrorCode = Type.Union([
     Type.Literal('INTERNAL_ERROR'),
     Type.Literal('TIMEOUT'),
     Type.Literal('SERVICE_UNAVAILABLE'),
-]);
+], { $id: 'ApiErrorCode', description: 'Canonical error code enum for API error envelopes.' });
 export const ApiError = Type.Object({
     code: ApiErrorCode,
     message: Type.String(),
     status_code: Type.Integer({ minimum: 400, maximum: 599 }),
     details: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
     correlation_id: Type.Optional(Type.String()),
-});
+}, { $id: 'ApiError', description: 'Standard API error envelope payload.' });
 //# sourceMappingURL=error.js.map

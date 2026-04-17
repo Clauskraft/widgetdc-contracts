@@ -10,7 +10,7 @@ from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
 from pydantic import BaseModel, Field
 from pydantic import BaseModel, Field, constr
-from pydantic import RootModel
+from pydantic import Field, RootModel
 from typing import Any
 from typing import Any, Literal
 from typing import Literal
@@ -26,7 +26,7 @@ class ApiError(BaseModel):
         'INTERNAL_ERROR',
         'TIMEOUT',
         'SERVICE_UNAVAILABLE',
-    ]
+    ] = Field(..., description='Canonical error code enum for API error envelopes.')
     message: str
     status_code: int = Field(..., ge=400, le=599)
     details: dict[constr(pattern=r'^(.*)$'), Any] | None = None
@@ -53,7 +53,7 @@ class ApiErrorCode(
         'INTERNAL_ERROR',
         'TIMEOUT',
         'SERVICE_UNAVAILABLE',
-    ]
+    ] = Field(..., description='Canonical error code enum for API error envelopes.')
 
 class Error(BaseModel):
     code: Literal[
@@ -64,7 +64,7 @@ class Error(BaseModel):
         'INTERNAL_ERROR',
         'TIMEOUT',
         'SERVICE_UNAVAILABLE',
-    ]
+    ] = Field(..., description='Canonical error code enum for API error envelopes.')
     message: str
     status_code: int = Field(..., ge=400, le=599)
     details: dict[constr(pattern=r'^(.*)$'), Any] | None = None
@@ -81,7 +81,9 @@ class Metadata(BaseModel):
 class ApiResponse(BaseModel):
     success: bool
     data: Any | None = None
-    error: Error | None = None
+    error: Error | None = Field(
+        None, description='Standard API error envelope payload.'
+    )
     metadata: Metadata | None = None
 
 class PaginatedResponse(BaseModel):
