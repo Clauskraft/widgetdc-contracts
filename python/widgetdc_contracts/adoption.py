@@ -6,12 +6,195 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import BaseModel
 from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, RootModel
 from pydantic import BaseModel, Field, constr
 from pydantic import Field, RootModel
+from typing import Any, Literal
 from typing import Literal
 
-__all__ = ["ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "DegradationTier", "HistogramStats", "LLMTier", "MetricsSummary", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "VoteDecision"]
+__all__ = ["AnalysisArtifact", "AnalysisBlock", "ArtifactSource", "ArtifactStatus", "ChartBlock", "ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "CypherBlock", "DeepLinkBlock", "DegradationTier", "GraphRefs", "HistogramStats", "KpiCardBlock", "LLMTier", "MermaidBlock", "MetricsSummary", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "TableBlock", "TextBlock", "VoteDecision"]
+
+class Blocks(BaseModel):
+    type: Literal['text']
+    id: str
+    title: str | None = None
+    content: str
+
+
+class Blocks1(BaseModel):
+    type: Literal['table']
+    id: str
+    title: str | None = None
+    headers: list[str]
+    rows: list[list[str]]
+
+
+class Blocks2(BaseModel):
+    type: Literal['chart']
+    id: str
+    title: str | None = None
+    chart_type: Literal['bar', 'line', 'radar', 'sankey']
+    data: dict[str, Any]
+    config: dict[str, Any] | None = None
+
+
+class Blocks3(BaseModel):
+    type: Literal['cypher']
+    id: str
+    title: str | None = None
+    query: str
+    cached_result: dict[str, Any] | None = None
+
+
+class Blocks4(BaseModel):
+    type: Literal['mermaid']
+    id: str
+    title: str | None = None
+    source: str
+
+
+class Blocks5(BaseModel):
+    type: Literal['kpi_card']
+    id: str
+    title: str | None = None
+    label: str
+    value: float | str
+    unit: str | None = None
+    trend: Literal['up', 'down', 'flat'] | None = None
+
+
+class Blocks6(BaseModel):
+    type: Literal['deep_link']
+    id: str
+    title: str | None = None
+    target: Literal['obsidian', 'open-webui']
+    uri: str
+    label: str
+
+
+class GraphRefs(BaseModel):
+    node_ids: list[str]
+    domains: list[str]
+
+
+class AnalysisArtifact(BaseModel):
+    field_id: str = Field(..., alias='$id', description='widgetdc:artifact:{uuid}')
+    field_schema: Literal['widgetdc:analysis:v1'] = Field(..., alias='$schema')
+    title: str
+    source: Literal['open-webui', 'obsidian', 'orchestrator'] = Field(
+        ..., description='System that created the artifact'
+    )
+    created_at: AwareDatetime = Field(..., description='ISO 8601 timestamp')
+    updated_at: AwareDatetime = Field(..., description='ISO 8601 timestamp')
+    created_by: str = Field(..., description='Agent or user ID')
+    blocks: list[Blocks | Blocks1 | Blocks2 | Blocks3 | Blocks4 | Blocks5 | Blocks6]
+    graph_refs: GraphRefs | None = Field(
+        None, description='Neo4j graph node and domain references'
+    )
+    tags: list[str]
+    status: Literal['draft', 'published', 'archived'] = Field(
+        ..., description='Artifact lifecycle status'
+    )
+
+class AnalysisBlock1(BaseModel):
+    type: Literal['text']
+    id: str
+    title: str | None = None
+    content: str
+
+
+class AnalysisBlock2(BaseModel):
+    type: Literal['table']
+    id: str
+    title: str | None = None
+    headers: list[str]
+    rows: list[list[str]]
+
+
+class AnalysisBlock3(BaseModel):
+    type: Literal['chart']
+    id: str
+    title: str | None = None
+    chart_type: Literal['bar', 'line', 'radar', 'sankey']
+    data: dict[str, Any]
+    config: dict[str, Any] | None = None
+
+
+class AnalysisBlock4(BaseModel):
+    type: Literal['cypher']
+    id: str
+    title: str | None = None
+    query: str
+    cached_result: dict[str, Any] | None = None
+
+
+class AnalysisBlock5(BaseModel):
+    type: Literal['mermaid']
+    id: str
+    title: str | None = None
+    source: str
+
+
+class AnalysisBlock6(BaseModel):
+    type: Literal['kpi_card']
+    id: str
+    title: str | None = None
+    label: str
+    value: float | str
+    unit: str | None = None
+    trend: Literal['up', 'down', 'flat'] | None = None
+
+
+class AnalysisBlock7(BaseModel):
+    type: Literal['deep_link']
+    id: str
+    title: str | None = None
+    target: Literal['obsidian', 'open-webui']
+    uri: str
+    label: str
+
+
+class AnalysisBlock(
+    RootModel[
+        AnalysisBlock1
+        | AnalysisBlock2
+        | AnalysisBlock3
+        | AnalysisBlock4
+        | AnalysisBlock5
+        | AnalysisBlock6
+        | AnalysisBlock7
+    ]
+):
+    root: (
+        AnalysisBlock1
+        | AnalysisBlock2
+        | AnalysisBlock3
+        | AnalysisBlock4
+        | AnalysisBlock5
+        | AnalysisBlock6
+        | AnalysisBlock7
+    ) = Field(..., description='Analysis content block (discriminated on type)')
+
+class ArtifactSource(RootModel[Literal['open-webui', 'obsidian', 'orchestrator']]):
+    root: Literal['open-webui', 'obsidian', 'orchestrator'] = Field(
+        ..., description='System that created the artifact'
+    )
+
+class ArtifactStatus(RootModel[Literal['draft', 'published', 'archived']]):
+    root: Literal['draft', 'published', 'archived'] = Field(
+        ..., description='Artifact lifecycle status'
+    )
+
+class ChartBlock(BaseModel):
+    type: Literal['chart']
+    id: str
+    title: str | None = None
+    chart_type: Literal['bar', 'line', 'radar', 'sankey']
+    data: dict[str, Any]
+    config: dict[str, Any] | None = None
 
 class ComplexityTier(RootModel[Literal['simple', 'moderate', 'advanced', 'complex']]):
     root: Literal['simple', 'moderate', 'advanced', 'complex'] = Field(
@@ -73,12 +256,31 @@ class ConsensusVote(BaseModel):
     rationale: str = Field(..., description='Reason for decision')
     timestamp: float = Field(..., description='Unix timestamp ms')
 
+class CypherBlock(BaseModel):
+    type: Literal['cypher']
+    id: str
+    title: str | None = None
+    query: str
+    cached_result: dict[str, Any] | None = None
+
+class DeepLinkBlock(BaseModel):
+    type: Literal['deep_link']
+    id: str
+    title: str | None = None
+    target: Literal['obsidian', 'open-webui']
+    uri: str
+    label: str
+
 class DegradationTier(
     RootModel[Literal['full', 'cached', 'fallback', 'static', 'unavailable']]
 ):
     root: Literal['full', 'cached', 'fallback', 'static', 'unavailable'] = Field(
         ..., description='Service degradation tier'
     )
+
+class GraphRefs(BaseModel):
+    node_ids: list[str]
+    domains: list[str]
 
 class HistogramStats(BaseModel):
     count: int = Field(..., ge=0)
@@ -88,10 +290,25 @@ class HistogramStats(BaseModel):
     p95: float
     p99: float
 
+class KpiCardBlock(BaseModel):
+    type: Literal['kpi_card']
+    id: str
+    title: str | None = None
+    label: str
+    value: float | str
+    unit: str | None = None
+    trend: Literal['up', 'down', 'flat'] | None = None
+
 class LLMTier(RootModel[Literal[1, 2, 3]]):
     root: Literal[1, 2, 3] = Field(
         ..., description='LLM routing tier (1=Flash, 2=Standard, 3=Premium)'
     )
+
+class MermaidBlock(BaseModel):
+    type: Literal['mermaid']
+    id: str
+    title: str | None = None
+    source: str
 
 class Histograms(BaseModel):
     count: int = Field(..., ge=0)
@@ -219,6 +436,19 @@ class RolloutSummary(BaseModel):
     disabled: int
     canary: int
     features: list[Feature]
+
+class TableBlock(BaseModel):
+    type: Literal['table']
+    id: str
+    title: str | None = None
+    headers: list[str]
+    rows: list[list[str]]
+
+class TextBlock(BaseModel):
+    type: Literal['text']
+    id: str
+    title: str | None = None
+    content: str
 
 class VoteDecision(RootModel[Literal['approve', 'reject', 'abstain']]):
     root: Literal['approve', 'reject', 'abstain'] = Field(

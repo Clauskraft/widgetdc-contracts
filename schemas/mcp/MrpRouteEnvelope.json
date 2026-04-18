@@ -1,0 +1,143 @@
+{
+  "$id": "MrpRouteEnvelope",
+  "description": "Canonical envelope for /api/mrp/* requests — enables contract-validating middleware and default-on intelligence interception.",
+  "type": "object",
+  "required": [
+    "tool",
+    "payload"
+  ],
+  "properties": {
+    "tool": {
+      "pattern": "^[a-z_]+\\.[a-z_]+$",
+      "description": "MRP tool name in namespace.method format (e.g. \"mrp.produce\", \"gdpr.erase\").",
+      "type": "string"
+    },
+    "payload": {
+      "description": "Tool-specific payload; shape governed by the individual MRP contracts.",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "intent": {
+      "description": "Governance intent (required for write tools).",
+      "type": "string"
+    },
+    "evidence": {
+      "description": "Governance evidence (required for write tools).",
+      "type": "string"
+    },
+    "_trace_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "_request_features": {
+      "$id": "RequestFeatures",
+      "description": "Normalised feature vector consumed by the 12-step intelligence interceptor.",
+      "type": "object",
+      "required": [
+        "task_type"
+      ],
+      "properties": {
+        "task_type": {
+          "$id": "RequestTaskType",
+          "description": "Canonical request-level task-type dimension (distinct from llm.TaskType model-routing taxonomy).",
+          "anyOf": [
+            {
+              "const": "summarize",
+              "type": "string"
+            },
+            {
+              "const": "draft",
+              "type": "string"
+            },
+            {
+              "const": "review",
+              "type": "string"
+            },
+            {
+              "const": "classify",
+              "type": "string"
+            },
+            {
+              "const": "translate",
+              "type": "string"
+            },
+            {
+              "const": "code",
+              "type": "string"
+            },
+            {
+              "const": "reason",
+              "type": "string"
+            },
+            {
+              "const": "retrieve",
+              "type": "string"
+            },
+            {
+              "const": "compose",
+              "type": "string"
+            },
+            {
+              "const": "other",
+              "type": "string"
+            }
+          ]
+        },
+        "language": {
+          "description": "BCP-47 code (e.g. \"en\", \"da\", \"de\"). Defaults to \"en\".",
+          "type": "string"
+        },
+        "pii_present": {
+          "description": "Caller-asserted; PIIClassifier overrides.",
+          "type": "boolean"
+        },
+        "max_latency_ms": {
+          "minimum": 100,
+          "maximum": 120000,
+          "description": "Soft SLA ceiling; used by ResourceMarketAuctioneer.",
+          "type": "integer"
+        },
+        "max_cost_usd": {
+          "minimum": 0,
+          "description": "Soft budget ceiling per request in USD.",
+          "type": "number"
+        },
+        "compliance_tier": {
+          "$id": "ComplianceTier",
+          "description": "Data-handling compliance tier — drives crypto-shred + PII routing.",
+          "anyOf": [
+            {
+              "const": "public",
+              "type": "string"
+            },
+            {
+              "const": "internal",
+              "type": "string"
+            },
+            {
+              "const": "legal",
+              "type": "string"
+            },
+            {
+              "const": "health",
+              "type": "string"
+            }
+          ]
+        },
+        "reasoning_depth": {
+          "minimum": 1,
+          "maximum": 5,
+          "default": 3,
+          "description": "1 (shallow) .. 5 (deep chain-of-thought).",
+          "type": "integer"
+        },
+        "domain": {
+          "description": "Consulting domain ID (see @widgetdc/contracts/consulting).",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

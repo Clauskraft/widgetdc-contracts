@@ -1,0 +1,61 @@
+{
+  "$id": "AuditHashChainEntry",
+  "description": "Tamper-evident audit entry; chain is verifiable via /api/audit/verify-chain.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "ts",
+    "tool",
+    "payload_hash",
+    "prev_hash",
+    "entry_hash",
+    "bom_version"
+  ],
+  "properties": {
+    "event_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "ts": {
+      "format": "date-time",
+      "description": "Canonical entry timestamp (UTC).",
+      "type": "string"
+    },
+    "ts_raw": {
+      "description": "Raw epoch-millis at entry creation for deterministic re-hashing.",
+      "type": "integer"
+    },
+    "tool": {
+      "description": "Fully-qualified tool / event identifier (e.g. \"mrp.produce\", \"gdpr.erase\").",
+      "type": "string"
+    },
+    "payload_hash": {
+      "description": "Hex-encoded SHA-256 of the canonicalised payload.",
+      "type": "string"
+    },
+    "prev_hash": {
+      "description": "entry_hash of the previous chain entry; \"GENESIS\" for the first entry.",
+      "type": "string"
+    },
+    "entry_hash": {
+      "description": "Hex-encoded SHA-256 of (ts_raw || tool || payload_hash || prev_hash).",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    },
+    "actor": {
+      "description": "Authenticated client/agent id.",
+      "type": "string"
+    },
+    "order_id": {
+      "format": "uuid",
+      "description": "Linked :ProductionOrder if any.",
+      "type": "string"
+    },
+    "compliance_tier": {
+      "type": "string"
+    }
+  }
+}

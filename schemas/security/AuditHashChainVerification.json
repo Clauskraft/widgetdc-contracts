@@ -1,0 +1,29 @@
+{
+  "$id": "AuditHashChainVerification",
+  "description": "Output of chain-verification sweep; exposed via /api/audit/verify-chain.",
+  "type": "object",
+  "required": [
+    "verified",
+    "entries_checked",
+    "checked_at"
+  ],
+  "properties": {
+    "verified": {
+      "type": "boolean"
+    },
+    "head_entry_hash": {
+      "type": "string"
+    },
+    "entries_checked": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "first_break_event_id": {
+      "type": "string"
+    },
+    "checked_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

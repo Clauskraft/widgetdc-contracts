@@ -1,0 +1,22 @@
+{
+  "$id": "ComplianceTier",
+  "description": "Data-handling compliance tier — drives crypto-shred + PII routing.",
+  "anyOf": [
+    {
+      "const": "public",
+      "type": "string"
+    },
+    {
+      "const": "internal",
+      "type": "string"
+    },
+    {
+      "const": "legal",
+      "type": "string"
+    },
+    {
+      "const": "health",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$id": "ProductionOrderVariance",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "sourced_components": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "planned_sections": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "actual_sections": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "planned_cost_usd": {
+      "type": "number"
+    },
+    "actual_cost_usd": {
+      "type": "number"
+    },
+    "planned_latency_ms": {
+      "type": "integer"
+    },
+    "actual_latency_ms": {
+      "type": "integer"
+    },
+    "quality_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    }
+  }
+}

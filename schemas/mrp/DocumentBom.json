@@ -1,0 +1,84 @@
+{
+  "$id": "DocumentBom",
+  "type": "object",
+  "required": [
+    "product_type",
+    "bom_version",
+    "title",
+    "sections"
+  ],
+  "properties": {
+    "product_type": {
+      "const": "document",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$id": "DocumentSection",
+        "type": "object",
+        "required": [
+          "heading",
+          "content"
+        ],
+        "properties": {
+          "heading": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "level": {
+            "minimum": 1,
+            "maximum": 6,
+            "default": 2,
+            "type": "integer"
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "format": {
+      "$id": "DocumentFormat",
+      "anyOf": [
+        {
+          "const": "docx",
+          "type": "string"
+        },
+        {
+          "const": "pdf",
+          "type": "string"
+        },
+        {
+          "const": "html",
+          "type": "string"
+        },
+        {
+          "const": "md",
+          "type": "string"
+        }
+      ]
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "language": {
+      "type": "string"
+    }
+  }
+}

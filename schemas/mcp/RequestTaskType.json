@@ -1,0 +1,46 @@
+{
+  "$id": "RequestTaskType",
+  "description": "Canonical request-level task-type dimension (distinct from llm.TaskType model-routing taxonomy).",
+  "anyOf": [
+    {
+      "const": "summarize",
+      "type": "string"
+    },
+    {
+      "const": "draft",
+      "type": "string"
+    },
+    {
+      "const": "review",
+      "type": "string"
+    },
+    {
+      "const": "classify",
+      "type": "string"
+    },
+    {
+      "const": "translate",
+      "type": "string"
+    },
+    {
+      "const": "code",
+      "type": "string"
+    },
+    {
+      "const": "reason",
+      "type": "string"
+    },
+    {
+      "const": "retrieve",
+      "type": "string"
+    },
+    {
+      "const": "compose",
+      "type": "string"
+    },
+    {
+      "const": "other",
+      "type": "string"
+    }
+  ]
+}

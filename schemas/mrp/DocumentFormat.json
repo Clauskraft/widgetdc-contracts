@@ -1,0 +1,21 @@
+{
+  "$id": "DocumentFormat",
+  "anyOf": [
+    {
+      "const": "docx",
+      "type": "string"
+    },
+    {
+      "const": "pdf",
+      "type": "string"
+    },
+    {
+      "const": "html",
+      "type": "string"
+    },
+    {
+      "const": "md",
+      "type": "string"
+    }
+  ]
+}

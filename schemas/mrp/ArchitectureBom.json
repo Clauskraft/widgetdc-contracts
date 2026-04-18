@@ -1,0 +1,38 @@
+{
+  "$id": "ArchitectureBom",
+  "type": "object",
+  "required": [
+    "product_type",
+    "bom_version",
+    "title",
+    "requirements"
+  ],
+  "properties": {
+    "product_type": {
+      "const": "architecture",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    },
+    "blueprint_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
