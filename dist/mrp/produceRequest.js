@@ -58,5 +58,9 @@ export const ProduceRequest = Type.Object({
 }, {
     $id: 'ProduceRequest',
     description: 'Plugin → orchestrator /produce payload. Either `brief` or `bom` must be provided.',
+    anyOf: [
+        { required: ['brief'] },
+        { required: ['bom'] },
+    ],
 });
 //# sourceMappingURL=produceRequest.js.map
