@@ -1,0 +1,25 @@
+{
+  "$id": "PaneId",
+  "anyOf": [
+    {
+      "const": "canvas",
+      "type": "string"
+    },
+    {
+      "const": "markdown",
+      "type": "string"
+    },
+    {
+      "const": "slides",
+      "type": "string"
+    },
+    {
+      "const": "drawio",
+      "type": "string"
+    },
+    {
+      "const": "split",
+      "type": "string"
+    }
+  ]
+}

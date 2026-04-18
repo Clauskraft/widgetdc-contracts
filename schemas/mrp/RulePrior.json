@@ -1,0 +1,50 @@
+{
+  "$id": "RulePrior",
+  "description": "Aggregated 7-day rule performance prior; written by weekly canvas-rule-priors cron (UC3).",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "window_days",
+    "episode_count",
+    "reward_avg",
+    "quality_avg",
+    "weight_delta",
+    "computed_at",
+    "bom_version"
+  ],
+  "properties": {
+    "rule_id": {
+      "type": "string"
+    },
+    "window_days": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "episode_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "reward_avg": {
+      "minimum": -1,
+      "maximum": 1,
+      "type": "number"
+    },
+    "quality_avg": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "weight_delta": {
+      "description": "Proposed weight adjustment (applied after shadow-test).",
+      "type": "number"
+    },
+    "computed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$id": "BridgeMessage",
+  "description": "Typed envelope for two-way postMessage between host and canvas iframe.",
+  "type": "object",
+  "required": [
+    "type",
+    "session_id",
+    "payload",
+    "ts"
+  ],
+  "properties": {
+    "type": {
+      "$id": "BridgeMessageType",
+      "anyOf": [
+        {
+          "const": "canvas.ready",
+          "type": "string"
+        },
+        {
+          "const": "canvas.node.create",
+          "type": "string"
+        },
+        {
+          "const": "canvas.node.update",
+          "type": "string"
+        },
+        {
+          "const": "canvas.node.delete",
+          "type": "string"
+        },
+        {
+          "const": "chat.update",
+          "type": "string"
+        },
+        {
+          "const": "chat.message",
+          "type": "string"
+        },
+        {
+          "const": "canvas.export",
+          "type": "string"
+        },
+        {
+          "const": "canvas.error",
+          "type": "string"
+        }
+      ]
+    },
+    "session_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "payload": {},
+    "ts": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "origin": {
+      "description": "Sender window.location.origin; receiver must validate against allowlist.",
+      "type": "string"
+    }
+  }
+}

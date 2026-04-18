@@ -1,0 +1,47 @@
+{
+  "$id": "CanvasNodeSeed",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "label",
+    "type",
+    "payload"
+  ],
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "type": {
+      "description": "CanvasNodeType from widgetdc-canvas (e.g. Artifact, Pattern, Agent).",
+      "type": "string"
+    },
+    "payload": {
+      "description": "Free-form node payload; shape depends on type."
+    },
+    "pane": {
+      "$id": "PaneId",
+      "anyOf": [
+        {
+          "const": "canvas",
+          "type": "string"
+        },
+        {
+          "const": "markdown",
+          "type": "string"
+        },
+        {
+          "const": "slides",
+          "type": "string"
+        },
+        {
+          "const": "drawio",
+          "type": "string"
+        },
+        {
+          "const": "split",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

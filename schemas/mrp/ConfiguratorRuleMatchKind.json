@@ -1,0 +1,25 @@
+{
+  "$id": "ConfiguratorRuleMatchKind",
+  "anyOf": [
+    {
+      "const": "regex",
+      "type": "string"
+    },
+    {
+      "const": "length",
+      "type": "string"
+    },
+    {
+      "const": "feature",
+      "type": "string"
+    },
+    {
+      "const": "composite",
+      "type": "string"
+    },
+    {
+      "const": "fallback",
+      "type": "string"
+    }
+  ]
+}

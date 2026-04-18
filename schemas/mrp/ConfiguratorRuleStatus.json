@@ -1,0 +1,21 @@
+{
+  "$id": "ConfiguratorRuleStatus",
+  "anyOf": [
+    {
+      "const": "active",
+      "type": "string"
+    },
+    {
+      "const": "shadow",
+      "type": "string"
+    },
+    {
+      "const": "disabled",
+      "type": "string"
+    },
+    {
+      "const": "proposed",
+      "type": "string"
+    }
+  ]
+}

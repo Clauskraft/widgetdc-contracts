@@ -1,0 +1,97 @@
+{
+  "$id": "CanvasTrackOutcome",
+  "description": "Per-resolution reward event; feeds ClosedLoopAggregator into :RulePrior.",
+  "type": "object",
+  "required": [
+    "outcome_id",
+    "session_id",
+    "matched_rule_ids",
+    "winning_rule_id",
+    "resolved_track",
+    "created_at",
+    "bom_version"
+  ],
+  "properties": {
+    "outcome_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "session_id": {
+      "format": "uuid",
+      "description": "FK to :CanvasSession",
+      "type": "string"
+    },
+    "matched_rule_ids": {
+      "description": "Ordered list of rules that fired for this resolution.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "winning_rule_id": {
+      "description": "The rule that actually determined the track (first match).",
+      "type": "string"
+    },
+    "resolved_track": {
+      "$id": "BuilderTrack",
+      "description": "7 canonical builder tracks; canvas routes to the right one via configurator rules.",
+      "anyOf": [
+        {
+          "const": "textual",
+          "type": "string"
+        },
+        {
+          "const": "slide_flow",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "graphical",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        },
+        {
+          "const": "experiment",
+          "type": "string"
+        }
+      ]
+    },
+    "user_satisfaction": {
+      "minimum": -1,
+      "maximum": 1,
+      "description": "+1 user kept/exported, 0 neutral/unknown, -1 user abandoned or picked different track.",
+      "type": "number"
+    },
+    "artifact_quality_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Auto-computed from :ProductionOrder.variance.quality_score when session closes.",
+      "type": "number"
+    },
+    "duration_ms": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "host_origin": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    }
+  }
+}

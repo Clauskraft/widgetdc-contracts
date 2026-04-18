@@ -1,0 +1,142 @@
+{
+  "$id": "ConfiguratorRule",
+  "description": "Graph-persisted :ConfiguratorRule node; read by CanvasIntentConfigurator.resolve(), mutated by CanvasRuleEvolver.",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "track",
+    "match_kind",
+    "priority",
+    "weight",
+    "status",
+    "created_at",
+    "updated_at",
+    "bom_version"
+  ],
+  "properties": {
+    "rule_id": {
+      "description": "Stable identifier, e.g. \"diag-intent\" or \"fallback\".",
+      "type": "string"
+    },
+    "track": {
+      "$id": "BuilderTrack",
+      "description": "7 canonical builder tracks; canvas routes to the right one via configurator rules.",
+      "anyOf": [
+        {
+          "const": "textual",
+          "type": "string"
+        },
+        {
+          "const": "slide_flow",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "graphical",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        },
+        {
+          "const": "experiment",
+          "type": "string"
+        }
+      ]
+    },
+    "match_kind": {
+      "$id": "ConfiguratorRuleMatchKind",
+      "anyOf": [
+        {
+          "const": "regex",
+          "type": "string"
+        },
+        {
+          "const": "length",
+          "type": "string"
+        },
+        {
+          "const": "feature",
+          "type": "string"
+        },
+        {
+          "const": "composite",
+          "type": "string"
+        },
+        {
+          "const": "fallback",
+          "type": "string"
+        }
+      ]
+    },
+    "priority": {
+      "description": "Top-down evaluation order; lower = checked first.",
+      "type": "integer"
+    },
+    "weight": {
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Reward-driven weight; top-performers float up in priority.",
+      "type": "number"
+    },
+    "status": {
+      "$id": "ConfiguratorRuleStatus",
+      "anyOf": [
+        {
+          "const": "active",
+          "type": "string"
+        },
+        {
+          "const": "shadow",
+          "type": "string"
+        },
+        {
+          "const": "disabled",
+          "type": "string"
+        },
+        {
+          "const": "proposed",
+          "type": "string"
+        }
+      ]
+    },
+    "pattern": {
+      "description": "Regex pattern string for match_kind=regex.",
+      "type": "string"
+    },
+    "feature_expr": {
+      "description": "Predicate expression for match_kind=feature, e.g. \"sequence_step>0 && prior_track!=null\".",
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "last_applied_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "authored_by": {
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    }
+  }
+}

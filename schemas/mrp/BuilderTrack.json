@@ -1,0 +1,34 @@
+{
+  "$id": "BuilderTrack",
+  "description": "7 canonical builder tracks; canvas routes to the right one via configurator rules.",
+  "anyOf": [
+    {
+      "const": "textual",
+      "type": "string"
+    },
+    {
+      "const": "slide_flow",
+      "type": "string"
+    },
+    {
+      "const": "diagram",
+      "type": "string"
+    },
+    {
+      "const": "architecture",
+      "type": "string"
+    },
+    {
+      "const": "graphical",
+      "type": "string"
+    },
+    {
+      "const": "code",
+      "type": "string"
+    },
+    {
+      "const": "experiment",
+      "type": "string"
+    }
+  ]
+}
