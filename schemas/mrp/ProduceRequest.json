@@ -1,0 +1,327 @@
+{
+  "$id": "ProduceRequest",
+  "description": "Plugin → orchestrator /produce payload. Either `brief` or `bom` must be provided.",
+  "type": "object",
+  "required": [
+    "product_type"
+  ],
+  "properties": {
+    "product_type": {
+      "$id": "ProductType",
+      "description": "Kind of artifact the MRP pipeline should produce.",
+      "anyOf": [
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "document",
+          "type": "string"
+        },
+        {
+          "const": "presentation",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "pdf",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        }
+      ]
+    },
+    "brief": {
+      "description": "Free-form user intent; resolved to a BOM by briefToSections/RLM fold.",
+      "type": "string"
+    },
+    "bom": {
+      "anyOf": [
+        {
+          "$id": "DocumentBom",
+          "type": "object",
+          "required": [
+            "product_type",
+            "bom_version",
+            "title",
+            "sections"
+          ],
+          "properties": {
+            "product_type": {
+              "const": "document",
+              "type": "string"
+            },
+            "bom_version": {
+              "const": "2.0",
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "items": {
+                "$id": "DocumentSection",
+                "type": "object",
+                "required": [
+                  "heading",
+                  "content"
+                ],
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "minimum": 1,
+                    "maximum": 6,
+                    "default": 2,
+                    "type": "integer"
+                  },
+                  "citations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "format": {
+              "$id": "DocumentFormat",
+              "anyOf": [
+                {
+                  "const": "docx",
+                  "type": "string"
+                },
+                {
+                  "const": "pdf",
+                  "type": "string"
+                },
+                {
+                  "const": "html",
+                  "type": "string"
+                },
+                {
+                  "const": "md",
+                  "type": "string"
+                }
+              ]
+            },
+            "citations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "language": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "$id": "ArchitectureBom",
+          "type": "object",
+          "required": [
+            "product_type",
+            "bom_version",
+            "title",
+            "requirements"
+          ],
+          "properties": {
+            "product_type": {
+              "const": "architecture",
+              "type": "string"
+            },
+            "bom_version": {
+              "const": "2.0",
+              "type": "string"
+            },
+            "blueprint_id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "requirements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "constraints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "$id": "GenericBom",
+          "additionalProperties": true,
+          "type": "object",
+          "required": [
+            "product_type",
+            "bom_version"
+          ],
+          "properties": {
+            "product_type": {
+              "$id": "ProductType",
+              "description": "Kind of artifact the MRP pipeline should produce.",
+              "anyOf": [
+                {
+                  "const": "architecture",
+                  "type": "string"
+                },
+                {
+                  "const": "document",
+                  "type": "string"
+                },
+                {
+                  "const": "presentation",
+                  "type": "string"
+                },
+                {
+                  "const": "diagram",
+                  "type": "string"
+                },
+                {
+                  "const": "pdf",
+                  "type": "string"
+                },
+                {
+                  "const": "code",
+                  "type": "string"
+                }
+              ]
+            },
+            "bom_version": {
+              "const": "2.0",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "_request_features": {
+      "$id": "RequestFeatures",
+      "description": "Normalised feature vector consumed by the 12-step intelligence interceptor.",
+      "type": "object",
+      "required": [
+        "task_type"
+      ],
+      "properties": {
+        "task_type": {
+          "$id": "RequestTaskType",
+          "description": "Canonical request-level task-type dimension (distinct from llm.TaskType model-routing taxonomy).",
+          "anyOf": [
+            {
+              "const": "summarize",
+              "type": "string"
+            },
+            {
+              "const": "draft",
+              "type": "string"
+            },
+            {
+              "const": "review",
+              "type": "string"
+            },
+            {
+              "const": "classify",
+              "type": "string"
+            },
+            {
+              "const": "translate",
+              "type": "string"
+            },
+            {
+              "const": "code",
+              "type": "string"
+            },
+            {
+              "const": "reason",
+              "type": "string"
+            },
+            {
+              "const": "retrieve",
+              "type": "string"
+            },
+            {
+              "const": "compose",
+              "type": "string"
+            },
+            {
+              "const": "other",
+              "type": "string"
+            }
+          ]
+        },
+        "language": {
+          "description": "BCP-47 code (e.g. \"en\", \"da\", \"de\"). Defaults to \"en\".",
+          "type": "string"
+        },
+        "pii_present": {
+          "description": "Caller-asserted; PIIClassifier overrides.",
+          "type": "boolean"
+        },
+        "max_latency_ms": {
+          "minimum": 100,
+          "maximum": 120000,
+          "description": "Soft SLA ceiling; used by ResourceMarketAuctioneer.",
+          "type": "integer"
+        },
+        "max_cost_usd": {
+          "minimum": 0,
+          "description": "Soft budget ceiling per request in USD.",
+          "type": "number"
+        },
+        "compliance_tier": {
+          "$id": "ComplianceTier",
+          "description": "Data-handling compliance tier — drives crypto-shred + PII routing.",
+          "anyOf": [
+            {
+              "const": "public",
+              "type": "string"
+            },
+            {
+              "const": "internal",
+              "type": "string"
+            },
+            {
+              "const": "legal",
+              "type": "string"
+            },
+            {
+              "const": "health",
+              "type": "string"
+            }
+          ]
+        },
+        "reasoning_depth": {
+          "minimum": 1,
+          "maximum": 5,
+          "default": 3,
+          "description": "1 (shallow) .. 5 (deep chain-of-thought).",
+          "type": "integer"
+        },
+        "domain": {
+          "description": "Consulting domain ID (see @widgetdc/contracts/consulting).",
+          "type": "string"
+        }
+      }
+    },
+    "agent_id": {
+      "description": "Optional WebSocket correlation id for streaming progress.",
+      "type": "string"
+    }
+  }
+}

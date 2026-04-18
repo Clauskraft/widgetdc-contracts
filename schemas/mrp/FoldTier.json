@@ -1,0 +1,34 @@
+{
+  "$id": "FoldTier",
+  "description": "T1 (no-op) through T7 (hierarchical-reason) compression strategies.",
+  "anyOf": [
+    {
+      "const": "T1",
+      "type": "string"
+    },
+    {
+      "const": "T2",
+      "type": "string"
+    },
+    {
+      "const": "T3",
+      "type": "string"
+    },
+    {
+      "const": "T4",
+      "type": "string"
+    },
+    {
+      "const": "T5",
+      "type": "string"
+    },
+    {
+      "const": "T6",
+      "type": "string"
+    },
+    {
+      "const": "T7",
+      "type": "string"
+    }
+  ]
+}

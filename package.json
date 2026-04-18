@@ -1,6 +1,6 @@
 {
   "name": "@widgetdc/contracts",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "Shared type contracts for the WidgeTDC platform — single source of truth across backend, RLM engine, and frontend",
   "type": "module",
   "main": "./dist/index.js",
@@ -49,6 +49,14 @@
     "./adoption": {
       "types": "./dist/adoption/index.d.ts",
       "import": "./dist/adoption/index.js"
+    },
+    "./mrp": {
+      "types": "./dist/mrp/index.d.ts",
+      "import": "./dist/mrp/index.js"
+    },
+    "./security": {
+      "types": "./dist/security/index.d.ts",
+      "import": "./dist/security/index.js"
     },
     "./llm": {
       "types": "./dist/llm/index.d.ts",

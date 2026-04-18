@@ -1,0 +1,28 @@
+{
+  "$id": "DocumentSection",
+  "type": "object",
+  "required": [
+    "heading",
+    "content"
+  ],
+  "properties": {
+    "heading": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "level": {
+      "minimum": 1,
+      "maximum": 6,
+      "default": 2,
+      "type": "integer"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

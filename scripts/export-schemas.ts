@@ -22,6 +22,8 @@ import * as orchestrator from '../src/orchestrator/index.js'
 import * as opportunities from '../src/opportunities/index.js'
 import * as mcp from '../src/mcp/index.js'
 import * as adoption from '../src/adoption/index.js'
+import * as mrp from '../src/mrp/index.js'
+import * as security from '../src/security/index.js'
 
 const modules: Record<string, Record<string, unknown>> = {
   cognitive,
@@ -34,6 +36,8 @@ const modules: Record<string, Record<string, unknown>> = {
   opportunities,
   mcp,
   adoption,
+  mrp,
+  security,
 }
 
 let exportedCount = 0

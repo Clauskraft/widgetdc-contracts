@@ -1,0 +1,1 @@
+{"version":3,"file":"bomComponent.d.ts","sourceRoot":"","sources":["../../src/mrp/bomComponent.ts"],"names":[],"mappings":"AAAA;;;;;;;;GAQG;AACH,OAAO,EAAQ,MAAM,EAAE,MAAM,mBAAmB,CAAA;AAEhD,eAAO,MAAM,gBAAgB,kVAOE,CAAA;AAE/B,MAAM,MAAM,gBAAgB,GAAG,MAAM,CAAC,OAAO,gBAAgB,CAAC,CAAA;AAE9D,eAAO,MAAM,YAAY;;;;;;;;;;;EAevB,CAAA;AAEF,MAAM,MAAM,YAAY,GAAG,MAAM,CAAC,OAAO,YAAY,CAAC,CAAA"}

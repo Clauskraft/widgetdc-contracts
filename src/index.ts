@@ -14,6 +14,8 @@
  *   import { AgentHandshake } from '@widgetdc/contracts/orchestrator'
  *   import { SalienceVector } from '@widgetdc/contracts/opportunities'
  *   import { LlmMatrix, TaskType } from '@widgetdc/contracts/llm'
+ *   import { ProduceRequest, ProductionOrder } from '@widgetdc/contracts/mrp'
+ *   import { AuditHashChainEntry } from '@widgetdc/contracts/security'
  */
 
 export * from './cognitive/index.js'
@@ -25,6 +27,8 @@ export * from './graph/index.js'
 export * from './orchestrator/index.js'
 export * from './opportunities/index.js'
 export * from './mcp/index.js'
+export * from './mrp/index.js'
+export * from './security/index.js'
 export * from './normalization/index.js'
 export * from './adoption/index.js'
 export * from './llm/index.js'

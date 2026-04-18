@@ -1,0 +1,29 @@
+{
+  "$id": "BomComponentKind",
+  "anyOf": [
+    {
+      "const": "phantom_component",
+      "type": "string"
+    },
+    {
+      "const": "llm_provider",
+      "type": "string"
+    },
+    {
+      "const": "pattern",
+      "type": "string"
+    },
+    {
+      "const": "bid",
+      "type": "string"
+    },
+    {
+      "const": "slot",
+      "type": "string"
+    },
+    {
+      "const": "other",
+      "type": "string"
+    }
+  ]
+}

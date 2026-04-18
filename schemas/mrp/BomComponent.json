@@ -1,0 +1,80 @@
+{
+  "$id": "BomComponent",
+  "description": "Common BOM-level component shape. Concrete subtypes add their own required fields via schema extension.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "component_id",
+    "kind",
+    "bom_version",
+    "normalization_complete"
+  ],
+  "properties": {
+    "component_id": {
+      "type": "string"
+    },
+    "kind": {
+      "$id": "BomComponentKind",
+      "anyOf": [
+        {
+          "const": "phantom_component",
+          "type": "string"
+        },
+        {
+          "const": "llm_provider",
+          "type": "string"
+        },
+        {
+          "const": "pattern",
+          "type": "string"
+        },
+        {
+          "const": "bid",
+          "type": "string"
+        },
+        {
+          "const": "slot",
+          "type": "string"
+        },
+        {
+          "const": "other",
+          "type": "string"
+        }
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "description": "Normalisation-invariant: all BOM-touched nodes carry this.",
+      "type": "string"
+    },
+    "normalization_complete": {
+      "description": "True when every required field is filled by the ingest pipeline.",
+      "type": "boolean"
+    },
+    "last_audited": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "provenance": {
+      "description": "Source tool / service that produced this component.",
+      "type": "string"
+    },
+    "tier": {
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Sourcing tier (1=internal, 2=external, 3=pattern-built).",
+      "type": "integer"
+    },
+    "capability": {
+      "type": "string"
+    },
+    "trust_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    }
+  }
+}

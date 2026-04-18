@@ -1,0 +1,145 @@
+{
+  "$id": "ProductionOrder",
+  "description": "Neo4j `:ProductionOrder` schema mirror; written by GenerationOrchestrator, read by vision-board.",
+  "type": "object",
+  "required": [
+    "order_id",
+    "product_type",
+    "status",
+    "planned_at",
+    "variance",
+    "bom_version"
+  ],
+  "properties": {
+    "order_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "product_type": {
+      "$id": "ProductType",
+      "description": "Kind of artifact the MRP pipeline should produce.",
+      "anyOf": [
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "document",
+          "type": "string"
+        },
+        {
+          "const": "presentation",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "pdf",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        }
+      ]
+    },
+    "status": {
+      "$id": "ProductionOrderStatus",
+      "anyOf": [
+        {
+          "const": "open",
+          "type": "string"
+        },
+        {
+          "const": "running",
+          "type": "string"
+        },
+        {
+          "const": "closed",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        }
+      ]
+    },
+    "planned_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "failed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "failure_reason": {
+      "type": "string"
+    },
+    "variance": {
+      "$id": "ProductionOrderVariance",
+      "additionalProperties": true,
+      "type": "object",
+      "properties": {
+        "sourced_components": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "planned_sections": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "actual_sections": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "planned_cost_usd": {
+          "type": "number"
+        },
+        "actual_cost_usd": {
+          "type": "number"
+        },
+        "planned_latency_ms": {
+          "type": "integer"
+        },
+        "actual_latency_ms": {
+          "type": "integer"
+        },
+        "quality_score": {
+          "minimum": 0,
+          "maximum": 1,
+          "type": "number"
+        }
+      }
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    },
+    "compliance_tier": {
+      "type": "string"
+    },
+    "cluster": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    }
+  }
+}

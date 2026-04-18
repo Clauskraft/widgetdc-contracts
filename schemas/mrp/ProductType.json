@@ -1,0 +1,30 @@
+{
+  "$id": "ProductType",
+  "description": "Kind of artifact the MRP pipeline should produce.",
+  "anyOf": [
+    {
+      "const": "architecture",
+      "type": "string"
+    },
+    {
+      "const": "document",
+      "type": "string"
+    },
+    {
+      "const": "presentation",
+      "type": "string"
+    },
+    {
+      "const": "diagram",
+      "type": "string"
+    },
+    {
+      "const": "pdf",
+      "type": "string"
+    },
+    {
+      "const": "code",
+      "type": "string"
+    }
+  ]
+}
