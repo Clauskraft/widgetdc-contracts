@@ -204,7 +204,7 @@ function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   let result = content
 
   for (const alias of aliases) {
-    const classDefRegex = new RegExp(`^class ${alias.from}\\(BaseModel\\):.*?(?=^class |\\Z)`, 'gms')
+    const classDefRegex = new RegExp(`^class ${alias.from}\\(BaseModel\\):.*?(?=^class |$(?![\\s\\S]))`, 'gms')
     result = result.replace(classDefRegex, `${alias.from} = ${alias.to}\n\n`)
   }
 
