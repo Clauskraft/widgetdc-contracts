@@ -46,8 +46,8 @@
       "type": "string"
     },
     "bom_version": {
-      "const": "2.0",
       "description": "Normalisation-invariant: all BOM-touched nodes carry this.",
+      "const": "2.0",
       "type": "string"
     },
     "normalization_complete": {

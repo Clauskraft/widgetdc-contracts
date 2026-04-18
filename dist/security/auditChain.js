@@ -15,7 +15,7 @@ export const AuditHashChainEntry = Type.Object({
     payload_hash: Type.String({ description: 'Hex-encoded SHA-256 of the canonicalised payload.' }),
     prev_hash: Type.String({ description: 'entry_hash of the previous chain entry; "GENESIS" for the first entry.' }),
     entry_hash: Type.String({ description: 'Hex-encoded SHA-256 of (ts_raw || tool || payload_hash || prev_hash).' }),
-    bom_version: Type.String({ const: '2.0' }),
+    bom_version: Type.Literal('2.0'),
     actor: Type.Optional(Type.String({ description: 'Authenticated client/agent id.' })),
     order_id: Type.Optional(Type.String({ format: 'uuid', description: 'Linked :ProductionOrder if any.' })),
     compliance_tier: Type.Optional(Type.String()),

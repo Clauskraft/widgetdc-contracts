@@ -14,7 +14,7 @@ export declare const BomComponent: import("@sinclair/typebox").TObject<{
     component_id: import("@sinclair/typebox").TString;
     kind: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"phantom_component">, import("@sinclair/typebox").TLiteral<"llm_provider">, import("@sinclair/typebox").TLiteral<"pattern">, import("@sinclair/typebox").TLiteral<"bid">, import("@sinclair/typebox").TLiteral<"slot">, import("@sinclair/typebox").TLiteral<"other">]>;
     name: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
-    bom_version: import("@sinclair/typebox").TString;
+    bom_version: import("@sinclair/typebox").TLiteral<"2.0">;
     normalization_complete: import("@sinclair/typebox").TBoolean;
     last_audited: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     provenance: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;

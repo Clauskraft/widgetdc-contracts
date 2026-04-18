@@ -30,7 +30,7 @@ export const DocumentSection = Type.Object({
 }, { $id: 'DocumentSection' });
 export const DocumentBom = Type.Object({
     product_type: Type.Literal('document'),
-    bom_version: Type.String({ const: '2.0' }),
+    bom_version: Type.Literal('2.0'),
     title: Type.String(),
     sections: Type.Array(DocumentSection),
     format: Type.Optional(DocumentFormat),
@@ -39,7 +39,7 @@ export const DocumentBom = Type.Object({
 }, { $id: 'DocumentBom' });
 export const ArchitectureBom = Type.Object({
     product_type: Type.Literal('architecture'),
-    bom_version: Type.String({ const: '2.0' }),
+    bom_version: Type.Literal('2.0'),
     blueprint_id: Type.Optional(Type.String()),
     title: Type.String(),
     requirements: Type.Array(Type.String()),
@@ -47,7 +47,7 @@ export const ArchitectureBom = Type.Object({
 }, { $id: 'ArchitectureBom' });
 export const GenericBom = Type.Object({
     product_type: ProductType,
-    bom_version: Type.String({ const: '2.0' }),
+    bom_version: Type.Literal('2.0'),
 }, { $id: 'GenericBom', additionalProperties: true });
 export const ProduceRequest = Type.Object({
     product_type: ProductType,

@@ -34,7 +34,7 @@ export const ProductionOrder = Type.Object({
     failed_at: Type.Optional(Type.String({ format: 'date-time' })),
     failure_reason: Type.Optional(Type.String()),
     variance: ProductionOrderVariance,
-    bom_version: Type.String({ const: '2.0' }),
+    bom_version: Type.Literal('2.0'),
     compliance_tier: Type.Optional(Type.String()),
     cluster: Type.Optional(Type.String()),
     provider_id: Type.Optional(Type.String()),

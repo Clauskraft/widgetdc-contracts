@@ -15,7 +15,7 @@ export declare const AuditHashChainEntry: import("@sinclair/typebox").TObject<{
     payload_hash: import("@sinclair/typebox").TString;
     prev_hash: import("@sinclair/typebox").TString;
     entry_hash: import("@sinclair/typebox").TString;
-    bom_version: import("@sinclair/typebox").TString;
+    bom_version: import("@sinclair/typebox").TLiteral<"2.0">;
     actor: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     order_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     compliance_tier: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;

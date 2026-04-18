@@ -24,7 +24,7 @@ export const BomComponent = Type.Object({
   component_id: Type.String(),
   kind: BomComponentKind,
   name: Type.Optional(Type.String()),
-  bom_version: Type.String({ const: '2.0', description: 'Normalisation-invariant: all BOM-touched nodes carry this.' }),
+  bom_version: Type.Literal('2.0', { description: 'Normalisation-invariant: all BOM-touched nodes carry this.' }),
   normalization_complete: Type.Boolean({ description: 'True when every required field is filled by the ingest pipeline.' }),
   last_audited: Type.Optional(Type.String({ format: 'date-time' })),
   provenance: Type.Optional(Type.String({ description: 'Source tool / service that produced this component.' })),

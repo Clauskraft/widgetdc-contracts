@@ -39,7 +39,7 @@ export declare const ProductionOrder: import("@sinclair/typebox").TObject<{
         actual_latency_ms: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TInteger>;
         quality_score: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TNumber>;
     }>;
-    bom_version: import("@sinclair/typebox").TString;
+    bom_version: import("@sinclair/typebox").TLiteral<"2.0">;
     compliance_tier: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     cluster: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
     provider_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
