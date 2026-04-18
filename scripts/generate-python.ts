@@ -164,6 +164,53 @@ function extractBody(filePath: string): string {
   return lines.slice(classIndex).join('\n').trimEnd()
 }
 
+type TypeAlias = { from: string; to: string }
+
+function detectDuplicateTypes(classNames: string[], generatedFiles: string[]): TypeAlias[] {
+  const aliases: TypeAlias[] = []
+  const publicTypes = new Set(classNames)
+
+  for (const filePath of generatedFiles) {
+    const content = readFileSync(filePath, 'utf-8')
+    const classMatches = content.matchAll(/^class\s+(\w+)\s*\(/gm)
+    for (const match of classMatches) {
+      const className = match[1]
+      if (!publicTypes.has(className)) {
+        const publicEquivalent = findPublicEquivalent(className, publicTypes, filePath)
+        if (publicEquivalent) {
+          aliases.push({ from: className, to: publicEquivalent })
+        }
+      }
+    }
+  }
+
+  return aliases
+}
+
+function findPublicEquivalent(privateClass: string, publicTypes: Set<string>, filePath: string): string | null {
+  const knownMappings: Record<string, string> = {
+    'ProposedRule': 'ConfiguratorRule',
+    'PreSeededNode': 'CanvasNodeSeed',
+  }
+
+  if (knownMappings[privateClass]) {
+    return publicTypes.has(knownMappings[privateClass]) ? knownMappings[privateClass] : null
+  }
+
+  return null
+}
+
+function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
+  let result = content
+
+  for (const alias of aliases) {
+    const classDefRegex = new RegExp(`^class ${alias.from}\\(BaseModel\\):.*?(?=^class |\\Z)`, 'gms')
+    result = result.replace(classDefRegex, `${alias.from} = ${alias.to}\n\n`)
+  }
+
+  return result
+}
+
 function mergeModule(moduleName: string, outputName: string, classNames: string[], generatedFiles: string[]): void {
   const imports = new Set<string>()
 
@@ -174,6 +221,8 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
       }
     }
   }
+
+  const aliases = detectDuplicateTypes(classNames, generatedFiles)
 
   const parts: string[] = [
     '"""',
@@ -194,7 +243,10 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
     parts.push(extractBody(filePath), '')
   }
 
-  writeFileSync(join(pythonDir, `${outputName}.py`), `${parts.join('\n').trimEnd()}\n`, 'utf-8')
+  let content = `${parts.join('\n').trimEnd()}\n`
+  content = applyTypeAliases(content, aliases)
+
+  writeFileSync(join(pythonDir, `${outputName}.py`), content, 'utf-8')
 }
 
 function writeInit(modules: string[]): void {

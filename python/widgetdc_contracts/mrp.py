@@ -179,20 +179,7 @@ class CanvasNodeSeed(BaseModel):
     )
     pane: Literal['canvas', 'markdown', 'slides', 'drawio', 'split'] | None = None
 
-class PreSeededNode(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    label: str
-    type: str = Field(
-        ...,
-        description='CanvasNodeType from widgetdc-canvas (e.g. Artifact, Pattern, Agent).',
-    )
-    payload: Any = Field(
-        ..., description='Free-form node payload; shape depends on type.'
-    )
-    pane: Literal['canvas', 'markdown', 'slides', 'drawio', 'split'] | None = None
-
+PreSeededNode = CanvasNodeSeed
 
 class CanvasResolution(BaseModel):
     track: Literal[
@@ -545,47 +532,7 @@ class ProductionOrderVariance(BaseModel):
     actual_latency_ms: int | None = None
     quality_score: float | None = Field(None, ge=0.0, le=1.0)
 
-class ProposedRule(BaseModel):
-    rule_id: str = Field(
-        ..., description='Stable identifier, e.g. "diag-intent" or "fallback".'
-    )
-    track: Literal[
-        'textual',
-        'slide_flow',
-        'diagram',
-        'architecture',
-        'graphical',
-        'code',
-        'experiment',
-    ] = Field(
-        ...,
-        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
-    )
-    match_kind: Literal['regex', 'length', 'feature', 'composite', 'fallback']
-    priority: int = Field(
-        ..., description='Top-down evaluation order; lower = checked first.'
-    )
-    weight: float = Field(
-        ...,
-        description='Reward-driven weight; top-performers float up in priority.',
-        ge=0.0,
-        le=10.0,
-    )
-    status: Literal['active', 'shadow', 'disabled', 'proposed']
-    pattern: str | None = Field(
-        None, description='Regex pattern string for match_kind=regex.'
-    )
-    feature_expr: str | None = Field(
-        None,
-        description='Predicate expression for match_kind=feature, e.g. "sequence_step>0 && prior_track!=null".',
-    )
-    description: str | None = None
-    created_at: AwareDatetime
-    updated_at: AwareDatetime
-    last_applied_at: AwareDatetime | None = None
-    authored_by: str | None = None
-    bom_version: Literal['2.0']
-
+ProposedRule = ConfiguratorRule
 
 class RuleMutationProposal(BaseModel):
     proposal_id: UUID
