@@ -5,6 +5,15 @@ All notable changes to `@widgetdc/contracts` will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-04-18
+
+### Fixed
+- `http/error`: add `$id` to `ApiError` + `ApiErrorCode` schemas (`2791c00`, LIN-859).
+  Both were the only public root schemas missing `$id`, breaking `$ref` chain
+  lookups in the JSON Schema registry. Without `$id`, `InsightIntegrityGuard`
+  rejects any payload carrying these types. Downstream consumers should bump
+  the pin to `0.4.4` to unblock error-envelope validation.
+
 ## [0.4.3] - 2026-04-09
 
 ### Changed
