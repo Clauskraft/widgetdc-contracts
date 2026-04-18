@@ -197,6 +197,29 @@ function findPublicEquivalent(privateClass: string, publicTypes: Set<string>, fi
     return publicTypes.has(knownMappings[privateClass]) ? knownMappings[privateClass] : null
   }
 
+  const content = readFileSync(filePath, 'utf-8')
+  const privateClassRegex = new RegExp(`^class ${privateClass}\\((?:BaseModel|RootModel[^)]*?)\\):.*?(?=^class |\\z)`, 'gms')
+  const privateMatch = privateClassRegex.exec(content)
+  if (!privateMatch) {
+    return null
+  }
+  const privateBody = privateMatch[0]
+
+  for (const publicType of publicTypes) {
+    const publicClassRegex = new RegExp(`^class ${publicType}\\((?:BaseModel|RootModel[^)]*?)\\):.*?(?=^class |\\z)`, 'gms')
+    const publicMatch = publicClassRegex.exec(content)
+    if (publicMatch) {
+      const publicBody = publicMatch[0]
+      const normalizedPrivate = privateBody.replace(/^class \w+/, 'class X').trim()
+      const normalizedPublic = publicBody.replace(/^class \w+/, 'class X').trim()
+      if (normalizedPrivate === normalizedPublic) {
+        console.warn(`[generate-python] Detected duplicate class '${privateClass}' equivalent to '${publicType}'. Consider adding to knownMappings.`)
+        return publicType
+      }
+    }
+  }
+
+  console.warn(`[generate-python] Private class '${privateClass}' has no public equivalent in knownMappings. Consider adding it manually.`)
   return null
 }
 
@@ -204,7 +227,7 @@ function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   let result = content
 
   for (const alias of aliases) {
-    const classDefRegex = new RegExp(`^class ${alias.from}\\(BaseModel\\):.*?(?=^class |$(?![\\s\\S]))`, 'gms')
+    const classDefRegex = new RegExp(`^class ${alias.from}\\([^)]+\\):.*?(?=^class |$(?![\\s\\S]))`, 'gms')
     result = result.replace(classDefRegex, `${alias.from} = ${alias.to}\n\n`)
   }
 
