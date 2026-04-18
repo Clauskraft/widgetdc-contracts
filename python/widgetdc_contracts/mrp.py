@@ -6,6 +6,7 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel
@@ -13,10 +14,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, Field
 from pydantic import Field, RootModel
 from pydantic import RootModel
+from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "DocumentBom", "DocumentFormat", "DocumentSection", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance"]
+__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "BridgeMessage", "BridgeMessageType", "BuilderTrack", "CanvasIntent", "CanvasNodeSeed", "CanvasResolution", "CanvasTrackOutcome", "ConfiguratorRule", "ConfiguratorRuleMatchKind", "ConfiguratorRuleStatus", "DocumentBom", "DocumentFormat", "DocumentSection", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "PaneId", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance", "RuleMutationProposal", "RulePrior"]
 
 class ArchitectureBom(BaseModel):
     product_type: Literal['architecture']
@@ -63,6 +65,239 @@ class BomComponentKind(
     root: Literal[
         'phantom_component', 'llm_provider', 'pattern', 'bid', 'slot', 'other'
     ]
+
+class BridgeMessage(BaseModel):
+    type: Literal[
+        'canvas.ready',
+        'canvas.node.create',
+        'canvas.node.update',
+        'canvas.node.delete',
+        'chat.update',
+        'chat.message',
+        'canvas.export',
+        'canvas.error',
+    ]
+    session_id: UUID
+    payload: Any
+    ts: AwareDatetime
+    origin: str | None = Field(
+        None,
+        description='Sender window.location.origin; receiver must validate against allowlist.',
+    )
+
+class BridgeMessageType(
+    RootModel[
+        Literal[
+            'canvas.ready',
+            'canvas.node.create',
+            'canvas.node.update',
+            'canvas.node.delete',
+            'chat.update',
+            'chat.message',
+            'canvas.export',
+            'canvas.error',
+        ]
+    ]
+):
+    root: Literal[
+        'canvas.ready',
+        'canvas.node.create',
+        'canvas.node.update',
+        'canvas.node.delete',
+        'chat.update',
+        'chat.message',
+        'canvas.export',
+        'canvas.error',
+    ]
+
+class BuilderTrack(
+    RootModel[
+        Literal[
+            'textual',
+            'slide_flow',
+            'diagram',
+            'architecture',
+            'graphical',
+            'code',
+            'experiment',
+        ]
+    ]
+):
+    root: Literal[
+        'textual',
+        'slide_flow',
+        'diagram',
+        'architecture',
+        'graphical',
+        'code',
+        'experiment',
+    ] = Field(
+        ...,
+        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
+    )
+
+class CanvasIntent(BaseModel):
+    user_text: str = Field(
+        ..., description='Free-form chat brief from the user.', min_length=1
+    )
+    surface_hint: Literal['pane', 'full', 'overlay'] | None = None
+    sequence_step: int | None = Field(
+        None, description='Multi-turn counter; >0 enables sticky-track rule.', ge=0
+    )
+    prior_track: (
+        Literal[
+            'textual',
+            'slide_flow',
+            'diagram',
+            'architecture',
+            'graphical',
+            'code',
+            'experiment',
+        ]
+        | None
+    ) = Field(
+        None,
+        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
+    )
+    compliance_tier: Literal['public', 'internal', 'legal', 'health'] | None = None
+    host_origin: str | None = Field(
+        None, description='Embedding host URL (e.g. open-webui, librechat, office).'
+    )
+    agent_id: str | None = None
+
+class CanvasNodeSeed(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    label: str
+    type: str = Field(
+        ...,
+        description='CanvasNodeType from widgetdc-canvas (e.g. Artifact, Pattern, Agent).',
+    )
+    payload: Any = Field(
+        ..., description='Free-form node payload; shape depends on type.'
+    )
+    pane: Literal['canvas', 'markdown', 'slides', 'drawio', 'split'] | None = None
+
+PreSeededNode = CanvasNodeSeed
+
+class CanvasResolution(BaseModel):
+    track: Literal[
+        'textual',
+        'slide_flow',
+        'diagram',
+        'architecture',
+        'graphical',
+        'code',
+        'experiment',
+    ] = Field(
+        ...,
+        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
+    )
+    initial_pane: Literal['canvas', 'markdown', 'slides', 'drawio', 'split']
+    canvas_session_id: UUID
+    embed_url: AnyUrl = Field(
+        ..., description='widgetdc-canvas URL with ?session=<id> — host iframes this.'
+    )
+    pre_seeded_nodes: list[PreSeededNode] | None = None
+    rationale: list[str] = Field(
+        ...,
+        description='Ordered list of configurator-rule IDs that matched, most-recent last.',
+    )
+    fold_strategy: str | None = Field(
+        None, description='FoldTier (T1..T7) when input > 5k tokens.'
+    )
+    bom_version: Literal['2.0']
+    resolved_at: AwareDatetime
+
+class CanvasTrackOutcome(BaseModel):
+    outcome_id: UUID
+    session_id: UUID = Field(..., description='FK to :CanvasSession')
+    matched_rule_ids: list[str] = Field(
+        ..., description='Ordered list of rules that fired for this resolution.'
+    )
+    winning_rule_id: str = Field(
+        ..., description='The rule that actually determined the track (first match).'
+    )
+    resolved_track: Literal[
+        'textual',
+        'slide_flow',
+        'diagram',
+        'architecture',
+        'graphical',
+        'code',
+        'experiment',
+    ] = Field(
+        ...,
+        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
+    )
+    user_satisfaction: float | None = Field(
+        None,
+        description='+1 user kept/exported, 0 neutral/unknown, -1 user abandoned or picked different track.',
+        ge=-1.0,
+        le=1.0,
+    )
+    artifact_quality_score: float | None = Field(
+        None,
+        description='Auto-computed from :ProductionOrder.variance.quality_score when session closes.',
+        ge=0.0,
+        le=1.0,
+    )
+    duration_ms: int | None = Field(None, ge=0)
+    host_origin: str | None = None
+    created_at: AwareDatetime
+    bom_version: Literal['2.0']
+
+class ConfiguratorRule(BaseModel):
+    rule_id: str = Field(
+        ..., description='Stable identifier, e.g. "diag-intent" or "fallback".'
+    )
+    track: Literal[
+        'textual',
+        'slide_flow',
+        'diagram',
+        'architecture',
+        'graphical',
+        'code',
+        'experiment',
+    ] = Field(
+        ...,
+        description='7 canonical builder tracks; canvas routes to the right one via configurator rules.',
+    )
+    match_kind: Literal['regex', 'length', 'feature', 'composite', 'fallback']
+    priority: int = Field(
+        ..., description='Top-down evaluation order; lower = checked first.'
+    )
+    weight: float = Field(
+        ...,
+        description='Reward-driven weight; top-performers float up in priority.',
+        ge=0.0,
+        le=10.0,
+    )
+    status: Literal['active', 'shadow', 'disabled', 'proposed']
+    pattern: str | None = Field(
+        None, description='Regex pattern string for match_kind=regex.'
+    )
+    feature_expr: str | None = Field(
+        None,
+        description='Predicate expression for match_kind=feature, e.g. "sequence_step>0 && prior_track!=null".',
+    )
+    description: str | None = None
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
+    last_applied_at: AwareDatetime | None = None
+    authored_by: str | None = None
+    bom_version: Literal['2.0']
+
+class ConfiguratorRuleMatchKind(
+    RootModel[Literal['regex', 'length', 'feature', 'composite', 'fallback']]
+):
+    root: Literal['regex', 'length', 'feature', 'composite', 'fallback']
+
+class ConfiguratorRuleStatus(
+    RootModel[Literal['active', 'shadow', 'disabled', 'proposed']]
+):
+    root: Literal['active', 'shadow', 'disabled', 'proposed']
 
 class Section(BaseModel):
     heading: str
@@ -138,6 +373,9 @@ class GenericBom(BaseModel):
         'architecture', 'document', 'presentation', 'diagram', 'pdf', 'code'
     ] = Field(..., description='Kind of artifact the MRP pipeline should produce.')
     bom_version: Literal['2.0']
+
+class PaneId(RootModel[Literal['canvas', 'markdown', 'slides', 'drawio', 'split']]):
+    root: Literal['canvas', 'markdown', 'slides', 'drawio', 'split']
 
 class Section(BaseModel):
     heading: str
@@ -293,3 +531,42 @@ class ProductionOrderVariance(BaseModel):
     planned_latency_ms: int | None = None
     actual_latency_ms: int | None = None
     quality_score: float | None = Field(None, ge=0.0, le=1.0)
+
+ProposedRule = ConfiguratorRule
+
+class RuleMutationProposal(BaseModel):
+    proposal_id: UUID
+    proposed_rule: ProposedRule = Field(
+        ...,
+        description='Graph-persisted :ConfiguratorRule node; read by CanvasIntentConfigurator.resolve(), mutated by CanvasRuleEvolver.',
+    )
+    rationale: str = Field(
+        ..., description='Why InventorProxy thinks this rule improves coverage.'
+    )
+    shadow_test_episode_count: int = Field(..., ge=0)
+    shadow_test_reward_avg: float = Field(..., ge=-1.0, le=1.0)
+    baseline_reward_avg: float = Field(
+        ...,
+        description='Reward average of the rule this would replace/augment.',
+        ge=-1.0,
+        le=1.0,
+    )
+    graduation_status: Literal['pending', 'graduated', 'rejected']
+    graduation_threshold: float = Field(
+        ..., description='Minimum reward_avg uplift required to graduate.'
+    )
+    proposed_at: AwareDatetime
+    graduated_at: AwareDatetime | None = None
+    bom_version: Literal['2.0']
+
+class RulePrior(BaseModel):
+    rule_id: str
+    window_days: int = Field(..., ge=1)
+    episode_count: int = Field(..., ge=0)
+    reward_avg: float = Field(..., ge=-1.0, le=1.0)
+    quality_avg: float = Field(..., ge=0.0, le=1.0)
+    weight_delta: float = Field(
+        ..., description='Proposed weight adjustment (applied after shadow-test).'
+    )
+    computed_at: AwareDatetime
+    bom_version: Literal['2.0']

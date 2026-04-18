@@ -1,0 +1,97 @@
+{
+  "$id": "CanvasIntent",
+  "description": "Input to CanvasIntentConfigurator.resolve() — free-form brief + context features.",
+  "type": "object",
+  "required": [
+    "user_text"
+  ],
+  "properties": {
+    "user_text": {
+      "minLength": 1,
+      "description": "Free-form chat brief from the user.",
+      "type": "string"
+    },
+    "surface_hint": {
+      "anyOf": [
+        {
+          "const": "pane",
+          "type": "string"
+        },
+        {
+          "const": "full",
+          "type": "string"
+        },
+        {
+          "const": "overlay",
+          "type": "string"
+        }
+      ]
+    },
+    "sequence_step": {
+      "minimum": 0,
+      "description": "Multi-turn counter; >0 enables sticky-track rule.",
+      "type": "integer"
+    },
+    "prior_track": {
+      "$id": "BuilderTrack",
+      "description": "7 canonical builder tracks; canvas routes to the right one via configurator rules.",
+      "anyOf": [
+        {
+          "const": "textual",
+          "type": "string"
+        },
+        {
+          "const": "slide_flow",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "graphical",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        },
+        {
+          "const": "experiment",
+          "type": "string"
+        }
+      ]
+    },
+    "compliance_tier": {
+      "anyOf": [
+        {
+          "const": "public",
+          "type": "string"
+        },
+        {
+          "const": "internal",
+          "type": "string"
+        },
+        {
+          "const": "legal",
+          "type": "string"
+        },
+        {
+          "const": "health",
+          "type": "string"
+        }
+      ]
+    },
+    "host_origin": {
+      "description": "Embedding host URL (e.g. open-webui, librechat, office).",
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    }
+  }
+}

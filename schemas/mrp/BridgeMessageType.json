@@ -1,0 +1,37 @@
+{
+  "$id": "BridgeMessageType",
+  "anyOf": [
+    {
+      "const": "canvas.ready",
+      "type": "string"
+    },
+    {
+      "const": "canvas.node.create",
+      "type": "string"
+    },
+    {
+      "const": "canvas.node.update",
+      "type": "string"
+    },
+    {
+      "const": "canvas.node.delete",
+      "type": "string"
+    },
+    {
+      "const": "chat.update",
+      "type": "string"
+    },
+    {
+      "const": "chat.message",
+      "type": "string"
+    },
+    {
+      "const": "canvas.export",
+      "type": "string"
+    },
+    {
+      "const": "canvas.error",
+      "type": "string"
+    }
+  ]
+}

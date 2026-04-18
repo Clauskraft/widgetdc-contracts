@@ -1,0 +1,153 @@
+{
+  "$id": "CanvasResolution",
+  "description": "CanvasIntentConfigurator.resolve() output; consumed by host pipeline/function to render iframe + seed nodes.",
+  "type": "object",
+  "required": [
+    "track",
+    "initial_pane",
+    "canvas_session_id",
+    "embed_url",
+    "rationale",
+    "bom_version",
+    "resolved_at"
+  ],
+  "properties": {
+    "track": {
+      "$id": "BuilderTrack",
+      "description": "7 canonical builder tracks; canvas routes to the right one via configurator rules.",
+      "anyOf": [
+        {
+          "const": "textual",
+          "type": "string"
+        },
+        {
+          "const": "slide_flow",
+          "type": "string"
+        },
+        {
+          "const": "diagram",
+          "type": "string"
+        },
+        {
+          "const": "architecture",
+          "type": "string"
+        },
+        {
+          "const": "graphical",
+          "type": "string"
+        },
+        {
+          "const": "code",
+          "type": "string"
+        },
+        {
+          "const": "experiment",
+          "type": "string"
+        }
+      ]
+    },
+    "initial_pane": {
+      "$id": "PaneId",
+      "anyOf": [
+        {
+          "const": "canvas",
+          "type": "string"
+        },
+        {
+          "const": "markdown",
+          "type": "string"
+        },
+        {
+          "const": "slides",
+          "type": "string"
+        },
+        {
+          "const": "drawio",
+          "type": "string"
+        },
+        {
+          "const": "split",
+          "type": "string"
+        }
+      ]
+    },
+    "canvas_session_id": {
+      "format": "uuid",
+      "type": "string"
+    },
+    "embed_url": {
+      "format": "uri",
+      "description": "widgetdc-canvas URL with ?session=<id> — host iframes this.",
+      "type": "string"
+    },
+    "pre_seeded_nodes": {
+      "type": "array",
+      "items": {
+        "$id": "CanvasNodeSeed",
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "label",
+          "type",
+          "payload"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "description": "CanvasNodeType from widgetdc-canvas (e.g. Artifact, Pattern, Agent).",
+            "type": "string"
+          },
+          "payload": {
+            "description": "Free-form node payload; shape depends on type."
+          },
+          "pane": {
+            "$id": "PaneId",
+            "anyOf": [
+              {
+                "const": "canvas",
+                "type": "string"
+              },
+              {
+                "const": "markdown",
+                "type": "string"
+              },
+              {
+                "const": "slides",
+                "type": "string"
+              },
+              {
+                "const": "drawio",
+                "type": "string"
+              },
+              {
+                "const": "split",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "rationale": {
+      "description": "Ordered list of configurator-rule IDs that matched, most-recent last.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fold_strategy": {
+      "description": "FoldTier (T1..T7) when input > 5k tokens.",
+      "type": "string"
+    },
+    "bom_version": {
+      "const": "2.0",
+      "type": "string"
+    },
+    "resolved_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
