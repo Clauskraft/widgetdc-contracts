@@ -1,0 +1,52 @@
+{
+  "additionalProperties": false,
+  "$id": "FitnessVector",
+  "description": "Six-axis normalized fitness vector used by composition scoring.",
+  "type": "object",
+  "required": [
+    "correctness",
+    "performance",
+    "cost",
+    "compliance",
+    "novelty",
+    "provenance"
+  ],
+  "properties": {
+    "correctness": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    },
+    "performance": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    },
+    "cost": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    },
+    "compliance": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    },
+    "novelty": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    },
+    "provenance": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Normalized score in [0,1]",
+      "type": "number"
+    }
+  }
+}

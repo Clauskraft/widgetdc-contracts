@@ -191,6 +191,7 @@ function findPublicEquivalent(privateClass: string, publicTypes: Set<string>, fi
   const knownMappings: Record<string, string> = {
     'ProposedRule': 'ConfiguratorRule',
     'PreSeededNode': 'CanvasNodeSeed',
+    'HandoffPayload': 'LauncherHandoffPayload',
   }
 
   if (knownMappings[privateClass]) {
