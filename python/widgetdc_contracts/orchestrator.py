@@ -949,19 +949,7 @@ class LauncherMode(RootModel[Literal['tool_only', 'single', 'swarm']]):
         ..., description='Execution modes exposed by launcher planning.'
     )
 
-class HandoffPayload(BaseModel):
-    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
-        ..., description='Intent values supported by the WidgeTDC launcher surface.'
-    )
-    prompt: str = Field(
-        ...,
-        description='Prompt payload handed to the deeper workspace surface.',
-        min_length=1,
-    )
-    executionPath: str = Field(
-        ..., description='Canonical runtime path selected for the task.', min_length=1
-    )
-
+HandoffPayload = LauncherHandoffPayload
 
 class LauncherPlanCore(BaseModel):
     intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
@@ -1024,19 +1012,7 @@ class Request(BaseModel):
     )
 
 
-class HandoffPayload(BaseModel):
-    intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
-        ..., description='Intent values supported by the WidgeTDC launcher surface.'
-    )
-    prompt: str = Field(
-        ...,
-        description='Prompt payload handed to the deeper workspace surface.',
-        min_length=1,
-    )
-    executionPath: str = Field(
-        ..., description='Canonical runtime path selected for the task.', min_length=1
-    )
-
+HandoffPayload = LauncherHandoffPayload
 
 class Plan(BaseModel):
     intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
