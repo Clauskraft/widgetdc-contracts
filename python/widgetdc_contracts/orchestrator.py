@@ -949,7 +949,7 @@ class LauncherMode(RootModel[Literal['tool_only', 'single', 'swarm']]):
         ..., description='Execution modes exposed by launcher planning.'
     )
 
-HandoffPayload = LauncherPlanCore
+HandoffPayload = LauncherHandoffPayload
 
 class LauncherPlanCore(BaseModel):
     intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(
@@ -1012,7 +1012,7 @@ class Request(BaseModel):
     )
 
 
-HandoffPayload = LauncherPlanCore
+HandoffPayload = LauncherHandoffPayload
 
 class Plan(BaseModel):
     intent: Literal['info', 'analyze', 'report', 'research', 'orchestrate'] = Field(

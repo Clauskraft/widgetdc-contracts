@@ -161,7 +161,7 @@ describe('fitnessVector helpers', () => {
       novelty: 0,
       provenance: 0,
     }
-    expect(fitnessAverage(v, { performance: 100, correctness: 0 })).toBeCloseTo((0 + 100 * 0 + 1 + 1 + 0 + 0) / 102)
+    expect(fitnessAverage(v, { performance: 100, correctness: 0 })).toBeCloseTo((0 + 100 * 0 + 1 + 1 + 0 + 0) / 104)
   })
 })
 
