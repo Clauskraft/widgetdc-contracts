@@ -17,17 +17,38 @@ const FitnessDimension = Type.Number({
   description: 'Normalized score in [0,1]',
 })
 
-export const FitnessVector = Type.Object({
-  correctness: FitnessDimension,
-  performance: FitnessDimension,
-  cost: FitnessDimension,
-  compliance: FitnessDimension,
-  novelty: FitnessDimension,
-  provenance: FitnessDimension,
-}, {
-  additionalProperties: false,
-  $id: 'FitnessVector',
-  description: 'Six-axis normalized fitness vector used by composition scoring.',
-})
+export const FitnessVector = Type.Object(
+  {
+    correctness: FitnessDimension,
+    performance: FitnessDimension,
+    cost: FitnessDimension,
+    compliance: FitnessDimension,
+    novelty: FitnessDimension,
+    provenance: FitnessDimension,
+  },
+  {
+    additionalProperties: false,
+    $id: 'FitnessVector',
+    description: 'Six-axis normalized fitness vector used by composition scoring.',
+  }
+)
 
 export type FitnessVector = Static<typeof FitnessVector>
+
+export function fitnessAverage(
+  v: FitnessVector,
+  weights?: Partial<Record<keyof FitnessVector, number>>
+): number {
+  const keys = Object.keys(v) as (keyof FitnessVector)[]
+  const w = keys.map((k) => weights?.[k] ?? 1)
+  const sum = keys.reduce((acc, k, i) => acc + v[k] * w[i], 0)
+  const norm = w.reduce((acc, x) => acc + x, 0)
+  return norm === 0 ? 0 : sum / norm
+}
+
+export function dominates(a: FitnessVector, b: FitnessVector): boolean {
+  const keys = Object.keys(a) as (keyof FitnessVector)[]
+  const weaklyBetter = keys.every((k) => a[k] >= b[k])
+  const strictlyBetter = keys.some((k) => a[k] > b[k])
+  return weaklyBetter && strictlyBetter
+}

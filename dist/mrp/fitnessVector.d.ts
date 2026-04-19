@@ -19,4 +19,6 @@ export declare const FitnessVector: import("@sinclair/typebox").TObject<{
     provenance: import("@sinclair/typebox").TNumber;
 }>;
 export type FitnessVector = Static<typeof FitnessVector>;
+export declare function fitnessAverage(v: FitnessVector, weights?: Partial<Record<keyof FitnessVector, number>>): number;
+export declare function dominates(a: FitnessVector, b: FitnessVector): boolean;
 //# sourceMappingURL=fitnessVector.d.ts.map

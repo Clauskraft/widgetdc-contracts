@@ -27,4 +27,17 @@ export const FitnessVector = Type.Object({
     $id: 'FitnessVector',
     description: 'Six-axis normalized fitness vector used by composition scoring.',
 });
+export function fitnessAverage(v, weights) {
+    const keys = Object.keys(v);
+    const w = keys.map((k) => weights?.[k] ?? 1);
+    const sum = keys.reduce((acc, k, i) => acc + v[k] * w[i], 0);
+    const norm = w.reduce((acc, x) => acc + x, 0);
+    return norm === 0 ? 0 : sum / norm;
+}
+export function dominates(a, b) {
+    const keys = Object.keys(a);
+    const weaklyBetter = keys.every((k) => a[k] >= b[k]);
+    const strictlyBetter = keys.some((k) => a[k] > b[k]);
+    return weaklyBetter && strictlyBetter;
+}
 //# sourceMappingURL=fitnessVector.js.map
