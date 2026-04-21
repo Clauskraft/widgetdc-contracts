@@ -18,7 +18,7 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "BridgeMessage", "BridgeMessageType", "BuilderTrack", "CanvasIntent", "CanvasNodeSeed", "CanvasResolution", "CanvasTrackOutcome", "ConfiguratorRule", "ConfiguratorRuleMatchKind", "ConfiguratorRuleStatus", "DocumentBom", "DocumentFormat", "DocumentSection", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "PaneId", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance", "RuleMutationProposal", "RulePrior"]
+__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "BridgeMessage", "BridgeMessageType", "BuilderTrack", "CanvasIntent", "CanvasNodeSeed", "CanvasResolution", "CanvasTrackOutcome", "ConfiguratorRule", "ConfiguratorRuleMatchKind", "ConfiguratorRuleStatus", "DocumentBom", "DocumentFormat", "DocumentSection", "FitnessVector", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "PaneId", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance", "RuleMutationProposal", "RulePrior"]
 
 class ArchitectureBom(BaseModel):
     product_type: Literal['architecture']
@@ -323,6 +323,25 @@ class DocumentSection(BaseModel):
     content: str
     level: int | None = Field(2, ge=1, le=6)
     citations: list[str] | None = None
+
+class FitnessVector(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    correctness: float = Field(
+        ..., description='Normalized score in [0,1]', ge=0.0, le=1.0
+    )
+    performance: float = Field(
+        ..., description='Normalized score in [0,1]', ge=0.0, le=1.0
+    )
+    cost: float = Field(..., description='Normalized score in [0,1]', ge=0.0, le=1.0)
+    compliance: float = Field(
+        ..., description='Normalized score in [0,1]', ge=0.0, le=1.0
+    )
+    novelty: float = Field(..., description='Normalized score in [0,1]', ge=0.0, le=1.0)
+    provenance: float = Field(
+        ..., description='Normalized score in [0,1]', ge=0.0, le=1.0
+    )
 
 class Definition(BaseModel):
     tier: Literal['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] = Field(

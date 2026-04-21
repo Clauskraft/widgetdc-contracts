@@ -5,4 +5,5 @@ export * from './bomComponent.js';
 export * from './canvasIntent.js';
 export * from './canvasRule.js';
 export * from './fitnessVector.js';
+export * from './operatorAnchoredPheromone.js';
 //# sourceMappingURL=index.d.ts.map
