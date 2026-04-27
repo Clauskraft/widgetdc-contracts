@@ -1,0 +1,64 @@
+{
+  "$id": "InspectOperatorAnchoredPheromoneResponse",
+  "description": "Inspection result payload for operator-anchored pheromone review.",
+  "type": "object",
+  "required": [
+    "status",
+    "pheromone_id",
+    "inspection_id",
+    "verdict",
+    "candidate_actions"
+  ],
+  "properties": {
+    "status": {
+      "const": "completed",
+      "type": "string"
+    },
+    "pheromone_id": {
+      "type": "string"
+    },
+    "inspection_id": {
+      "type": "string"
+    },
+    "verdict": {
+      "$id": "PheromoneInspectionVerdict",
+      "description": "Canonical inspection verdicts for operator-anchored pheromones.",
+      "anyOf": [
+        {
+          "const": "informational",
+          "type": "string"
+        },
+        {
+          "const": "relevant",
+          "type": "string"
+        },
+        {
+          "const": "novel",
+          "type": "string"
+        },
+        {
+          "const": "contradictory",
+          "type": "string"
+        },
+        {
+          "const": "breaking",
+          "type": "string"
+        },
+        {
+          "const": "incorrect",
+          "type": "string"
+        },
+        {
+          "const": "needs_review",
+          "type": "string"
+        }
+      ]
+    },
+    "candidate_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

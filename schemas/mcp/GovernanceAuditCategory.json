@@ -1,0 +1,37 @@
+{
+  "$id": "GovernanceAuditCategory",
+  "anyOf": [
+    {
+      "const": "graph_promotion",
+      "type": "string"
+    },
+    {
+      "const": "memory_promotion",
+      "type": "string"
+    },
+    {
+      "const": "data_read",
+      "type": "string"
+    },
+    {
+      "const": "tool_invocation",
+      "type": "string"
+    },
+    {
+      "const": "plan_lifecycle",
+      "type": "string"
+    },
+    {
+      "const": "policy_decision",
+      "type": "string"
+    },
+    {
+      "const": "external_call",
+      "type": "string"
+    },
+    {
+      "const": "security_event",
+      "type": "string"
+    }
+  ]
+}

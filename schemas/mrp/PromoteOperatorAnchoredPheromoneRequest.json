@@ -1,0 +1,26 @@
+{
+  "$id": "PromoteOperatorAnchoredPheromoneRequest",
+  "description": "Promotion request for an inspected operator-anchored pheromone.",
+  "type": "object",
+  "required": [
+    "target_kind"
+  ],
+  "properties": {
+    "target_kind": {
+      "anyOf": [
+        {
+          "const": "innovation_ticket",
+          "type": "string"
+        },
+        {
+          "const": "training_proposal",
+          "type": "string"
+        },
+        {
+          "const": "contradiction_review",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

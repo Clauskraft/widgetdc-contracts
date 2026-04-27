@@ -1,0 +1,38 @@
+{
+  "$id": "GraphPromotionResult",
+  "description": "Result of a typed graph promotion. Includes the spine_event_id for replay.",
+  "type": "object",
+  "required": [
+    "tool",
+    "promotion_type",
+    "promoted",
+    "correlation_id",
+    "evidence_ref"
+  ],
+  "properties": {
+    "tool": {
+      "type": "string"
+    },
+    "promotion_type": {
+      "type": "string"
+    },
+    "promoted": {
+      "type": "boolean"
+    },
+    "node_id": {
+      "type": "string"
+    },
+    "relationship_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "evidence_ref": {
+      "type": "string"
+    },
+    "spine_event_id": {
+      "type": "string"
+    }
+  }
+}

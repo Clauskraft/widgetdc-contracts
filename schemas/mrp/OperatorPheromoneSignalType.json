@@ -1,0 +1,38 @@
+{
+  "$id": "OperatorPheromoneSignalType",
+  "description": "Canonical signal types for operator-anchored pheromones.",
+  "anyOf": [
+    {
+      "const": "risk",
+      "type": "string"
+    },
+    {
+      "const": "novelty",
+      "type": "string"
+    },
+    {
+      "const": "question",
+      "type": "string"
+    },
+    {
+      "const": "claim",
+      "type": "string"
+    },
+    {
+      "const": "contradiction",
+      "type": "string"
+    },
+    {
+      "const": "breaking_change",
+      "type": "string"
+    },
+    {
+      "const": "opportunity",
+      "type": "string"
+    },
+    {
+      "const": "attention",
+      "type": "string"
+    }
+  ]
+}

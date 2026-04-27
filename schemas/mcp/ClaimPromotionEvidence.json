@@ -1,0 +1,81 @@
+{
+  "$id": "ClaimPromotionEvidence",
+  "description": "Evidence bundle pinned to a claim promotion. Promotion is gated by canary_run_ids + evidence_refs + policy_bundle_digest — no PR-merge-only promotion is permitted.",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "current_level",
+    "proposed_level",
+    "evidence_refs",
+    "canary_run_ids",
+    "policy_bundle_digest",
+    "reason"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "current_level": {
+      "anyOf": [
+        {
+          "const": "L0",
+          "type": "string"
+        },
+        {
+          "const": "L1",
+          "type": "string"
+        },
+        {
+          "const": "L2",
+          "type": "string"
+        },
+        {
+          "const": "L3",
+          "type": "string"
+        }
+      ]
+    },
+    "proposed_level": {
+      "anyOf": [
+        {
+          "const": "L0",
+          "type": "string"
+        },
+        {
+          "const": "L1",
+          "type": "string"
+        },
+        {
+          "const": "L2",
+          "type": "string"
+        },
+        {
+          "const": "L3",
+          "type": "string"
+        }
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "canary_run_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_bundle_digest": {
+      "type": "string"
+    },
+    "promoted_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

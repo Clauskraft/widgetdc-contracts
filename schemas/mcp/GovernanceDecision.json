@@ -1,0 +1,274 @@
+{
+  "$id": "GovernanceDecision",
+  "description": "Decision returned by the gate. allowed=true means proceed; allowed=false with code+reason explains the rejection class. policy_bundle_digest + policy_version pin the decision to a specific signed policy bundle.",
+  "type": "object",
+  "required": [
+    "allowed",
+    "code",
+    "reason",
+    "governance"
+  ],
+  "properties": {
+    "allowed": {
+      "type": "boolean"
+    },
+    "code": {
+      "$id": "GovernanceDecisionCode",
+      "anyOf": [
+        {
+          "const": "OK",
+          "type": "string"
+        },
+        {
+          "const": "PLAN_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "APPROVAL_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "UNCLASSIFIED_DANGEROUS_CALLER",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_EXPIRED",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_TOOL_NOT_ALLOWED",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_RISK_TOO_HIGH",
+          "type": "string"
+        },
+        {
+          "const": "POLICY_VIOLATION",
+          "type": "string"
+        },
+        {
+          "const": "COST_BUDGET_EXCEEDED",
+          "type": "string"
+        },
+        {
+          "const": "INTERNAL_ERROR",
+          "type": "string"
+        }
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "governance": {
+      "$id": "MCPToolGovernance",
+      "description": "Governance metadata declared on every MCP tool definition. The gate consults `risk_level` + `requires_plan` + `requires_approval` to decide execution path. Audience / source_protocol / standing_approval express the Architect Option B scheduled-internal-mutation lifecycle.",
+      "type": "object",
+      "required": [
+        "risk_level",
+        "requires_plan",
+        "requires_approval",
+        "cost_tier",
+        "audit_category"
+      ],
+      "properties": {
+        "risk_level": {
+          "$id": "GovernanceRiskLevel",
+          "anyOf": [
+            {
+              "const": "read_only",
+              "type": "string"
+            },
+            {
+              "const": "staged_write",
+              "type": "string"
+            },
+            {
+              "const": "production_write",
+              "type": "string"
+            }
+          ]
+        },
+        "requires_plan": {
+          "description": "If true, the gate rejects direct execution and routes through HyperAgent (create_plan → approve_plan → execute_plan → evaluate_plan).",
+          "type": "boolean"
+        },
+        "requires_approval": {
+          "description": "If true, plan creation alone is insufficient — operator OR policy-profile approval token required before execute_plan.",
+          "type": "boolean"
+        },
+        "cost_tier": {
+          "$id": "GovernanceCostTier",
+          "anyOf": [
+            {
+              "const": "free",
+              "type": "string"
+            },
+            {
+              "const": "low",
+              "type": "string"
+            },
+            {
+              "const": "medium",
+              "type": "string"
+            },
+            {
+              "const": "high",
+              "type": "string"
+            },
+            {
+              "const": "premium",
+              "type": "string"
+            }
+          ]
+        },
+        "audit_category": {
+          "$id": "GovernanceAuditCategory",
+          "anyOf": [
+            {
+              "const": "graph_promotion",
+              "type": "string"
+            },
+            {
+              "const": "memory_promotion",
+              "type": "string"
+            },
+            {
+              "const": "data_read",
+              "type": "string"
+            },
+            {
+              "const": "tool_invocation",
+              "type": "string"
+            },
+            {
+              "const": "plan_lifecycle",
+              "type": "string"
+            },
+            {
+              "const": "policy_decision",
+              "type": "string"
+            },
+            {
+              "const": "external_call",
+              "type": "string"
+            },
+            {
+              "const": "security_event",
+              "type": "string"
+            }
+          ]
+        },
+        "audience": {
+          "$id": "GovernanceAudience",
+          "anyOf": [
+            {
+              "const": "external_agent",
+              "type": "string"
+            },
+            {
+              "const": "internal_system",
+              "type": "string"
+            },
+            {
+              "const": "operator_only",
+              "type": "string"
+            }
+          ]
+        },
+        "source_protocol": {
+          "$id": "GovernanceSourceProtocol",
+          "anyOf": [
+            {
+              "const": "rest",
+              "type": "string"
+            },
+            {
+              "const": "mcp",
+              "type": "string"
+            },
+            {
+              "const": "streamable",
+              "type": "string"
+            },
+            {
+              "const": "openai",
+              "type": "string"
+            },
+            {
+              "const": "websocket",
+              "type": "string"
+            },
+            {
+              "const": "agent_chain",
+              "type": "string"
+            },
+            {
+              "const": "scheduled_job",
+              "type": "string"
+            },
+            {
+              "const": "internal",
+              "type": "string"
+            }
+          ]
+        },
+        "standing_approval": {
+          "$id": "GovernanceStandingApproval",
+          "description": "Standing approval block for scheduled internal governed mutation. Replaces the per-call HyperAgent plan+approval flow for cron-driven callers while preserving auditable lifecycle (granted/expires/review/policy).",
+          "type": "object",
+          "required": [
+            "approval_token_digest",
+            "granted_by",
+            "granted_at",
+            "expires_at",
+            "review_after",
+            "policy_bundle_digest"
+          ],
+          "properties": {
+            "approval_token_digest": {
+              "description": "sha256 of the standing approval token (no plaintext)",
+              "type": "string"
+            },
+            "granted_by": {
+              "description": "Operator identity (user id or role)",
+              "type": "string"
+            },
+            "granted_at": {
+              "format": "date-time",
+              "description": "ISO datetime when the approval was granted",
+              "type": "string"
+            },
+            "expires_at": {
+              "format": "date-time",
+              "description": "ISO datetime — MUST be set; null forbidden for standing approvals",
+              "type": "string"
+            },
+            "review_after": {
+              "format": "date-time",
+              "description": "ISO datetime — operator review cadence",
+              "type": "string"
+            },
+            "policy_bundle_digest": {
+              "description": "sha256 of the active policy bundle this approval is bound to",
+              "type": "string"
+            }
+          }
+        },
+        "system_plan_id": {
+          "description": "Pinned plan-id for scheduled internal callers (Option B)",
+          "type": "string"
+        }
+      }
+    },
+    "policy_bundle_digest": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    }
+  }
+}

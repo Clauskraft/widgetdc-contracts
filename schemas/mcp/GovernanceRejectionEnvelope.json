@@ -1,0 +1,144 @@
+{
+  "$id": "GovernanceRejectionEnvelope",
+  "description": "HTTP 403 body returned by the universal gate when a call is rejected. Carries enough information for the caller to either self-recover (via next_step) or surface the rejection to a human.",
+  "type": "object",
+  "required": [
+    "error_class",
+    "tool",
+    "code",
+    "requirement",
+    "reason",
+    "next_step",
+    "correlation_id"
+  ],
+  "properties": {
+    "error_class": {
+      "const": "governance_rejection",
+      "type": "string"
+    },
+    "tool": {
+      "type": "string"
+    },
+    "risk_level": {
+      "$id": "GovernanceRiskLevel",
+      "anyOf": [
+        {
+          "const": "read_only",
+          "type": "string"
+        },
+        {
+          "const": "staged_write",
+          "type": "string"
+        },
+        {
+          "const": "production_write",
+          "type": "string"
+        }
+      ]
+    },
+    "code": {
+      "$id": "GovernanceDecisionCode",
+      "anyOf": [
+        {
+          "const": "OK",
+          "type": "string"
+        },
+        {
+          "const": "PLAN_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "APPROVAL_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "UNCLASSIFIED_DANGEROUS_CALLER",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_EXPIRED",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_TOOL_NOT_ALLOWED",
+          "type": "string"
+        },
+        {
+          "const": "BYPASS_RISK_TOO_HIGH",
+          "type": "string"
+        },
+        {
+          "const": "POLICY_VIOLATION",
+          "type": "string"
+        },
+        {
+          "const": "COST_BUDGET_EXCEEDED",
+          "type": "string"
+        },
+        {
+          "const": "INTERNAL_ERROR",
+          "type": "string"
+        }
+      ]
+    },
+    "requirement": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "next_step": {
+      "$id": "GovernanceRejectionNextStep",
+      "description": "Action-oriented next-step instruction returned with every rejection so callers can self-recover (matches the Learning Interface Contract — GOV-2.1).",
+      "type": "object",
+      "required": [
+        "action"
+      ],
+      "properties": {
+        "action": {
+          "anyOf": [
+            {
+              "const": "create_plan",
+              "type": "string"
+            },
+            {
+              "const": "request_approval",
+              "type": "string"
+            },
+            {
+              "const": "classify_caller",
+              "type": "string"
+            },
+            {
+              "const": "refresh_bypass",
+              "type": "string"
+            },
+            {
+              "const": "contact_operator",
+              "type": "string"
+            }
+          ]
+        },
+        "endpoint": {
+          "description": "Endpoint or tool name the caller should invoke next",
+          "type": "string"
+        },
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "policy_bundle_digest": {
+      "type": "string"
+    }
+  }
+}

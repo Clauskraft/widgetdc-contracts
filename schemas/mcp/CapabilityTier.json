@@ -1,0 +1,21 @@
+{
+  "$id": "CapabilityTier",
+  "anyOf": [
+    {
+      "const": "untrusted",
+      "type": "string"
+    },
+    {
+      "const": "observed",
+      "type": "string"
+    },
+    {
+      "const": "governed",
+      "type": "string"
+    },
+    {
+      "const": "canonical",
+      "type": "string"
+    }
+  ]
+}

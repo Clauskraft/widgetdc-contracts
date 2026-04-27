@@ -1,0 +1,34 @@
+{
+  "$id": "PheromoneInspectionVerdict",
+  "description": "Canonical inspection verdicts for operator-anchored pheromones.",
+  "anyOf": [
+    {
+      "const": "informational",
+      "type": "string"
+    },
+    {
+      "const": "relevant",
+      "type": "string"
+    },
+    {
+      "const": "novel",
+      "type": "string"
+    },
+    {
+      "const": "contradictory",
+      "type": "string"
+    },
+    {
+      "const": "breaking",
+      "type": "string"
+    },
+    {
+      "const": "incorrect",
+      "type": "string"
+    },
+    {
+      "const": "needs_review",
+      "type": "string"
+    }
+  ]
+}

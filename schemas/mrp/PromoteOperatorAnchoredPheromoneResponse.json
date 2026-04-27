@@ -1,0 +1,44 @@
+{
+  "$id": "PromoteOperatorAnchoredPheromoneResponse",
+  "description": "Promotion outcome payload for operator-anchored pheromones.",
+  "type": "object",
+  "required": [
+    "status",
+    "pheromone_id",
+    "target_kind",
+    "target_id"
+  ],
+  "properties": {
+    "status": {
+      "anyOf": [
+        {
+          "const": "accepted",
+          "type": "string"
+        },
+        {
+          "const": "rejected",
+          "type": "string"
+        }
+      ]
+    },
+    "pheromone_id": {
+      "type": "string"
+    },
+    "target_kind": {
+      "type": "string"
+    },
+    "target_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rejection_reason": {
+      "type": "string"
+    }
+  }
+}

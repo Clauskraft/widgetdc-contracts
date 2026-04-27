@@ -1,0 +1,26 @@
+{
+  "$id": "PheromoneClientSurface",
+  "description": "Client surfaces allowed to create operator-anchored pheromones.",
+  "anyOf": [
+    {
+      "const": "canvas",
+      "type": "string"
+    },
+    {
+      "const": "word_addin",
+      "type": "string"
+    },
+    {
+      "const": "excel_addin",
+      "type": "string"
+    },
+    {
+      "const": "web_overlay",
+      "type": "string"
+    },
+    {
+      "const": "filesystem_shell",
+      "type": "string"
+    }
+  ]
+}

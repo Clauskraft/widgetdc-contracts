@@ -1,0 +1,73 @@
+{
+  "$id": "SpineEventType",
+  "anyOf": [
+    {
+      "const": "tool_called",
+      "type": "string"
+    },
+    {
+      "const": "tool_succeeded",
+      "type": "string"
+    },
+    {
+      "const": "tool_failed",
+      "type": "string"
+    },
+    {
+      "const": "tool_rejected",
+      "type": "string"
+    },
+    {
+      "const": "governance_rejection",
+      "type": "string"
+    },
+    {
+      "const": "policy_decision_made",
+      "type": "string"
+    },
+    {
+      "const": "plan_created",
+      "type": "string"
+    },
+    {
+      "const": "plan_approved",
+      "type": "string"
+    },
+    {
+      "const": "plan_executed",
+      "type": "string"
+    },
+    {
+      "const": "plan_evaluated",
+      "type": "string"
+    },
+    {
+      "const": "graph_promotion_completed",
+      "type": "string"
+    },
+    {
+      "const": "lineage_linked",
+      "type": "string"
+    },
+    {
+      "const": "memory_promoted",
+      "type": "string"
+    },
+    {
+      "const": "premium_escalation_used",
+      "type": "string"
+    },
+    {
+      "const": "cost_budget_exceeded",
+      "type": "string"
+    },
+    {
+      "const": "capability_canary_run",
+      "type": "string"
+    },
+    {
+      "const": "policy_violation_detected",
+      "type": "string"
+    }
+  ]
+}

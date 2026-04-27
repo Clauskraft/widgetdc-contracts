@@ -1,0 +1,190 @@
+{
+  "$id": "HumanSignaledPheromoneTriggerRequest",
+  "description": "Orchestrator payload for propagating a human-signaled pheromone into swarm pheromone processing.",
+  "type": "object",
+  "required": [
+    "source",
+    "domain",
+    "label",
+    "signal_type",
+    "client_surface"
+  ],
+  "properties": {
+    "source": {
+      "minLength": 1,
+      "maxLength": 128,
+      "type": "string"
+    },
+    "domain": {
+      "minLength": 1,
+      "maxLength": 128,
+      "type": "string"
+    },
+    "label": {
+      "minLength": 1,
+      "maxLength": 256,
+      "type": "string"
+    },
+    "signal_type": {
+      "$id": "OperatorPheromoneSignalType",
+      "description": "Canonical signal types for operator-anchored pheromones.",
+      "anyOf": [
+        {
+          "const": "risk",
+          "type": "string"
+        },
+        {
+          "const": "novelty",
+          "type": "string"
+        },
+        {
+          "const": "question",
+          "type": "string"
+        },
+        {
+          "const": "claim",
+          "type": "string"
+        },
+        {
+          "const": "contradiction",
+          "type": "string"
+        },
+        {
+          "const": "breaking_change",
+          "type": "string"
+        },
+        {
+          "const": "opportunity",
+          "type": "string"
+        },
+        {
+          "const": "attention",
+          "type": "string"
+        }
+      ]
+    },
+    "client_surface": {
+      "$id": "PheromoneClientSurface",
+      "description": "Client surfaces allowed to create operator-anchored pheromones.",
+      "anyOf": [
+        {
+          "const": "canvas",
+          "type": "string"
+        },
+        {
+          "const": "word_addin",
+          "type": "string"
+        },
+        {
+          "const": "excel_addin",
+          "type": "string"
+        },
+        {
+          "const": "web_overlay",
+          "type": "string"
+        },
+        {
+          "const": "filesystem_shell",
+          "type": "string"
+        }
+      ]
+    },
+    "strength": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "rationale": {
+      "maxLength": 1000,
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {
+          "type": "number"
+        }
+      }
+    },
+    "anchor": {
+      "$id": "ResourceAnchorInput",
+      "description": "Stable locator payload for operator-anchored pheromone placement.",
+      "type": "object",
+      "required": [
+        "anchor_kind",
+        "resource_uri",
+        "locator_json"
+      ],
+      "properties": {
+        "anchor_kind": {
+          "anyOf": [
+            {
+              "const": "docx-page",
+              "type": "string"
+            },
+            {
+              "const": "docx-paragraph",
+              "type": "string"
+            },
+            {
+              "const": "xlsx-cell",
+              "type": "string"
+            },
+            {
+              "const": "xlsx-range",
+              "type": "string"
+            },
+            {
+              "const": "file",
+              "type": "string"
+            },
+            {
+              "const": "folder",
+              "type": "string"
+            },
+            {
+              "const": "pdf-page",
+              "type": "string"
+            },
+            {
+              "const": "web-url",
+              "type": "string"
+            },
+            {
+              "const": "web-selection",
+              "type": "string"
+            },
+            {
+              "const": "code-span",
+              "type": "string"
+            }
+          ]
+        },
+        "resource_uri": {
+          "minLength": 1,
+          "maxLength": 2048,
+          "type": "string"
+        },
+        "resource_label": {
+          "minLength": 1,
+          "maxLength": 255,
+          "type": "string"
+        },
+        "locator_json": {
+          "type": "object",
+          "patternProperties": {
+            "^(.*)$": {}
+          }
+        },
+        "anchor_text": {
+          "maxLength": 4000,
+          "type": "string"
+        },
+        "content_fingerprint": {
+          "maxLength": 255,
+          "type": "string"
+        }
+      }
+    }
+  }
+}

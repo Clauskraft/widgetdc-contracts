@@ -1,0 +1,54 @@
+{
+  "$id": "GraphPromotionRequest",
+  "description": "Typed request a HyperAgent plan submits to a governed promotion tool. Replaces raw graph.write_cypher for broad-agent use. Evidence_ref + intent are required so spine_events become a readable business log.",
+  "type": "object",
+  "required": [
+    "promotion_type",
+    "evidence_ref",
+    "intent",
+    "payload"
+  ],
+  "properties": {
+    "promotion_type": {
+      "anyOf": [
+        {
+          "const": "metric",
+          "type": "string"
+        },
+        {
+          "const": "capability",
+          "type": "string"
+        },
+        {
+          "const": "observation",
+          "type": "string"
+        },
+        {
+          "const": "decision",
+          "type": "string"
+        },
+        {
+          "const": "pattern",
+          "type": "string"
+        },
+        {
+          "const": "lineage",
+          "type": "string"
+        }
+      ]
+    },
+    "evidence_ref": {
+      "description": "URL or identifier pointing to the evidence backing this promotion",
+      "type": "string"
+    },
+    "intent": {
+      "description": "One-line description of the business intent for audit replay",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "type": "object",
+      "properties": {}
+    }
+  }
+}
