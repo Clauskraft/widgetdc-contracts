@@ -1,0 +1,17 @@
+{
+  "$id": "GovernanceRiskLevel",
+  "anyOf": [
+    {
+      "const": "read_only",
+      "type": "string"
+    },
+    {
+      "const": "staged_write",
+      "type": "string"
+    },
+    {
+      "const": "production_write",
+      "type": "string"
+    }
+  ]
+}

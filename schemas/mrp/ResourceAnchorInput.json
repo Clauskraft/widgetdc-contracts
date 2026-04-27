@@ -1,0 +1,80 @@
+{
+  "$id": "ResourceAnchorInput",
+  "description": "Stable locator payload for operator-anchored pheromone placement.",
+  "type": "object",
+  "required": [
+    "anchor_kind",
+    "resource_uri",
+    "locator_json"
+  ],
+  "properties": {
+    "anchor_kind": {
+      "anyOf": [
+        {
+          "const": "docx-page",
+          "type": "string"
+        },
+        {
+          "const": "docx-paragraph",
+          "type": "string"
+        },
+        {
+          "const": "xlsx-cell",
+          "type": "string"
+        },
+        {
+          "const": "xlsx-range",
+          "type": "string"
+        },
+        {
+          "const": "file",
+          "type": "string"
+        },
+        {
+          "const": "folder",
+          "type": "string"
+        },
+        {
+          "const": "pdf-page",
+          "type": "string"
+        },
+        {
+          "const": "web-url",
+          "type": "string"
+        },
+        {
+          "const": "web-selection",
+          "type": "string"
+        },
+        {
+          "const": "code-span",
+          "type": "string"
+        }
+      ]
+    },
+    "resource_uri": {
+      "minLength": 1,
+      "maxLength": 2048,
+      "type": "string"
+    },
+    "resource_label": {
+      "minLength": 1,
+      "maxLength": 255,
+      "type": "string"
+    },
+    "locator_json": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "anchor_text": {
+      "maxLength": 4000,
+      "type": "string"
+    },
+    "content_fingerprint": {
+      "maxLength": 255,
+      "type": "string"
+    }
+  }
+}

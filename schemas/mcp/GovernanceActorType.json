@@ -1,0 +1,25 @@
+{
+  "$id": "GovernanceActorType",
+  "anyOf": [
+    {
+      "const": "agent",
+      "type": "string"
+    },
+    {
+      "const": "user",
+      "type": "string"
+    },
+    {
+      "const": "system",
+      "type": "string"
+    },
+    {
+      "const": "cron",
+      "type": "string"
+    },
+    {
+      "const": "operator",
+      "type": "string"
+    }
+  ]
+}

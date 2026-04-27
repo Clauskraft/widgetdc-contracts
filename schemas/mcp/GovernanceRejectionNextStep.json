@@ -1,0 +1,47 @@
+{
+  "$id": "GovernanceRejectionNextStep",
+  "description": "Action-oriented next-step instruction returned with every rejection so callers can self-recover (matches the Learning Interface Contract — GOV-2.1).",
+  "type": "object",
+  "required": [
+    "action"
+  ],
+  "properties": {
+    "action": {
+      "anyOf": [
+        {
+          "const": "create_plan",
+          "type": "string"
+        },
+        {
+          "const": "request_approval",
+          "type": "string"
+        },
+        {
+          "const": "classify_caller",
+          "type": "string"
+        },
+        {
+          "const": "refresh_bypass",
+          "type": "string"
+        },
+        {
+          "const": "contact_operator",
+          "type": "string"
+        }
+      ]
+    },
+    "endpoint": {
+      "description": "Endpoint or tool name the caller should invoke next",
+      "type": "string"
+    },
+    "required_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hint": {
+      "type": "string"
+    }
+  }
+}

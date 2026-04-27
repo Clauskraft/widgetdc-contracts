@@ -1,0 +1,45 @@
+{
+  "$id": "GovernanceDecisionCode",
+  "anyOf": [
+    {
+      "const": "OK",
+      "type": "string"
+    },
+    {
+      "const": "PLAN_REQUIRED",
+      "type": "string"
+    },
+    {
+      "const": "APPROVAL_REQUIRED",
+      "type": "string"
+    },
+    {
+      "const": "UNCLASSIFIED_DANGEROUS_CALLER",
+      "type": "string"
+    },
+    {
+      "const": "BYPASS_EXPIRED",
+      "type": "string"
+    },
+    {
+      "const": "BYPASS_TOOL_NOT_ALLOWED",
+      "type": "string"
+    },
+    {
+      "const": "BYPASS_RISK_TOO_HIGH",
+      "type": "string"
+    },
+    {
+      "const": "POLICY_VIOLATION",
+      "type": "string"
+    },
+    {
+      "const": "COST_BUDGET_EXCEEDED",
+      "type": "string"
+    },
+    {
+      "const": "INTERNAL_ERROR",
+      "type": "string"
+    }
+  ]
+}

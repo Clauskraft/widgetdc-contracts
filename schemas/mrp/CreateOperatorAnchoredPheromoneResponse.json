@@ -1,0 +1,35 @@
+{
+  "$id": "CreateOperatorAnchoredPheromoneResponse",
+  "description": "Backend acceptance payload for operator-anchored pheromone placement.",
+  "type": "object",
+  "required": [
+    "status",
+    "pheromone_id",
+    "anchor_id",
+    "inspection_enqueued",
+    "accepted_at",
+    "directive_run_id"
+  ],
+  "properties": {
+    "status": {
+      "const": "accepted",
+      "type": "string"
+    },
+    "pheromone_id": {
+      "type": "string"
+    },
+    "anchor_id": {
+      "type": "string"
+    },
+    "inspection_enqueued": {
+      "type": "boolean"
+    },
+    "accepted_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "directive_run_id": {
+      "type": "string"
+    }
+  }
+}

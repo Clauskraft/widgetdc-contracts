@@ -1,0 +1,17 @@
+{
+  "$id": "GovernanceAudience",
+  "anyOf": [
+    {
+      "const": "external_agent",
+      "type": "string"
+    },
+    {
+      "const": "internal_system",
+      "type": "string"
+    },
+    {
+      "const": "operator_only",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "$id": "GovernanceContext",
+  "description": "Server-trusted execution context. Carries actor identity, correlation, and source protocol so EventSpine and the gate can reason about who is calling and why. Client-supplied context.governance fields are rejected.",
+  "type": "object",
+  "required": [
+    "actor_id",
+    "actor_type",
+    "correlation_id",
+    "source_protocol",
+    "server_trusted"
+  ],
+  "properties": {
+    "actor_id": {
+      "type": "string"
+    },
+    "actor_type": {
+      "$id": "GovernanceActorType",
+      "anyOf": [
+        {
+          "const": "agent",
+          "type": "string"
+        },
+        {
+          "const": "user",
+          "type": "string"
+        },
+        {
+          "const": "system",
+          "type": "string"
+        },
+        {
+          "const": "cron",
+          "type": "string"
+        },
+        {
+          "const": "operator",
+          "type": "string"
+        }
+      ]
+    },
+    "correlation_id": {
+      "description": "Cross-service correlation id; required for replay/audit",
+      "type": "string"
+    },
+    "parent_event_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "workflow_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plan_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "approval_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tenant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_protocol": {
+      "$id": "GovernanceSourceProtocol",
+      "anyOf": [
+        {
+          "const": "rest",
+          "type": "string"
+        },
+        {
+          "const": "mcp",
+          "type": "string"
+        },
+        {
+          "const": "streamable",
+          "type": "string"
+        },
+        {
+          "const": "openai",
+          "type": "string"
+        },
+        {
+          "const": "websocket",
+          "type": "string"
+        },
+        {
+          "const": "agent_chain",
+          "type": "string"
+        },
+        {
+          "const": "scheduled_job",
+          "type": "string"
+        },
+        {
+          "const": "internal",
+          "type": "string"
+        }
+      ]
+    },
+    "server_trusted": {
+      "const": true,
+      "type": "boolean"
+    }
+  }
+}

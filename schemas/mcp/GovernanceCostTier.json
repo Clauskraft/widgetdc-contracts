@@ -1,0 +1,25 @@
+{
+  "$id": "GovernanceCostTier",
+  "anyOf": [
+    {
+      "const": "free",
+      "type": "string"
+    },
+    {
+      "const": "low",
+      "type": "string"
+    },
+    {
+      "const": "medium",
+      "type": "string"
+    },
+    {
+      "const": "high",
+      "type": "string"
+    },
+    {
+      "const": "premium",
+      "type": "string"
+    }
+  ]
+}

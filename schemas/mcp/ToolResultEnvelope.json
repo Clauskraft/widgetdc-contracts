@@ -1,0 +1,58 @@
+{
+  "$id": "ToolResultEnvelope",
+  "description": "Canonical result envelope returned to the caller after a successful invocation.",
+  "type": "object",
+  "required": [
+    "tool",
+    "result",
+    "correlation_id"
+  ],
+  "properties": {
+    "tool": {
+      "type": "string"
+    },
+    "result": {},
+    "correlation_id": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "cost": {
+      "type": "object",
+      "required": [
+        "cost_tier"
+      ],
+      "properties": {
+        "cost_tier": {
+          "$id": "GovernanceCostTier",
+          "anyOf": [
+            {
+              "const": "free",
+              "type": "string"
+            },
+            {
+              "const": "low",
+              "type": "string"
+            },
+            {
+              "const": "medium",
+              "type": "string"
+            },
+            {
+              "const": "high",
+              "type": "string"
+            },
+            {
+              "const": "premium",
+              "type": "string"
+            }
+          ]
+        },
+        "units": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$id": "GovernanceStandingApproval",
+  "description": "Standing approval block for scheduled internal governed mutation. Replaces the per-call HyperAgent plan+approval flow for cron-driven callers while preserving auditable lifecycle (granted/expires/review/policy).",
+  "type": "object",
+  "required": [
+    "approval_token_digest",
+    "granted_by",
+    "granted_at",
+    "expires_at",
+    "review_after",
+    "policy_bundle_digest"
+  ],
+  "properties": {
+    "approval_token_digest": {
+      "description": "sha256 of the standing approval token (no plaintext)",
+      "type": "string"
+    },
+    "granted_by": {
+      "description": "Operator identity (user id or role)",
+      "type": "string"
+    },
+    "granted_at": {
+      "format": "date-time",
+      "description": "ISO datetime when the approval was granted",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "description": "ISO datetime — MUST be set; null forbidden for standing approvals",
+      "type": "string"
+    },
+    "review_after": {
+      "format": "date-time",
+      "description": "ISO datetime — operator review cadence",
+      "type": "string"
+    },
+    "policy_bundle_digest": {
+      "description": "sha256 of the active policy bundle this approval is bound to",
+      "type": "string"
+    }
+  }
+}

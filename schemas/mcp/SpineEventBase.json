@@ -1,0 +1,249 @@
+{
+  "$id": "SpineEventBase",
+  "description": "Base shape for every typed event in the EventSpine.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "timestamp",
+    "actor_id",
+    "actor_type",
+    "correlation_id",
+    "outcome",
+    "payload"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "actor_type": {
+      "$id": "GovernanceActorType",
+      "anyOf": [
+        {
+          "const": "agent",
+          "type": "string"
+        },
+        {
+          "const": "user",
+          "type": "string"
+        },
+        {
+          "const": "system",
+          "type": "string"
+        },
+        {
+          "const": "cron",
+          "type": "string"
+        },
+        {
+          "const": "operator",
+          "type": "string"
+        }
+      ]
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "parent_event_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tool_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "plan_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "workflow_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tenant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "risk_level": {
+      "anyOf": [
+        {
+          "$id": "GovernanceRiskLevel",
+          "anyOf": [
+            {
+              "const": "read_only",
+              "type": "string"
+            },
+            {
+              "const": "staged_write",
+              "type": "string"
+            },
+            {
+              "const": "production_write",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "audit_category": {
+      "anyOf": [
+        {
+          "$id": "GovernanceAuditCategory",
+          "anyOf": [
+            {
+              "const": "graph_promotion",
+              "type": "string"
+            },
+            {
+              "const": "memory_promotion",
+              "type": "string"
+            },
+            {
+              "const": "data_read",
+              "type": "string"
+            },
+            {
+              "const": "tool_invocation",
+              "type": "string"
+            },
+            {
+              "const": "plan_lifecycle",
+              "type": "string"
+            },
+            {
+              "const": "policy_decision",
+              "type": "string"
+            },
+            {
+              "const": "external_call",
+              "type": "string"
+            },
+            {
+              "const": "security_event",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cost_tier": {
+      "anyOf": [
+        {
+          "$id": "GovernanceCostTier",
+          "anyOf": [
+            {
+              "const": "free",
+              "type": "string"
+            },
+            {
+              "const": "low",
+              "type": "string"
+            },
+            {
+              "const": "medium",
+              "type": "string"
+            },
+            {
+              "const": "high",
+              "type": "string"
+            },
+            {
+              "const": "premium",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "outcome": {
+      "anyOf": [
+        {
+          "const": "success",
+          "type": "string"
+        },
+        {
+          "const": "failure",
+          "type": "string"
+        },
+        {
+          "const": "rejected",
+          "type": "string"
+        },
+        {
+          "const": "pending",
+          "type": "string"
+        }
+      ]
+    },
+    "error_class": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "payload": {}
+  }
+}

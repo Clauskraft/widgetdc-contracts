@@ -1,0 +1,75 @@
+{
+  "$id": "CapabilityLifecycleState",
+  "description": "Capability tier + recent canary history (GOV-8 promotion engine).",
+  "type": "object",
+  "required": [
+    "capability_id",
+    "current_tier",
+    "recent_canary_history"
+  ],
+  "properties": {
+    "capability_id": {
+      "type": "string"
+    },
+    "current_tier": {
+      "$id": "CapabilityTier",
+      "anyOf": [
+        {
+          "const": "untrusted",
+          "type": "string"
+        },
+        {
+          "const": "observed",
+          "type": "string"
+        },
+        {
+          "const": "governed",
+          "type": "string"
+        },
+        {
+          "const": "canonical",
+          "type": "string"
+        }
+      ]
+    },
+    "promoted_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "recent_canary_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "run_id",
+          "status",
+          "checked_at"
+        ],
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "const": "green",
+                "type": "string"
+              },
+              {
+                "const": "red",
+                "type": "string"
+              }
+            ]
+          },
+          "checked_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "evidence_ref": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "$id": "HumanSignaledPheromoneTriggerResponse",
+  "description": "Orchestrator acknowledgement for a human-signaled pheromone trigger.",
+  "type": "object",
+  "required": [
+    "status",
+    "domain",
+    "signal_type",
+    "client_surface",
+    "message"
+  ],
+  "properties": {
+    "status": {
+      "anyOf": [
+        {
+          "const": "accepted",
+          "type": "string"
+        },
+        {
+          "const": "rejected",
+          "type": "string"
+        }
+      ]
+    },
+    "domain": {
+      "type": "string"
+    },
+    "signal_type": {
+      "$id": "OperatorPheromoneSignalType",
+      "description": "Canonical signal types for operator-anchored pheromones.",
+      "anyOf": [
+        {
+          "const": "risk",
+          "type": "string"
+        },
+        {
+          "const": "novelty",
+          "type": "string"
+        },
+        {
+          "const": "question",
+          "type": "string"
+        },
+        {
+          "const": "claim",
+          "type": "string"
+        },
+        {
+          "const": "contradiction",
+          "type": "string"
+        },
+        {
+          "const": "breaking_change",
+          "type": "string"
+        },
+        {
+          "const": "opportunity",
+          "type": "string"
+        },
+        {
+          "const": "attention",
+          "type": "string"
+        }
+      ]
+    },
+    "client_surface": {
+      "$id": "PheromoneClientSurface",
+      "description": "Client surfaces allowed to create operator-anchored pheromones.",
+      "anyOf": [
+        {
+          "const": "canvas",
+          "type": "string"
+        },
+        {
+          "const": "word_addin",
+          "type": "string"
+        },
+        {
+          "const": "excel_addin",
+          "type": "string"
+        },
+        {
+          "const": "web_overlay",
+          "type": "string"
+        },
+        {
+          "const": "filesystem_shell",
+          "type": "string"
+        }
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "accepted_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

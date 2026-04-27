@@ -1,0 +1,37 @@
+{
+  "$id": "GovernanceSourceProtocol",
+  "anyOf": [
+    {
+      "const": "rest",
+      "type": "string"
+    },
+    {
+      "const": "mcp",
+      "type": "string"
+    },
+    {
+      "const": "streamable",
+      "type": "string"
+    },
+    {
+      "const": "openai",
+      "type": "string"
+    },
+    {
+      "const": "websocket",
+      "type": "string"
+    },
+    {
+      "const": "agent_chain",
+      "type": "string"
+    },
+    {
+      "const": "scheduled_job",
+      "type": "string"
+    },
+    {
+      "const": "internal",
+      "type": "string"
+    }
+  ]
+}
