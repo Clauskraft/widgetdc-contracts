@@ -1,0 +1,37 @@
+{
+  "$id": "BOMItemType",
+  "anyOf": [
+    {
+      "const": "provider_call",
+      "type": "string"
+    },
+    {
+      "const": "grounding",
+      "type": "string"
+    },
+    {
+      "const": "compression",
+      "type": "string"
+    },
+    {
+      "const": "routing",
+      "type": "string"
+    },
+    {
+      "const": "tool_invocation",
+      "type": "string"
+    },
+    {
+      "const": "synthesis",
+      "type": "string"
+    },
+    {
+      "const": "verification",
+      "type": "string"
+    },
+    {
+      "const": "skill_selection",
+      "type": "string"
+    }
+  ]
+}

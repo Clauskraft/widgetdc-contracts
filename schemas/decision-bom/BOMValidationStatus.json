@@ -1,0 +1,21 @@
+{
+  "$id": "BOMValidationStatus",
+  "anyOf": [
+    {
+      "const": "pending",
+      "type": "string"
+    },
+    {
+      "const": "passed",
+      "type": "string"
+    },
+    {
+      "const": "failed",
+      "type": "string"
+    },
+    {
+      "const": "skipped",
+      "type": "string"
+    }
+  ]
+}

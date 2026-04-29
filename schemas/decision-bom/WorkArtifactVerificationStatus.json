@@ -1,0 +1,25 @@
+{
+  "$id": "WorkArtifactVerificationStatus",
+  "anyOf": [
+    {
+      "const": "pending",
+      "type": "string"
+    },
+    {
+      "const": "verified",
+      "type": "string"
+    },
+    {
+      "const": "failed",
+      "type": "string"
+    },
+    {
+      "const": "expired",
+      "type": "string"
+    },
+    {
+      "const": "revoked",
+      "type": "string"
+    }
+  ]
+}

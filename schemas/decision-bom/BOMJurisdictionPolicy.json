@@ -1,0 +1,29 @@
+{
+  "$id": "BOMJurisdictionPolicy",
+  "anyOf": [
+    {
+      "const": "EU_ONLY",
+      "type": "string"
+    },
+    {
+      "const": "DK_ONLY",
+      "type": "string"
+    },
+    {
+      "const": "NO_CN",
+      "type": "string"
+    },
+    {
+      "const": "NO_US",
+      "type": "string"
+    },
+    {
+      "const": "LOCAL_ONLY",
+      "type": "string"
+    },
+    {
+      "const": "NONE",
+      "type": "string"
+    }
+  ]
+}

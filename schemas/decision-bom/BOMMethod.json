@@ -1,0 +1,25 @@
+{
+  "$id": "BOMMethod",
+  "anyOf": [
+    {
+      "const": "RLM",
+      "type": "string"
+    },
+    {
+      "const": "RAG",
+      "type": "string"
+    },
+    {
+      "const": "Folding",
+      "type": "string"
+    },
+    {
+      "const": "LLM",
+      "type": "string"
+    },
+    {
+      "const": "MCP",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,343 @@
+{
+  "$id": "ConfigurationSnapshot",
+  "description": "Immutable hash-anchored release-first object per Deep Research Report 2 Layer 3. Verifiable via verifyArtifact() endpoint.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "id",
+    "snapshot_type",
+    "feature_model_version",
+    "rule_set_version",
+    "route_template_version",
+    "bom_run_id",
+    "items",
+    "snapshot_hash",
+    "canonicalization_version",
+    "signature_domain",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "pattern": "^configsnap-[a-zA-Z0-9-]{8,}$",
+      "type": "string"
+    },
+    "snapshot_type": {
+      "$id": "ConfigurationSnapshotType",
+      "anyOf": [
+        {
+          "const": "session",
+          "type": "string"
+        },
+        {
+          "const": "release",
+          "type": "string"
+        },
+        {
+          "const": "tenant",
+          "type": "string"
+        },
+        {
+          "const": "demo",
+          "type": "string"
+        }
+      ]
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "feature_model_version": {
+      "description": "Pin of :FeatureModel{version} (FODA-style feature tree).",
+      "type": "string"
+    },
+    "rule_set_version": {
+      "description": "Pin of MethodSelector ruleset.",
+      "type": "string"
+    },
+    "route_template_version": {
+      "description": "Pin of :RouteTemplate{version}.",
+      "type": "string"
+    },
+    "bom_run_id": {
+      "pattern": "^bomrun-[a-zA-Z0-9-]{8,}$",
+      "type": "string"
+    },
+    "items": {
+      "minItems": 1,
+      "description": "Resolution invariant requires ≥1 BOMItem.",
+      "type": "array",
+      "items": {
+        "$id": "ConfigurationSnapshotItem",
+        "description": "Reference to a BOMItem contained in a snapshot.",
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "bom_item_id",
+          "method_selected"
+        ],
+        "properties": {
+          "bom_item_id": {
+            "pattern": "^bomitem-[a-zA-Z0-9-]{8,}$",
+            "type": "string"
+          },
+          "method_selected": {
+            "anyOf": [
+              {
+                "const": "RLM",
+                "type": "string"
+              },
+              {
+                "const": "RAG",
+                "type": "string"
+              },
+              {
+                "const": "Folding",
+                "type": "string"
+              },
+              {
+                "const": "LLM",
+                "type": "string"
+              },
+              {
+                "const": "MCP",
+                "type": "string"
+              }
+            ]
+          },
+          "evidence_hash": {
+            "pattern": "^sha256:[a-f0-9]{16}$",
+            "type": "string"
+          },
+          "validation_status": {
+            "anyOf": [
+              {
+                "const": "pending",
+                "type": "string"
+              },
+              {
+                "const": "passed",
+                "type": "string"
+              },
+              {
+                "const": "failed",
+                "type": "string"
+              },
+              {
+                "const": "skipped",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "derived_artifacts": {
+      "type": "array",
+      "items": {
+        "$id": "ConfigurationSnapshotDerivedArtifact",
+        "description": "WorkArtifact produced as part of a snapshot. Each must satisfy invariant I4.",
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type"
+        ],
+        "properties": {
+          "artifact_id": {
+            "type": "string"
+          },
+          "artifact_type": {
+            "anyOf": [
+              {
+                "const": "document",
+                "type": "string"
+              },
+              {
+                "const": "decision",
+                "type": "string"
+              },
+              {
+                "const": "deliverable",
+                "type": "string"
+              },
+              {
+                "const": "config_bundle",
+                "type": "string"
+              },
+              {
+                "const": "code_patch",
+                "type": "string"
+              },
+              {
+                "const": "report",
+                "type": "string"
+              }
+            ]
+          },
+          "uri": {
+            "type": "string"
+          },
+          "evidence_hash": {
+            "pattern": "^sha256:[a-f0-9]{16}$",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "items": {
+        "$id": "ConfigurationSnapshotApproval",
+        "description": "Approval chain entry. Required for snapshot_type=release.",
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "approver_id",
+          "approval_type",
+          "approved_at"
+        ],
+        "properties": {
+          "approver_id": {
+            "type": "string"
+          },
+          "approval_type": {
+            "anyOf": [
+              {
+                "const": "operator",
+                "type": "string"
+              },
+              {
+                "const": "hyperagent",
+                "type": "string"
+              },
+              {
+                "const": "policy_engine",
+                "type": "string"
+              },
+              {
+                "const": "compliance_officer",
+                "type": "string"
+              },
+              {
+                "const": "claim_promotion",
+                "type": "string"
+              }
+            ]
+          },
+          "approval_token": {
+            "description": "Opaque token bound to snapshot id. Required for L3 promotions.",
+            "type": "string"
+          },
+          "approved_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "policy_profile": {
+      "type": "string"
+    },
+    "jurisdiction_policy": {
+      "anyOf": [
+        {
+          "const": "EU_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "DK_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NO_CN",
+          "type": "string"
+        },
+        {
+          "const": "NO_US",
+          "type": "string"
+        },
+        {
+          "const": "LOCAL_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "type": "string"
+        }
+      ]
+    },
+    "data_class": {
+      "anyOf": [
+        {
+          "const": "pii",
+          "type": "string"
+        },
+        {
+          "const": "confidential",
+          "type": "string"
+        },
+        {
+          "const": "public",
+          "type": "string"
+        },
+        {
+          "const": "legal",
+          "type": "string"
+        }
+      ]
+    },
+    "snapshot_hash": {
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "Full sha256 of canonical payload (RFC 8785 JCS).",
+      "type": "string"
+    },
+    "canonicalization_version": {
+      "description": "Default: \"jcs-rfc8785-v1\".",
+      "type": "string"
+    },
+    "signature": {
+      "description": "Ed25519 over snapshot_hash.",
+      "type": "string"
+    },
+    "signing_pubkey_id": {
+      "type": "string"
+    },
+    "signature_domain": {
+      "description": "Default: \"widgetdc.config-snapshot.v1\".",
+      "type": "string"
+    },
+    "previous_snapshot_id": {
+      "pattern": "^configsnap-[a-zA-Z0-9-]{8,}$",
+      "type": "string"
+    },
+    "supersedes_reason": {
+      "type": "string"
+    },
+    "verify_endpoint": {
+      "type": "string"
+    },
+    "workflow_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "compile_started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "last_verified_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
