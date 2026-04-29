@@ -1,0 +1,64 @@
+{
+  "$id": "ConfigurationSnapshotItem",
+  "description": "Reference to a BOMItem contained in a snapshot.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "bom_item_id",
+    "method_selected"
+  ],
+  "properties": {
+    "bom_item_id": {
+      "pattern": "^bomitem-[a-zA-Z0-9-]{8,}$",
+      "type": "string"
+    },
+    "method_selected": {
+      "anyOf": [
+        {
+          "const": "RLM",
+          "type": "string"
+        },
+        {
+          "const": "RAG",
+          "type": "string"
+        },
+        {
+          "const": "Folding",
+          "type": "string"
+        },
+        {
+          "const": "LLM",
+          "type": "string"
+        },
+        {
+          "const": "MCP",
+          "type": "string"
+        }
+      ]
+    },
+    "evidence_hash": {
+      "pattern": "^sha256:[a-f0-9]{16}$",
+      "type": "string"
+    },
+    "validation_status": {
+      "anyOf": [
+        {
+          "const": "pending",
+          "type": "string"
+        },
+        {
+          "const": "passed",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        },
+        {
+          "const": "skipped",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

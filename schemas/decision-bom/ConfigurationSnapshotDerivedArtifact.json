@@ -1,0 +1,50 @@
+{
+  "$id": "ConfigurationSnapshotDerivedArtifact",
+  "description": "WorkArtifact produced as part of a snapshot. Each must satisfy invariant I4.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "artifact_type"
+  ],
+  "properties": {
+    "artifact_id": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "anyOf": [
+        {
+          "const": "document",
+          "type": "string"
+        },
+        {
+          "const": "decision",
+          "type": "string"
+        },
+        {
+          "const": "deliverable",
+          "type": "string"
+        },
+        {
+          "const": "config_bundle",
+          "type": "string"
+        },
+        {
+          "const": "code_patch",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "type": "string"
+        }
+      ]
+    },
+    "uri": {
+      "type": "string"
+    },
+    "evidence_hash": {
+      "pattern": "^sha256:[a-f0-9]{16}$",
+      "type": "string"
+    }
+  }
+}

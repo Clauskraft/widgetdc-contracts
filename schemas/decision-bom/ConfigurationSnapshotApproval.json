@@ -1,0 +1,48 @@
+{
+  "$id": "ConfigurationSnapshotApproval",
+  "description": "Approval chain entry. Required for snapshot_type=release.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "approver_id",
+    "approval_type",
+    "approved_at"
+  ],
+  "properties": {
+    "approver_id": {
+      "type": "string"
+    },
+    "approval_type": {
+      "anyOf": [
+        {
+          "const": "operator",
+          "type": "string"
+        },
+        {
+          "const": "hyperagent",
+          "type": "string"
+        },
+        {
+          "const": "policy_engine",
+          "type": "string"
+        },
+        {
+          "const": "compliance_officer",
+          "type": "string"
+        },
+        {
+          "const": "claim_promotion",
+          "type": "string"
+        }
+      ]
+    },
+    "approval_token": {
+      "description": "Opaque token bound to snapshot id. Required for L3 promotions.",
+      "type": "string"
+    },
+    "approved_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

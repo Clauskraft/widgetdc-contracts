@@ -1,0 +1,322 @@
+{
+  "$id": "BOMItem",
+  "description": "First-class decision unit per Deep Research Report 1. Five invariants enforced by canary: completed-run, BOMItem resolution, sovereign, crypto, claim.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "id",
+    "bom_run_id",
+    "item_type",
+    "decision_type",
+    "policy_requirement",
+    "method_selected",
+    "method_reason",
+    "validation_status"
+  ],
+  "properties": {
+    "id": {
+      "pattern": "^bomitem-[a-zA-Z0-9-]{8,}$",
+      "description": "Globally unique BOMItem id.",
+      "type": "string"
+    },
+    "bom_run_id": {
+      "pattern": "^bomrun-[a-zA-Z0-9-]{8,}$",
+      "description": "Parent PhantomBOMRun id (HAS_ITEM edge).",
+      "type": "string"
+    },
+    "item_type": {
+      "$id": "BOMItemType",
+      "anyOf": [
+        {
+          "const": "provider_call",
+          "type": "string"
+        },
+        {
+          "const": "grounding",
+          "type": "string"
+        },
+        {
+          "const": "compression",
+          "type": "string"
+        },
+        {
+          "const": "routing",
+          "type": "string"
+        },
+        {
+          "const": "tool_invocation",
+          "type": "string"
+        },
+        {
+          "const": "synthesis",
+          "type": "string"
+        },
+        {
+          "const": "verification",
+          "type": "string"
+        },
+        {
+          "const": "skill_selection",
+          "type": "string"
+        }
+      ]
+    },
+    "decision_type": {
+      "$id": "BOMDecisionType",
+      "anyOf": [
+        {
+          "const": "method_selection",
+          "type": "string"
+        },
+        {
+          "const": "provider_selection",
+          "type": "string"
+        },
+        {
+          "const": "knowledge_pack_selection",
+          "type": "string"
+        },
+        {
+          "const": "fold_strategy",
+          "type": "string"
+        },
+        {
+          "const": "tool_selection",
+          "type": "string"
+        },
+        {
+          "const": "verification_step",
+          "type": "string"
+        },
+        {
+          "const": "skill_route",
+          "type": "string"
+        }
+      ]
+    },
+    "data_class": {
+      "$id": "BOMDataClass",
+      "anyOf": [
+        {
+          "const": "pii",
+          "type": "string"
+        },
+        {
+          "const": "confidential",
+          "type": "string"
+        },
+        {
+          "const": "public",
+          "type": "string"
+        },
+        {
+          "const": "legal",
+          "type": "string"
+        }
+      ]
+    },
+    "authority_requirement": {
+      "anyOf": [
+        {
+          "const": "regulator",
+          "type": "string"
+        },
+        {
+          "const": "internal",
+          "type": "string"
+        },
+        {
+          "const": "none",
+          "type": "string"
+        }
+      ]
+    },
+    "policy_requirement": {
+      "description": "Policy bundle id this item is bound to (empty only if data_class=public).",
+      "type": "string"
+    },
+    "jurisdiction_policy": {
+      "$id": "BOMJurisdictionPolicy",
+      "anyOf": [
+        {
+          "const": "EU_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "DK_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NO_CN",
+          "type": "string"
+        },
+        {
+          "const": "NO_US",
+          "type": "string"
+        },
+        {
+          "const": "LOCAL_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "type": "string"
+        }
+      ]
+    },
+    "method_selected": {
+      "$id": "BOMMethod",
+      "anyOf": [
+        {
+          "const": "RLM",
+          "type": "string"
+        },
+        {
+          "const": "RAG",
+          "type": "string"
+        },
+        {
+          "const": "Folding",
+          "type": "string"
+        },
+        {
+          "const": "LLM",
+          "type": "string"
+        },
+        {
+          "const": "MCP",
+          "type": "string"
+        }
+      ]
+    },
+    "method_reason": {
+      "minLength": 1,
+      "description": "Rationale chain (e.g. \"compliance_required → RLM\").",
+      "type": "string"
+    },
+    "applied_rules": {
+      "description": "Ordered MethodSelector rules that fired.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sovereignty_enforced": {
+      "description": "True if MethodSelector forced fallback due to data_class/jurisdiction.",
+      "type": "boolean"
+    },
+    "allowed_methods": {
+      "type": "array",
+      "items": {
+        "$id": "BOMMethod",
+        "anyOf": [
+          {
+            "const": "RLM",
+            "type": "string"
+          },
+          {
+            "const": "RAG",
+            "type": "string"
+          },
+          {
+            "const": "Folding",
+            "type": "string"
+          },
+          {
+            "const": "LLM",
+            "type": "string"
+          },
+          {
+            "const": "MCP",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "allowed_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "denied_providers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estimated_input_tokens": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "source_grounded_required": {
+      "type": "boolean"
+    },
+    "evidence_hash": {
+      "pattern": "^sha256:[a-f0-9]{16}$",
+      "description": "16-char sha256 prefix of canonical evidence (RFC 8785).",
+      "type": "string"
+    },
+    "signature": {
+      "description": "Ed25519 signature (RFC 8032). Empty until ToolContractSigner finalises.",
+      "type": "string"
+    },
+    "signing_pubkey_id": {
+      "type": "string"
+    },
+    "signature_domain": {
+      "description": "Default: \"widgetdc.bom-item.v1\".",
+      "type": "string"
+    },
+    "canonicalization_version": {
+      "description": "Default: \"jcs-rfc8785-v1\".",
+      "type": "string"
+    },
+    "validation_status": {
+      "$id": "BOMValidationStatus",
+      "anyOf": [
+        {
+          "const": "pending",
+          "type": "string"
+        },
+        {
+          "const": "passed",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        },
+        {
+          "const": "skipped",
+          "type": "string"
+        }
+      ]
+    },
+    "resolved": {
+      "description": "True after a typed edge is wired (RESOLVED_BY/ROUTED_BY/etc.).",
+      "type": "boolean"
+    },
+    "workflow_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "description": "ALWAYS required for event spine emission.",
+      "type": "string"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "last_audited": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

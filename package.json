@@ -58,6 +58,10 @@
       "types": "./dist/security/index.d.ts",
       "import": "./dist/security/index.js"
     },
+    "./decision-bom": {
+      "types": "./dist/decision-bom/index.d.ts",
+      "import": "./dist/decision-bom/index.js"
+    },
     "./llm": {
       "types": "./dist/llm/index.d.ts",
       "import": "./dist/llm/index.js"

@@ -1,0 +1,41 @@
+{
+  "$id": "WorkArtifactType",
+  "anyOf": [
+    {
+      "const": "document",
+      "type": "string"
+    },
+    {
+      "const": "decision",
+      "type": "string"
+    },
+    {
+      "const": "deliverable",
+      "type": "string"
+    },
+    {
+      "const": "config_bundle",
+      "type": "string"
+    },
+    {
+      "const": "code_patch",
+      "type": "string"
+    },
+    {
+      "const": "report",
+      "type": "string"
+    },
+    {
+      "const": "graph_snapshot",
+      "type": "string"
+    },
+    {
+      "const": "compliance_evidence",
+      "type": "string"
+    },
+    {
+      "const": "audit_log",
+      "type": "string"
+    }
+  ]
+}

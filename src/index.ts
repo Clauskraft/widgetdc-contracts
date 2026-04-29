@@ -16,6 +16,7 @@
  *   import { LlmMatrix, TaskType } from '@widgetdc/contracts/llm'
  *   import { ProduceRequest, ProductionOrder } from '@widgetdc/contracts/mrp'
  *   import { AuditHashChainEntry } from '@widgetdc/contracts/security'
+ *   import { BOMItem, ConfigurationSnapshot, WorkArtifact } from '@widgetdc/contracts/decision-bom'
  */
 
 export * from './cognitive/index.js'
@@ -32,3 +33,4 @@ export * from './security/index.js'
 export * from './normalization/index.js'
 export * from './adoption/index.js'
 export * from './llm/index.js'
+export * from './decision-bom/index.js'

@@ -1,0 +1,33 @@
+{
+  "$id": "BOMDecisionType",
+  "anyOf": [
+    {
+      "const": "method_selection",
+      "type": "string"
+    },
+    {
+      "const": "provider_selection",
+      "type": "string"
+    },
+    {
+      "const": "knowledge_pack_selection",
+      "type": "string"
+    },
+    {
+      "const": "fold_strategy",
+      "type": "string"
+    },
+    {
+      "const": "tool_selection",
+      "type": "string"
+    },
+    {
+      "const": "verification_step",
+      "type": "string"
+    },
+    {
+      "const": "skill_route",
+      "type": "string"
+    }
+  ]
+}
