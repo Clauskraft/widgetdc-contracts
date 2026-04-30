@@ -1,7 +1,7 @@
 name: Harvest on Merge — Pattern Citation Lineage
 
-# Cross-repo extension of WidgeTDC's harvest-on-merge.yml per ADR-007.
-# v2: long-form curl flags + file-based JSON body for GHA-secret-masking robustness.
+# v3: hardcoded BACKEND_URL (it's public). Only BACKEND_API_KEY remains a secret.
+# This isolates secret-handling bugs and makes URL invariant.
 
 on:
   push:
@@ -14,6 +14,9 @@ concurrency:
 
 permissions:
   contents: read
+
+env:
+  BACKEND_URL: https://backend-production-d3da.up.railway.app
 
 jobs:
   harvest-citation:
@@ -45,9 +48,8 @@ jobs:
           CITATIONS=$(echo "$MSG" | grep -oE '(agentic-pattern|metapattern):[a-z0-9-]+' | sort -u | tr '\n' ',' | sed 's/,$//')
           echo "citations=$CITATIONS" >> "$GITHUB_OUTPUT"
 
-      - name: POST citation to WidgeTDC backend
+      - name: Pre-flight debug + POST citation
         env:
-          BACKEND_URL: ${{ secrets.BACKEND_URL }}
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
           REPO_NAME: ${{ steps.resolve.outputs.repo_name }}
           SHA: ${{ steps.resolve.outputs.sha }}
@@ -58,8 +60,16 @@ jobs:
           CITATIONS: ${{ steps.resolve.outputs.citations }}
         run: |
           set -e
-          if [ -z "${BACKEND_URL:-}" ] || [ -z "${BACKEND_API_KEY:-}" ]; then
-            echo "::warning::BACKEND_URL/BACKEND_API_KEY missing — set in repo Secrets to enable harvest"
+          # Pre-flight debug — verifies env shape without exposing secrets
+          echo "DEBUG: BACKEND_URL_len=${#BACKEND_URL}"
+          echo "DEBUG: BACKEND_URL_prefix=$(echo "$BACKEND_URL" | head -c 8)"
+          echo "DEBUG: BACKEND_API_KEY_len=${#BACKEND_API_KEY}"
+          echo "DEBUG: REPO_NAME=$REPO_NAME"
+          echo "DEBUG: SHORT_SHA=$SHORT_SHA"
+          echo "DEBUG: CITATIONS_raw=$CITATIONS"
+
+          if [ -z "${BACKEND_API_KEY:-}" ]; then
+            echo "::warning::BACKEND_API_KEY missing — set in repo Secrets"
             exit 0
           fi
 
@@ -73,10 +83,14 @@ jobs:
             jq -nc --arg q "$CYPHER" --arg sha "$SHA" --arg repo "$REPO_NAME" --arg short_sha "$SHORT_SHA" --arg author "$AUTHOR" --arg committed_at "$COMMITTED_AT" --arg message "$MESSAGE" --argjson cits "$CITS_JSON" '{tool:"graph.write_cypher", payload:{query:$q, params:{sha:$sha, repo:$repo, short_sha:$short_sha, author:$author, committed_at:$committed_at, message:$message, citations:$cits}, intent:"cross-repo harvest cited", evidence:"GHA harvest-on-merge"}}' > "$BODY_FILE"
           fi
 
-          curl --silent --show-error --fail \
+          echo "DEBUG: BODY_FILE_size=$(wc -c < "$BODY_FILE")"
+          echo "DEBUG: BODY_FILE_first80=$(head -c 80 "$BODY_FILE")"
+
+          RESPONSE=$(curl --silent --show-error --fail \
             --request POST "${BACKEND_URL}/api/mcp/route" \
             --header "Authorization: Bearer ${BACKEND_API_KEY}" \
             --header "Content-Type: application/json" \
-            --data @"$BODY_FILE"
+            --data @"$BODY_FILE" 2>&1)
+          echo "RESPONSE: $RESPONSE" | head -c 400
           echo ""
           echo "Harvest complete for $SHORT_SHA"
