@@ -1,0 +1,82 @@
+name: Harvest on Merge — Pattern Citation Lineage
+
+# Cross-repo extension of WidgeTDC's harvest-on-merge.yml per ADR-007.
+# v2: long-form curl flags + file-based JSON body for GHA-secret-masking robustness.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: harvest-on-merge
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  harvest-citation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - id: resolve
+        env:
+          REPO_NAME: widgetdc-contracts
+        run: |
+          SHA="${{ github.sha }}"
+          MSG=$(git log -1 --format=%B "$SHA")
+          AUTHOR=$(git log -1 --format=%an "$SHA")
+          DATE=$(git log -1 --format=%cI "$SHA")
+          {
+            echo "sha=$SHA"
+            echo "short_sha=$(echo "$SHA" | cut -c1-12)"
+            echo "author=$AUTHOR"
+            echo "committed_at=$DATE"
+            echo "repo_name=$REPO_NAME"
+            echo "message<<EOF_MSG"
+            echo "$MSG"
+            echo "EOF_MSG"
+          } >> "$GITHUB_OUTPUT"
+          CITATIONS=$(echo "$MSG" | grep -oE '(agentic-pattern|metapattern):[a-z0-9-]+' | sort -u | tr '\n' ',' | sed 's/,$//')
+          echo "citations=$CITATIONS" >> "$GITHUB_OUTPUT"
+
+      - name: POST citation to WidgeTDC backend
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          REPO_NAME: ${{ steps.resolve.outputs.repo_name }}
+          SHA: ${{ steps.resolve.outputs.sha }}
+          SHORT_SHA: ${{ steps.resolve.outputs.short_sha }}
+          AUTHOR: ${{ steps.resolve.outputs.author }}
+          COMMITTED_AT: ${{ steps.resolve.outputs.committed_at }}
+          MESSAGE: ${{ steps.resolve.outputs.message }}
+          CITATIONS: ${{ steps.resolve.outputs.citations }}
+        run: |
+          set -e
+          if [ -z "${BACKEND_URL:-}" ] || [ -z "${BACKEND_API_KEY:-}" ]; then
+            echo "::warning::BACKEND_URL/BACKEND_API_KEY missing — set in repo Secrets to enable harvest"
+            exit 0
+          fi
+
+          BODY_FILE=$(mktemp)
+          if [ -z "$CITATIONS" ]; then
+            CYPHER='MERGE (c:CommitArtifact:UnharvestedCommit {sha: $sha}) SET c.repo=$repo, c.short_sha=$short_sha, c.author=$author, c.committed_at=$committed_at, c.message=$message, c.harvested_at=datetime(), c.harvested_via="cross-repo-gha", c.needs_pattern_assignment=true RETURN c.sha AS sha'
+            jq -nc --arg q "$CYPHER" --arg sha "$SHA" --arg repo "$REPO_NAME" --arg short_sha "$SHORT_SHA" --arg author "$AUTHOR" --arg committed_at "$COMMITTED_AT" --arg message "$MESSAGE" '{tool:"graph.write_cypher", payload:{query:$q, params:{sha:$sha, repo:$repo, short_sha:$short_sha, author:$author, committed_at:$committed_at, message:$message}, intent:"cross-repo harvest uncited", evidence:"GHA harvest-on-merge"}}' > "$BODY_FILE"
+          else
+            CITS_JSON=$(echo "$CITATIONS" | tr ',' '\n' | jq -R . | jq -s .)
+            CYPHER='MERGE (c:CommitArtifact {sha: $sha}) SET c.repo=$repo, c.short_sha=$short_sha, c.author=$author, c.committed_at=$committed_at, c.message=$message, c.harvested_at=datetime(), c.harvested_via="cross-repo-gha" WITH c UNWIND $citations AS cit MATCH (p) WHERE (p:AgenticPattern OR p:MetaPattern) AND p.id = cit MERGE (p)-[m:MATERIALIZED_IN]->(c) SET m.repo=$repo, m.sha=$sha, m.harvested_at=datetime() RETURN count(m) AS edges'
+            jq -nc --arg q "$CYPHER" --arg sha "$SHA" --arg repo "$REPO_NAME" --arg short_sha "$SHORT_SHA" --arg author "$AUTHOR" --arg committed_at "$COMMITTED_AT" --arg message "$MESSAGE" --argjson cits "$CITS_JSON" '{tool:"graph.write_cypher", payload:{query:$q, params:{sha:$sha, repo:$repo, short_sha:$short_sha, author:$author, committed_at:$committed_at, message:$message, citations:$cits}, intent:"cross-repo harvest cited", evidence:"GHA harvest-on-merge"}}' > "$BODY_FILE"
+          fi
+
+          curl --silent --show-error --fail \
+            --request POST "${BACKEND_URL}/api/mcp/route" \
+            --header "Authorization: Bearer ${BACKEND_API_KEY}" \
+            --header "Content-Type: application/json" \
+            --data @"$BODY_FILE"
+          echo ""
+          echo "Harvest complete for $SHORT_SHA"
