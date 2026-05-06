@@ -1,0 +1,111 @@
+{
+  "$id": "AgenticPattern",
+  "description": "Canonical agentic pattern node from the WidgeTDC Pattern Composition Graph (ADR-008). Owned per ADR-007 cross-repo pattern lineage matrix: rlm-engine = reasoning + reflection patterns. Live corpus: 90+ :AgenticPattern nodes in Neo4j AuraDB, 89 embedded at 384D NEXUS canonical (LIN-818).",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "description": "Stable pattern identifier with namespace prefix. Format: 'agentic-pattern:<slug>' or 'pattern:<slug>'. Used for cross-repo MATERIALIZED_IN edge keying per ADR-007.",
+      "type": "string",
+      "pattern": "^(agentic-pattern|pattern|metapattern):[a-z0-9-]+$"
+    },
+    "name": {
+      "description": "Human-readable pattern name (e.g. 'Reflection', 'ReAct', 'Chain-of-Thought').",
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "description": "1-3 sentence description of what the pattern does and when to apply it. Used by embedPatternsCron to vectorize at 384D for srag.query semantic discovery.",
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "description": "Optional short-form summary (one-liner) for SITREP and RAG inline use.",
+      "type": "string"
+    },
+    "verdict": {
+      "description": "Adoption verdict from Gulli enrichment audit: 'adopt' | 'evaluate' | 'reject' | 'unverified'.",
+      "type": "string",
+      "enum": ["adopt", "evaluate", "reject", "unverified"]
+    },
+    "adoption_path": {
+      "description": "Suggested adoption recipe — when and how this pattern integrates into agent runtime.",
+      "type": "string"
+    },
+    "score": {
+      "description": "Aggregate quality score (0.0-1.0). Composite of credibility + production-readiness + integration ease.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "canonical_owner_repo": {
+      "description": "Per ADR-007 ownership matrix — which repo canonically owns this pattern (rlm-engine | orchestrator | contracts | WidgeTDC).",
+      "type": "string",
+      "enum": ["rlm-engine", "orchestrator", "contracts", "WidgeTDC", "shared"]
+    },
+    "source": {
+      "description": "Provenance of pattern — academic paper, GitHub repo URL, internal harvest run, etc.",
+      "type": "string"
+    },
+    "embedding_dim": {
+      "description": "Vector embedding dimension. Canonical: 384 (NEXUS, LIN-818). Other dimensions are orphan assets per Orphan Asset Lifecycle pattern.",
+      "type": "integer",
+      "enum": [384]
+    },
+    "gulli_chapter": {
+      "description": "Reference to Gulli reasoning-techniques chapter for cross-document anchoring (Phase Δ harvest).",
+      "type": "string"
+    },
+    "gulli_credibility": {
+      "description": "Gulli-enrichment credibility score (very_low | low | medium | medium_high | high).",
+      "type": "string",
+      "enum": ["very_low", "low", "medium", "medium_high", "high"]
+    },
+    "gulli_match_type": {
+      "description": "Type of match against Gulli corpus: 'exact' | 'semantic' | 'derived' | 'novel'.",
+      "type": "string",
+      "enum": ["exact", "semantic", "derived", "novel"]
+    },
+    "gulli_strengths": {
+      "description": "Strengths from Gulli enrichment audit — array of bullet points.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gulli_weaknesses": {
+      "description": "Known weaknesses or failure modes from Gulli enrichment audit.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "gulli_verdict": {
+      "description": "Free-text verdict paragraph from Gulli enrichment.",
+      "type": "string"
+    },
+    "gulli_endorsement": {
+      "description": "Whether the pattern is endorsed by the Gulli reasoning-techniques source.",
+      "type": "boolean"
+    },
+    "gulli_plan_id": {
+      "description": "Reference to the Gulli enrichment plan_id that produced this pattern record.",
+      "type": "string"
+    },
+    "created_at": {
+      "description": "ISO-8601 datetime when the pattern was first registered.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_updated": {
+      "description": "ISO-8601 datetime of last content modification.",
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

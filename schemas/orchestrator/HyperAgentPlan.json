@@ -1,0 +1,131 @@
+{
+  "$id": "HyperAgentPlan",
+  "description": "Canonical HyperAgent plan envelope per master prompt §HYPERAGENT. Codifies the plan-id, correlation-id, risk lane, success metrics, rollback plan, and approval policy that govern multi-step agent execution. Reference template: config/plan-templates/psr-rollout.json (Phase Δ Plan v3).",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "plan_id",
+    "correlation_id",
+    "risk_level",
+    "budget_lane",
+    "target_services",
+    "success_metrics",
+    "rollback_plan",
+    "approval_policy"
+  ],
+  "properties": {
+    "plan_id": {
+      "description": "Globally unique plan identifier. Format: 'plan:<slug>-<date>' (e.g. 'plan:psr-rollout-phase-delta-2026-04-28').",
+      "type": "string",
+      "pattern": "^plan:[a-z0-9-]+$"
+    },
+    "plan_version": {
+      "description": "Iterative plan version (v1, v2, v3, ...). Used when RLM critique or operator feedback produces a synthesized successor plan.",
+      "type": "string",
+      "pattern": "^v[0-9]+$"
+    },
+    "parent_plan": {
+      "description": "Optional reference to a parent plan_id when this plan is a sub-plan or successor.",
+      "type": "string"
+    },
+    "correlation_id": {
+      "description": "Trace-id propagated through every event and write produced under this plan. Connects spine_events, AgentMemory entries, governance audits.",
+      "type": "string"
+    },
+    "risk_level": {
+      "description": "Plan-wide risk classification. 'low' = additive-only; 'medium' = additive + minor mutations; 'medium-high' = production-write with rollback; 'high' = irreversible or wide blast radius.",
+      "type": "string",
+      "enum": ["low", "medium", "medium-high", "high"]
+    },
+    "budget_lane": {
+      "description": "Token + cost lane. 'micro' = cheap inline ops; 'standard' = normal LLM-path mutations; 'deep' = escalation-only premium reasoning.",
+      "type": "string",
+      "enum": ["micro", "standard", "deep"]
+    },
+    "target_services": {
+      "description": "Services the plan will modify. Used for blast-radius pre-check and impact assessment.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "success_metrics": {
+      "description": "Hard and soft gates that determine plan success.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hard_gates"],
+      "properties": {
+        "hard_gates": {
+          "description": "Must-pass criteria. Plan does not close until all hard_gates evaluate true.",
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "soft_gates": {
+          "description": "Aspirational criteria; plan can close yellow if soft_gates partially met.",
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "premium_allowed": {
+      "description": "Premium escalation policy. 'NO' = never; 'ESCALATION_ONLY' = with explicit premium_escalation_used event; 'ALLOWED' = unrestricted.",
+      "type": "string",
+      "enum": ["NO", "ESCALATION_ONLY", "ALLOWED"]
+    },
+    "max_agent_fanout": {
+      "description": "Maximum concurrent sub-agents the plan may dispatch in a single mission step.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "max_recursion_depth": {
+      "description": "Maximum nested chain depth. Prevents unbounded recursion in router or materializer.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "rollback_plan": {
+      "description": "Per-phase rollback procedure keyed by phase identifier. Each phase entry describes the reversal action.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "approval_policy": {
+      "description": "Per-phase approval gate. Maps phase to required approver class.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["captain_self_with_evidence", "operator_only", "hyperagent_required", "auto"]
+      }
+    },
+    "policy_profile": {
+      "description": "Compliance + governance profile applied to this plan. Determines which gates and policies apply at runtime.",
+      "type": "string"
+    },
+    "spof_rollback_triggers": {
+      "description": "Single-point-of-failure rollback triggers per Plan v2 §SPOF. Each entry maps a SPOF condition to the trigger threshold and rollback action.",
+      "type": "object"
+    },
+    "inventor_governance": {
+      "description": "Inventor experiment cost cap and concurrency limits per Plan v2 §inventor_governance.",
+      "type": "object",
+      "properties": {
+        "max_token_cost_per_experiment": {"type": "integer", "minimum": 0},
+        "max_concurrent_experiments": {"type": "integer", "minimum": 1},
+        "fail_closed": {"type": "boolean"}
+      }
+    },
+    "created_at": {
+      "description": "ISO-8601 datetime of plan registration.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "captain": {
+      "description": "Identifier of the captain agent that authored / owns the plan.",
+      "type": "string"
+    }
+  }
+}
