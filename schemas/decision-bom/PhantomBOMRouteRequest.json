@@ -1,0 +1,6 @@
+{
+  "$id": "PhantomBOMRouteRequest",
+  "description": "POST /phantom-bom/{run_id}/route payload (reserved for future routing hints).",
+  "type": "object",
+  "properties": {}
+}

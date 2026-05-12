@@ -1,0 +1,51 @@
+{
+  "$id": "PhantomBOMComposeRequest",
+  "description": "POST /phantom-bom/compose payload.",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "framework",
+    "brief"
+  ],
+  "properties": {
+    "framework": {
+      "$id": "PhantomBOMFramework",
+      "description": "Decomposition framework used by the BOM compiler.",
+      "anyOf": [
+        {
+          "const": "MECE",
+          "type": "string"
+        },
+        {
+          "const": "HDR",
+          "type": "string"
+        },
+        {
+          "const": "Pyramid",
+          "type": "string"
+        },
+        {
+          "const": "STRIDE",
+          "type": "string"
+        }
+      ]
+    },
+    "brief": {
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Decision brief to decompose.",
+      "type": "string"
+    },
+    "correlation_id": {
+      "maxLength": 120,
+      "description": "Passed through to event spine.",
+      "type": "string"
+    },
+    "max_items": {
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Max BOM items to emit (default: 12).",
+      "type": "integer"
+    }
+  }
+}

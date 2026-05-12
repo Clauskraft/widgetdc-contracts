@@ -1,0 +1,27 @@
+{
+  "$id": "PhantomBOMResponse",
+  "description": "Standard success envelope for all Phantom BOM endpoints.",
+  "type": "object",
+  "required": [
+    "success",
+    "data",
+    "metadata"
+  ],
+  "properties": {
+    "success": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    }
+  }
+}
