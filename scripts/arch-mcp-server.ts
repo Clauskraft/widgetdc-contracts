@@ -880,8 +880,8 @@ async function fetchRepoBranches(owner: string, repo: string, label: string): Pr
   return branches;
 }
 
-async function fetchAllOpenChanges(): Promise<{ prs: OpenPR[]; branches: UnmergedBranch[]; fromCache: boolean; warning?: string }> {
-  if (branchesCache && Date.now() - branchesCache.ts < CACHE_TTL) {
+async function fetchAllOpenChanges(options: { refresh?: boolean } = {}): Promise<{ prs: OpenPR[]; branches: UnmergedBranch[]; fromCache: boolean; warning?: string }> {
+  if (!options.refresh && branchesCache && Date.now() - branchesCache.ts < CACHE_TTL) {
     return { ...branchesCache.data, fromCache: true };
   }
 
@@ -1695,7 +1695,8 @@ app.get("/api/changelog", async (_req, res) => {
 app.get("/api/branches", async (_req, res) => {
   try {
     const repo = _req.query.repo as string | undefined;
-    let result = await fetchAllOpenChanges();
+    const refresh = _req.query.refresh === "true" || _req.query.cache === "false" || _req.query.force === "true";
+    let result = await fetchAllOpenChanges({ refresh });
     let prs = result.prs;
     let branches = result.branches;
     if (repo) {
