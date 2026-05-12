@@ -2,8 +2,8 @@
   "meta": {
     "generated": "2026-02-23T00:00:00Z",
     "version": "1.0.0",
-    "totalSources": 24,
-    "totalPipelines": 18,
+    "totalSources": 31,
+    "totalPipelines": 19,
     "totalDestinations": 6
   },
   "sources": [
@@ -171,10 +171,11 @@
       "name": "Scribd Document Intelligence",
       "type": "document_platform",
       "category": "knowledge_acquisition",
-      "protocol": "https_scrape",
+      "protocol": "deprecated_reference_only",
       "endpoint": "https://www.scribd.com",
       "owner": "clak",
-      "description": "Premium consulting documents, research papers, industry reports. Harvested via API + scraping.",
+      "status": "deprecated",
+      "description": "Deprecated reference-only source. Direct Scribd scraping is not production evidence; use governed document source spine replacements or user-provided document intake with rights attestation.",
       "schema": {
         "documentTypes": ["consulting_report", "industry_analysis", "methodology_guide", "case_study"],
         "estimatedDocuments": 2500
@@ -189,14 +190,283 @@
         "consistency": 0.60,
         "accuracy": 0.75,
         "knownIssues": [
+          "Direct Scribd scraping is not production evidence",
+          "No stable official public API path has been verified for governed ingestion",
           "Scraping blocked intermittently — 30% failure rate",
           "No structured metadata extraction",
           "Document dedup not implemented — ~15% duplicates estimated",
           "Table extraction accuracy varies 23-97%"
         ]
       },
+      "governance": {
+        "productionFacing": false,
+        "directScrapingAllowed": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "replacementStack": "governed-document-source-spine",
+        "nextStep": "Resolve original publisher, open-access source, or user-provided rights-attested document before ingestion."
+      },
       "dependencies": [],
-      "consumers": ["pipe-scribd-harvester"]
+      "consumers": ["pipe-scribd-harvester", "pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-openalex-research-graph",
+      "name": "OpenAlex Research Graph",
+      "type": "research_metadata",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rest",
+      "endpoint": "https://api.openalex.org",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "Official research discovery graph for works, authors, sources, institutions, concepts, topics, and citation-adjacent metadata.",
+      "schema": {
+        "entities": ["works", "authors", "sources", "institutions", "topics"],
+        "trackableFields": ["id", "doi", "title", "authorships", "publication_year", "primary_location", "open_access"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.90,
+        "consistency": 0.90,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Metadata discovery only; full text requires license-aware downstream source",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Discovery metadata only until runtime canary and EventSpine evidence exist"
+      },
+      "dependencies": [],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-crossref-doi-metadata",
+      "name": "Crossref DOI Metadata",
+      "type": "research_metadata",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rest",
+      "endpoint": "https://api.crossref.org",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "DOI and publisher metadata authority for document identity, bibliographic records, license references, and source URLs.",
+      "schema": {
+        "entities": ["works", "journals", "funders", "members"],
+        "trackableFields": ["DOI", "title", "publisher", "published", "license", "URL", "reference"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.92,
+        "consistency": 0.92,
+        "accuracy": 0.94,
+        "knownIssues": [
+          "Metadata authority, not full-text entitlement",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "DOI identity and metadata only until runtime canary and EventSpine evidence exist"
+      },
+      "dependencies": [],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-core-open-access",
+      "name": "CORE Open Access Corpus",
+      "type": "open_access_document_source",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rest",
+      "endpoint": "https://api.core.ac.uk",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "Open-access research discovery and full-text path where license and source metadata allow ingestion.",
+      "schema": {
+        "entities": ["works", "fullText", "repositories"],
+        "trackableFields": ["id", "doi", "title", "authors", "downloadUrl", "repositoryDocument"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.85,
+        "consistency": 0.88,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Requires license/source verification before canonical ingestion",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Full-text ingestion requires rights evidence, content hash, EventSpine event, and replay"
+      },
+      "dependencies": ["src-openalex-research-graph", "src-crossref-doi-metadata"],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-europepmc-open-access",
+      "name": "Europe PMC Open Access",
+      "type": "open_access_document_source",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rest",
+      "endpoint": "https://www.ebi.ac.uk/europepmc/webservices/rest",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "Open biomedical and scientific publication metadata and full-text links where Europe PMC records allow access.",
+      "schema": {
+        "entities": ["search", "articles", "citations", "fullTextXml"],
+        "trackableFields": ["id", "doi", "title", "authorString", "isOpenAccess", "fullTextUrlList"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.84,
+        "consistency": 0.90,
+        "accuracy": 0.92,
+        "knownIssues": [
+          "Domain coverage is stronger for biomedical/scientific content than consulting reports",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Full-text ingestion requires open-access evidence, content hash, EventSpine event, and replay"
+      },
+      "dependencies": ["src-openalex-research-graph", "src-crossref-doi-metadata"],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-semantic-scholar-enrichment",
+      "name": "Semantic Scholar Enrichment",
+      "type": "research_enrichment",
+      "category": "knowledge_acquisition",
+      "protocol": "https_rest",
+      "endpoint": "https://api.semanticscholar.org",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "Citation, recommendation, and paper similarity enrichment for documents already resolved through governed metadata sources.",
+      "schema": {
+        "entities": ["paper", "citations", "references", "recommendations"],
+        "trackableFields": ["paperId", "externalIds", "title", "citationCount", "influentialCitationCount"]
+      },
+      "freshness": {
+        "updateFrequency": "daily",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 24
+      },
+      "quality": {
+        "completeness": 0.86,
+        "consistency": 0.88,
+        "accuracy": 0.90,
+        "knownIssues": [
+          "Enrichment only; not canonical source of full-text truth",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Recommendation/enrichment cannot promote canonical document content without source evidence"
+      },
+      "dependencies": ["src-openalex-research-graph", "src-crossref-doi-metadata"],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-publisher-allowlist-reports",
+      "name": "Publisher Allowlist Reports",
+      "type": "publisher_document_source",
+      "category": "knowledge_acquisition",
+      "protocol": "allowlisted_https",
+      "endpoint": "publisher-owned publication pages, feeds, or APIs",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "Allowlisted publisher-owned pages, feeds, sitemaps, or APIs for reports and whitepapers where terms permit indexing or metadata capture.",
+      "schema": {
+        "publishers": ["ENISA", "NIST", "CISA", "OECD", "EU Publications", "McKinsey", "BCG", "Deloitte", "Accenture"],
+        "trackableFields": ["publisher", "url", "title", "published_at", "license_or_terms_ref", "content_hash"]
+      },
+      "freshness": {
+        "updateFrequency": "weekly",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 168
+      },
+      "quality": {
+        "completeness": 0.70,
+        "consistency": 0.82,
+        "accuracy": 0.88,
+        "knownIssues": [
+          "Each publisher requires explicit allowlist and terms review",
+          "Runtime integration planned, not yet claim-proof"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Publisher content ingestion requires allowlist entry, terms reference, content hash, EventSpine event, and replay"
+      },
+      "dependencies": [],
+      "consumers": ["pipe-document-source-resolver"]
+    },
+    {
+      "id": "src-governed-document-intake",
+      "name": "Governed Document Intake",
+      "type": "user_provided_document_source",
+      "category": "knowledge_acquisition",
+      "protocol": "governed_upload",
+      "endpoint": "captain-app governed document intake",
+      "owner": "platform-team",
+      "status": "planned",
+      "description": "User-provided or enterprise-provided documents with explicit rights attestation, content hash, signature bundle, and EventSpine evidence.",
+      "schema": {
+        "requiredEvidence": ["rights_attestation", "content_hash", "source_uri_or_upload_id", "correlation_id", "event_id"],
+        "outputs": ["WorkArtifact", "EvidenceRef", "DocumentMetadata"]
+      },
+      "freshness": {
+        "updateFrequency": "on_upload",
+        "lastUpdate": "2026-02-16T00:00:00Z",
+        "staleness_threshold_hours": 720
+      },
+      "quality": {
+        "completeness": 0.80,
+        "consistency": 0.90,
+        "accuracy": 0.92,
+        "knownIssues": [
+          "Runtime integration planned, not yet claim-proof",
+          "Requires operator/user rights attestation before canonical ingestion"
+        ]
+      },
+      "governance": {
+        "productionFacing": false,
+        "evidenceRequired": true,
+        "rightsBoundaryRequired": true,
+        "claimBoundary": "Document intake remains evidence-only until runtime upload canary, signature verification, EventSpine replay, and graph lineage exist"
+      },
+      "dependencies": [],
+      "consumers": ["pipe-document-source-resolver"]
     },
     {
       "id": "src-cisa-kev",
@@ -784,11 +1054,28 @@
     {
       "id": "pipe-scribd-harvester",
       "name": "Scribd Document Harvester",
-      "description": "Downloads and processes Scribd documents for consulting knowledge extraction.",
+      "description": "Deprecated direct Scribd harvest path. Retained only as historical/reference evidence; do not use as production document ingestion.",
       "sources": ["src-scribd"],
       "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
       "schedule": "weekly",
-      "status": "degraded"
+      "status": "deprecated"
+    },
+    {
+      "id": "pipe-document-source-resolver",
+      "name": "Governed Document Source Resolver",
+      "description": "Resolves document intent through official metadata APIs, open-access sources, publisher allowlists, and rights-attested document intake before canonical ingestion.",
+      "sources": [
+        "src-openalex-research-graph",
+        "src-crossref-doi-metadata",
+        "src-core-open-access",
+        "src-europepmc-open-access",
+        "src-semantic-scholar-enrichment",
+        "src-publisher-allowlist-reports",
+        "src-governed-document-intake"
+      ],
+      "destinations": ["dest-neo4j-write", "dest-pgvector-write"],
+      "schedule": "planned",
+      "status": "planned"
     },
     {
       "id": "pipe-osint-aggregator",
