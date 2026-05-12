@@ -1,0 +1,22 @@
+{
+  "$id": "PhantomBOMFramework",
+  "description": "Decomposition framework used by the BOM compiler.",
+  "anyOf": [
+    {
+      "const": "MECE",
+      "type": "string"
+    },
+    {
+      "const": "HDR",
+      "type": "string"
+    },
+    {
+      "const": "Pyramid",
+      "type": "string"
+    },
+    {
+      "const": "STRIDE",
+      "type": "string"
+    }
+  ]
+}

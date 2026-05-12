@@ -62,6 +62,10 @@
       "types": "./dist/decision-bom/index.d.ts",
       "import": "./dist/decision-bom/index.js"
     },
+    "./parl": {
+      "types": "./dist/parl/index.d.ts",
+      "import": "./dist/parl/index.js"
+    },
     "./llm": {
       "types": "./dist/llm/index.d.ts",
       "import": "./dist/llm/index.js"
