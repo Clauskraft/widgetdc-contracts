@@ -88,6 +88,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-sync.ts",
+    "datapulse:scribd:audit": "node scripts/datapulse-scribd-refresh-audit.mjs",
     "prepublishOnly": "npm run generate && npm run test",
     "arch:scan": "mkdir -p arch && depcruise --config .dependency-cruiser.cjs --output-type json src > arch/contracts-graph.json",
     "arch:aggregate": "tsx scripts/arch-aggregate.ts",
