@@ -48,7 +48,7 @@ jobs:
           CITATIONS=$(echo "$MSG" | grep -oE '(agentic-pattern|metapattern):[a-z0-9-]+' | sort -u | tr '\n' ',' | sed 's/,$//')
           echo "citations=$CITATIONS" >> "$GITHUB_OUTPUT"
 
-      - name: Pre-flight debug + POST citation
+      - name: Pre-flight debug + POST harvest
         env:
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
           REPO_NAME: ${{ steps.resolve.outputs.repo_name }}
@@ -75,19 +75,25 @@ jobs:
 
           BODY_FILE=$(mktemp)
           if [ -z "$CITATIONS" ]; then
-            CYPHER='MERGE (c:CommitArtifact:UnharvestedCommit {sha: $sha}) SET c.repo=$repo, c.short_sha=$short_sha, c.author=$author, c.committed_at=$committed_at, c.message=$message, c.harvested_at=datetime(), c.harvested_via="cross-repo-gha", c.needs_pattern_assignment=true RETURN c.sha AS sha'
-            jq -nc --arg q "$CYPHER" --arg sha "$SHA" --arg repo "$REPO_NAME" --arg short_sha "$SHORT_SHA" --arg author "$AUTHOR" --arg committed_at "$COMMITTED_AT" --arg message "$MESSAGE" '{tool:"graph.write_cypher", payload:{query:$q, params:{sha:$sha, repo:$repo, short_sha:$short_sha, author:$author, committed_at:$committed_at, message:$message}, intent:"cross-repo harvest uncited", evidence:"GHA harvest-on-merge"}}' > "$BODY_FILE"
+            CITS_JSON='[]'
           else
             CITS_JSON=$(echo "$CITATIONS" | tr ',' '\n' | jq -R . | jq -s .)
-            CYPHER='MERGE (c:CommitArtifact {sha: $sha}) SET c.repo=$repo, c.short_sha=$short_sha, c.author=$author, c.committed_at=$committed_at, c.message=$message, c.harvested_at=datetime(), c.harvested_via="cross-repo-gha" WITH c UNWIND $citations AS cit MATCH (p) WHERE (p:AgenticPattern OR p:MetaPattern) AND p.id = cit MERGE (p)-[m:MATERIALIZED_IN]->(c) SET m.repo=$repo, m.sha=$sha, m.harvested_at=datetime() RETURN count(m) AS edges'
-            jq -nc --arg q "$CYPHER" --arg sha "$SHA" --arg repo "$REPO_NAME" --arg short_sha "$SHORT_SHA" --arg author "$AUTHOR" --arg committed_at "$COMMITTED_AT" --arg message "$MESSAGE" --argjson cits "$CITS_JSON" '{tool:"graph.write_cypher", payload:{query:$q, params:{sha:$sha, repo:$repo, short_sha:$short_sha, author:$author, committed_at:$committed_at, message:$message, citations:$cits}, intent:"cross-repo harvest cited", evidence:"GHA harvest-on-merge"}}' > "$BODY_FILE"
           fi
+          jq -nc \
+            --arg sha "$SHA" \
+            --arg repo "$REPO_NAME" \
+            --arg title "$MESSAGE" \
+            --arg author "$AUTHOR" \
+            --arg committed_at "$COMMITTED_AT" \
+            --arg harvested_via "github-actions:harvest-on-merge" \
+            --argjson citations "$CITS_JSON" \
+            '{sha:$sha, repo:$repo, title:$title, author:$author, committed_at:$committed_at, citations:$citations, harvested_via:$harvested_via}' \
+            > "$BODY_FILE"
 
           echo "DEBUG: BODY_FILE_size=$(wc -c < "$BODY_FILE")"
-          echo "DEBUG: BODY_FILE_first80=$(head -c 80 "$BODY_FILE")"
 
           RESPONSE=$(curl --silent --show-error --fail \
-            --request POST "${BACKEND_URL}/api/mcp/route" \
+            --request POST "${BACKEND_URL}/api/cron/harvest-commit" \
             --header "Authorization: Bearer ${BACKEND_API_KEY}" \
             --header "Content-Type: application/json" \
             --data @"$BODY_FILE" 2>&1)
