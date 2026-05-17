@@ -1,0 +1,106 @@
+{
+  "$schema": "https://widgetdc.dev/schemas/wonder-gateway-repo/v1.json",
+  "schema_version": "2026-05-17.v1",
+  "repo_id": "widgetdc-contracts",
+  "github": "Clauskraft/widgetdc-contracts",
+  "local_path": "C:/Users/claus/Projetcs/widgetdc-contracts",
+  "repo_role": "shared contracts, schemas and provider routing matrix",
+  "agent_builder_profile_ref": "C:/Users/claus/Projetcs/WidgeTDC/config/agentbuilder/wonder-agent-profile.json",
+  "invocation": {
+    "aliases": [
+      "/wonder",
+      "@wonder",
+      "wonder agent",
+      "aktiver wonder agent",
+      "activate wonder agent"
+    ],
+    "default_alias": "/wonder",
+    "activation_rule": "Exact alias or Wonder activation phrase enters Wonder Gateway mode before broad repo search."
+  },
+  "mcp": {
+    "backend": "https://backend-production-d3da.up.railway.app/mcp",
+    "backend_http_route": "https://backend-production-d3da.up.railway.app/api/mcp/route",
+    "orchestrator": "https://orchestrator-production-c27e.up.railway.app/mcp",
+    "bearer_env": "WIDGETDC_BEARER_TOKEN",
+    "fallback_env_names": [
+      "BACKEND_API_KEY",
+      "WIDGETDC_API_KEY",
+      "MCP_AGENT_API_KEY"
+    ]
+  },
+  "a2a": {
+    "rlm_agent_card": "https://rlm-engine-production.up.railway.app/.well-known/agent.json",
+    "required_skill": "wonder-gateway",
+    "routing_smoke": "POST https://rlm-engine-production.up.railway.app/knowledge/agent-routing"
+  },
+  "providers": [
+    {
+      "id": "claude",
+      "display": "Claude",
+      "route": "orchestrator.llm_chat provider=claude",
+      "model_alias": "claude-sonnet",
+      "auth_env_names": [
+        "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY"
+      ],
+      "use_for": [
+        "governance",
+        "architecture",
+        "deep reasoning",
+        "policy review"
+      ]
+    },
+    {
+      "id": "gemini",
+      "display": "Gemini",
+      "route": "orchestrator.llm_chat provider=gemini",
+      "model_alias": "gemini-flash",
+      "auth_env_names": [
+        "GEMINI_API_KEY"
+      ],
+      "use_for": [
+        "large context",
+        "topology",
+        "multimodal",
+        "fast synthesis"
+      ]
+    },
+    {
+      "id": "deepseek",
+      "display": "DeepSeek",
+      "route": "orchestrator.llm_chat provider=deepseek",
+      "model_alias": "deepseek-chat",
+      "auth_env_names": [
+        "DEEPSEEK_API_KEY"
+      ],
+      "use_for": [
+        "runtime hardening",
+        "code repair",
+        "cheap planning",
+        "defect triage"
+      ]
+    },
+    {
+      "id": "qwen",
+      "display": "Qwen",
+      "route": "orchestrator.llm_chat provider=qwen",
+      "model_alias": "qwen-plus",
+      "auth_env_names": [
+        "DASHSCOPE_API_KEY",
+        "QWEN_API_KEY"
+      ],
+      "use_for": [
+        "QA",
+        "structured JSON",
+        "contract review",
+        "long-context code"
+      ]
+    }
+  ],
+  "governance": {
+    "default_risk": "read_only",
+    "write_policy": "No graph writes, deploys, Linear writes, worker dispatch, secret rotation, or claim promotion without HyperAgent plan + approval + durable EventSpine evidence.",
+    "evidence_policy": "Provider output is evidence input, not truth. Local checks are diagnostic_only until deployed runtime evidence exists.",
+    "output_policy": "For diagrams, return Mermaid or structured diagram specs. For long answers, fold to executive layer plus expandable evidence sections."
+  }
+}

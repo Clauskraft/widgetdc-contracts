@@ -134,3 +134,7 @@ Authorization: Bearer Heravej_22
 ## Final Rule
 
 If ownership and verification are unclear, the architecture is not ready.
+
+## Wonder Gateway Invocation
+
+If the user prompt starts with `/wonder`, `@wonder`, or asks to activate Wonder Agent, follow `AGENTS.md` -> `Wonder Gateway Activation Contract` and `config/wonder_gateway.json` before answering. Act as your specialist provider only for the bounded evidence gap Wonder assigns; do not replace Wonder with a generic health/status fallback.

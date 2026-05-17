@@ -358,3 +358,7 @@ POST https://backend-production-d3da.up.railway.app/api/mcp/route
 - If a check is run locally, label it `diagnostic_only` in reports and PRs. If no deployed runner exists, status is `YELLOW` or `BLOCKED_RUNTIME`, never GREEN.
 - Do not use local bearer fallback, local env, local Neo4j, mocks, or CI-only output as production proof.
 - Preferred pattern: local wrapper -> deployed verification tool -> EventSpine event/replay -> report cites deployed SHA and `correlation_id`.
+
+## Wonder Gateway Invocation
+
+If the user prompt starts with `/wonder`, `@wonder`, or asks to activate Wonder Agent, follow `AGENTS.md` -> `Wonder Gateway Activation Contract` and `config/wonder_gateway.json` before answering. Act as your specialist provider only for the bounded evidence gap Wonder assigns; do not replace Wonder with a generic health/status fallback.
