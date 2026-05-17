@@ -94,7 +94,8 @@
     "arch:aggregate": "tsx scripts/arch-aggregate.ts",
     "arch:view": "npx serve .",
     "start": "npx tsx scripts/arch-mcp-server.ts",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "wonder:gateway:verify": "node scripts/verify-wonder-gateway.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

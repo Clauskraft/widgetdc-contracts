@@ -84,3 +84,7 @@ NEXT MOVE:
 ## Final Rule
 
 If the failure path is not tested or read back, the fix is not trustworthy.
+
+## Wonder Gateway Invocation
+
+If the user prompt starts with `/wonder`, `@wonder`, or asks to activate Wonder Agent, follow `AGENTS.md` -> `Wonder Gateway Activation Contract` and `config/wonder_gateway.json` before answering. Act as your specialist provider only for the bounded evidence gap Wonder assigns; do not replace Wonder with a generic health/status fallback.
