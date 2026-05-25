@@ -1,8 +1,8 @@
 {
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
-  "version": "1.0.0",
-  "updated_at": "2026-04-09",
+  "version": "1.1.0",
+  "updated_at": "2026-04-29",
   "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
@@ -174,11 +174,11 @@
   "tasks": {
     "attestation": {
       "description": "Validate tool output as structured JSON {valid, confidence, issues[]}. Must return parseable JSON reliably.",
-      "chain": ["qwen-plus", "deepseek-chat", "gpt-4o-mini"],
+      "chain": ["deepseek-chat", "gpt-4o-mini", "qwen-plus"],
       "override_env": "ATTESTATION_MODEL",
       "disable_env": "ATTESTATION_DISABLED",
       "default_disabled": true,
-      "rationale": "Mercury's diffusion architecture exhausts reasoning token budget on structured JSON output, producing empty/malformed responses and high-confidence false positives. Qwen-plus verified better in session 2026-04-05. Defaults to disabled until consumers migrate and a model is verified for this task. Note: All models in chain must be openai_compatible=true for callModelFromMatrix to work."
+      "rationale": "Mercury's diffusion architecture exhausts reasoning token budget on structured JSON output. 2026-04-29 update: qwen-plus demoted from primary to last-resort after live benchmark of /reason endpoint surfaced deterministic phantom role-play on platform-internal tokens (PhantomBOM, BOMItem, pheromone). Pattern is fine-tuning-baked, not prompt-fixable. DeepSeek V3.2 (deepseek-chat) is now primary attestation model — strong structured JSON, 1.2s avg latency. Note: All models in chain must be openai_compatible=true for callModelFromMatrix to work."
     },
     "extraction_short": {
       "description": "Short-prompt entity/field extraction (prompt < 500 tokens). Speed matters, quality is acceptable with short outputs.",
@@ -219,10 +219,11 @@
     },
     "chat_premium": {
       "description": "Premium chat — highest-quality conversational output for critical user interactions.",
-      "chain": ["qwen3-235b-a22b", "gpt-4o", "deepseek-reasoner"],
+      "chain": ["deepseek-chat", "deepseek-reasoner", "gpt-4o"],
       "override_env": "CHAT_PREMIUM_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-04-29: qwen3-235b-a22b suspended from premium-chat primary slot. Live /reason benchmark showed deterministic memorized phantom role-play on tasks containing platform-internal tokens (PhantomBOM, BOMItem). DeepSeek V3.2 (chat) now primary, R1 (reasoner) for complex logic backup, GPT-4o as paid premium fallback."
     },
     "code_generation": {
       "description": "Generate code from natural language or spec.",
@@ -233,17 +234,19 @@
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
-      "chain": ["qwen3-235b-a22b", "deepseek-reasoner", "gpt-4o"],
+      "chain": ["deepseek-reasoner", "deepseek-chat", "gpt-4o"],
       "override_env": "PLANNING_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-04-29: qwen3-235b-a22b removed from planning chain. Phase Δ plan-critique benchmark surfaced memorized phantom role-play. DeepSeek R1 (reasoner) is best-in-class for multi-step planning per user direction; V3.2 standby for high-throughput plan iterations."
     },
     "reasoning_deep": {
       "description": "Deep reasoning over complex problems. Latency acceptable.",
-      "chain": ["deepseek-reasoner", "qwen3-235b-a22b", "gpt-4o"],
+      "chain": ["deepseek-reasoner", "deepseek-chat", "gpt-4o"],
       "override_env": "REASONING_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-04-29: qwen3-235b-a22b suspended from deep-reasoning chain. R1 = primary (logic-heavy CoT, transparent thinking), V3.2 = standby (high-throughput RAG). Note: R1 emits <think>...</think> blocks — consumers MUST strip these before JSON parse via _parse_reasoning_payload's tolerant first-{-to-last-} extraction."
     },
     "multimodal": {
       "description": "Image / document / vision input. Requires multimodal-capable provider.",
