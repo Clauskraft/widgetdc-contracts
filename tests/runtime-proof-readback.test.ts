@@ -109,4 +109,40 @@ describe('runtime proof read-back', () => {
 
     expect(checks.some((check) => check.status === 'BLOCKED_RUNTIME')).toBe(true)
   })
+
+  it('marks evidence as runtime_proof only when all runtime checks pass', () => {
+    const checks = evaluateRuntimeProof(
+      'fdf23433a450fc7041b33ef208480469ec4a4bd1',
+      {
+        deployed_sha: 'fdf23433a450',
+        runtime_correlation_id: 'corr-runtime-1',
+        eventspine_replay_count: 3,
+      },
+      surface.required_runtime_proof,
+    )
+
+    const evidence = buildRuntimeEvidence({
+      surface,
+      expectedSha: 'fdf23433a450fc7041b33ef208480469ec4a4bd1',
+      branch: 'main',
+      runtimeUrl: {
+        env_name: 'WIDGETDC_CONTRACTS_RUNTIME_URL',
+        url: 'https://runtime.test',
+      },
+      fingerprint: {
+        deployed_sha: 'fdf23433a450',
+        runtime_correlation_id: 'corr-runtime-1',
+        eventspine_replay_count: 3,
+      },
+      checks,
+    })
+
+    expect(evidence.status).toBe('PASS')
+    expect(evidence.evidence_level).toBe('runtime_proof')
+    expect(evidence.runtime_url).toEqual({
+      configured: true,
+      env_name: 'WIDGETDC_CONTRACTS_RUNTIME_URL',
+    })
+    expect(JSON.stringify(evidence)).not.toContain('https://runtime.test')
+  })
 })
