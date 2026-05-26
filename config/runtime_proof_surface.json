@@ -1,0 +1,27 @@
+{
+  "$schema": "https://widgetdc.ai/schemas/runtime-proof-surface.json",
+  "repo_id": "widgetdc-contracts",
+  "surface_id": "widgetdc-contracts-merge-runtime-proof",
+  "runtime_url_env_names": [
+    "WIDGETDC_CONTRACTS_RUNTIME_URL",
+    "RAILWAY_URL",
+    "BACKEND_URL"
+  ],
+  "health_path": "/health",
+  "release_path": "/api/governance/release",
+  "required_runtime_proof": {
+    "deployed_sha_matches": true,
+    "runtime_correlation_id": true,
+    "eventspine_replay_count_gte": 1
+  },
+  "evidence_policy": {
+    "missing_runtime_url_status": "BLOCKED_RUNTIME",
+    "local_or_ci_only_evidence_level": "diagnostic_only",
+    "claim_grade_requires": [
+      "deployed_sha_readback",
+      "structured_result",
+      "runtime_correlation_id",
+      "eventspine_replay_count_gte_1"
+    ]
+  }
+}

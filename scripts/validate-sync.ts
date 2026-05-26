@@ -31,6 +31,10 @@ function getAllFiles(dir: string): string[] {
   return results
 }
 
+function readComparable(filePath: string): string {
+  return readFileSync(filePath, 'utf-8').replace(/\r\n/g, '\n')
+}
+
 const tempDir = mkdtempSync(join(tmpdir(), 'wdc-validate-'))
 let driftDetected = false
 
@@ -52,9 +56,9 @@ function compareGeneratedDirs(): void {
       const relPath = relative(absDir, newFile)
       const oldFile = join(snapshotDir, relPath)
 
-      const newContent = readFileSync(newFile, 'utf-8')
+      const newContent = readComparable(newFile)
       try {
-        const oldContent = readFileSync(oldFile, 'utf-8')
+        const oldContent = readComparable(oldFile)
         if (newContent !== oldContent) {
           console.error(`DRIFT: ${join(relDir, relPath)}`)
           driftDetected = true
