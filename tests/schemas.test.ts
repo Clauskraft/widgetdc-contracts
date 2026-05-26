@@ -28,6 +28,7 @@ import {
   ReasonRuntimeRequest,
   ReasonRuntimeResponse,
   BackendGovernanceEvidencePacketResponseV1,
+  ContractsConsumerAdoptionReadback,
   ArtifactChallengeEnvelopeV1,
   ArtifactRequestReviewEnvelopeV1,
   NodeLabel,
@@ -46,6 +47,41 @@ describe('schema export coverage', () => {
     ]) {
       expect(existsSync(join(root, rel)), `missing ${rel}`).toBe(true)
     }
+  })
+})
+
+describe('mcp governance contracts/', () => {
+  it('ContractsConsumerAdoptionReadback requires deployed consumer runtime read-back without claim promotion', () => {
+    const readback = {
+      schema_version: 'contracts.consumer_adoption_readback.v1',
+      package_name: '@widgetdc/contracts',
+      package_version: '0.8.1',
+      contracts_commit_sha: 'b471587fc4d0d2378f8c06388d7b93f564cbf61d',
+      consumer_repo: 'WidgeTDC',
+      consumer_service: 'backend',
+      consumer_deployed_sha: '13114ae5ea3f0000000000000000000000000000',
+      source_protocol: 'scheduled_job',
+      generated_at: '2026-05-26T17:30:00Z',
+      runtime_correlation_id: 'github-actions:26463385469:1',
+      eventspine_replay_count: 1,
+      evidence_refs: ['github-artifact://7221264097/runtime-evidence'],
+      runtime_proof_claimed: false,
+      claim_promotion_eligible: false,
+    }
+
+    expect(Value.Check(ContractsConsumerAdoptionReadback, readback)).toBe(true)
+    expect(Value.Check(ContractsConsumerAdoptionReadback, {
+      ...readback,
+      eventspine_replay_count: 0,
+    })).toBe(false)
+    expect(Value.Check(ContractsConsumerAdoptionReadback, {
+      ...readback,
+      runtime_proof_claimed: true,
+    })).toBe(false)
+    expect(Value.Check(ContractsConsumerAdoptionReadback, {
+      ...readback,
+      claim_promotion_eligible: true,
+    })).toBe(false)
   })
 })
 

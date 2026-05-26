@@ -7,6 +7,7 @@ Do not edit manually — regenerate with: npm run python
 from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel
 from pydantic import BaseModel, Field
@@ -17,7 +18,7 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["CapabilityLifecycleState", "CapabilityTier", "ClaimPromotionEvidence", "ComplianceTier", "GovernanceActorType", "GovernanceAudience", "GovernanceAuditCategory", "GovernanceContext", "GovernanceCostTier", "GovernanceDecision", "GovernanceDecisionCode", "GovernanceRejectionEnvelope", "GovernanceRejectionNextStep", "GovernanceRiskLevel", "GovernanceSourceProtocol", "GovernanceStandingApproval", "GraphPromotionRequest", "GraphPromotionResult", "MCPToolGovernance", "McpClientDiscoveryPolicy", "McpClientLimits", "McpClientPoliciesDocument", "McpClientPolicy", "McpClientSelfResource", "McpPolicyRisk", "McpResourcePolicyMetadata", "McpToolPolicyMetadata", "McpTransport", "MrpRouteEnvelope", "RequestFeatures", "RequestTaskType", "SpineEventBase", "SpineEventType", "ToolInvocationEnvelope", "ToolResultEnvelope"]
+__all__ = ["CapabilityLifecycleState", "CapabilityTier", "ClaimPromotionEvidence", "ComplianceTier", "ContractsConsumerAdoptionReadback", "GovernanceActorType", "GovernanceAudience", "GovernanceAuditCategory", "GovernanceContext", "GovernanceCostTier", "GovernanceDecision", "GovernanceDecisionCode", "GovernanceRejectionEnvelope", "GovernanceRejectionNextStep", "GovernanceRiskLevel", "GovernanceSourceProtocol", "GovernanceStandingApproval", "GraphPromotionRequest", "GraphPromotionResult", "MCPToolGovernance", "McpClientDiscoveryPolicy", "McpClientLimits", "McpClientPoliciesDocument", "McpClientPolicy", "McpClientSelfResource", "McpPolicyRisk", "McpResourcePolicyMetadata", "McpToolPolicyMetadata", "McpTransport", "MrpRouteEnvelope", "RequestFeatures", "RequestTaskType", "SpineEventBase", "SpineEventType", "ToolInvocationEnvelope", "ToolResultEnvelope"]
 
 class RecentCanaryHistoryItem(BaseModel):
     run_id: str
@@ -52,6 +53,89 @@ class ComplianceTier(RootModel[Literal['public', 'internal', 'legal', 'health']]
         ...,
         description='Data-handling compliance tier — drives crypto-shred + PII routing.',
     )
+
+class EvidenceRef(RootModel[str]):
+    root: str = Field(..., min_length=1)
+
+
+class ContractsConsumerAdoptionReadback(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['contracts.consumer_adoption_readback.v1']
+    package_name: Literal['@widgetdc/contracts']
+    package_version: str = Field(
+        ...,
+        description='Resolved @widgetdc/contracts package version used by the deployed consumer.',
+        min_length=1,
+    )
+    contracts_commit_sha: str = Field(
+        ...,
+        description='Full lowercase git commit SHA.',
+        max_length=40,
+        min_length=40,
+        pattern='^[0-9a-f]{40}$',
+    )
+    consumer_repo: str = Field(
+        ...,
+        description='Repository or governed runtime that emitted this adoption read-back.',
+        min_length=1,
+    )
+    consumer_service: str = Field(
+        ...,
+        description='Deployed service, job, or runner inside the consumer boundary.',
+        min_length=1,
+    )
+    consumer_deployed_sha: str = Field(
+        ...,
+        description='Full lowercase git commit SHA.',
+        max_length=40,
+        min_length=40,
+        pattern='^[0-9a-f]{40}$',
+    )
+    source_protocol: Literal[
+        'rest',
+        'mcp',
+        'streamable',
+        'openai',
+        'websocket',
+        'agent_chain',
+        'scheduled_job',
+        'internal',
+    ]
+    generated_at: AwareDatetime
+    runtime_correlation_id: str = Field(
+        ...,
+        description='Correlation id emitted by the deployed consumer runtime.',
+        min_length=1,
+    )
+    eventspine_replay_count: int = Field(
+        ...,
+        description='EventSpine replay count observed by the deployed consumer runtime; must be >= 1.',
+        ge=1,
+    )
+    evidence_refs: list[EvidenceRef] = Field(
+        ...,
+        description='Evidence URIs or artifact identifiers backing the read-back.',
+        min_length=1,
+    )
+    spine_event_id: str | None = Field(
+        None,
+        description='Optional EventSpine event id for the adoption read-back.',
+        min_length=1,
+    )
+    workflow_id: str | None = Field(
+        None,
+        description='Optional workflow id associated with the deployed consumer run.',
+        min_length=1,
+    )
+    run_id: str | None = Field(
+        None,
+        description='Optional CI/runtime run id associated with the consumer read-back.',
+        min_length=1,
+    )
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
 
 class GovernanceActorType(
     RootModel[Literal['agent', 'user', 'system', 'cron', 'operator']]
