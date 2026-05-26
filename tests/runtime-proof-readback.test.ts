@@ -4,11 +4,14 @@ import {
   buildRuntimeEvidence,
   detectRuntimeUrl,
   evaluateRuntimeProof,
+  extractConsumerAdoptionReadback,
+  evaluateConsumerAdoptionReadback,
   extractRuntimeFingerprint,
   fetchJson,
   normalizeBaseUrl,
   parseProbeTimeoutMs,
   probeRuntime,
+  readConsumerAdoptionReadbackFromEnv,
   shaMatches,
 } from '../scripts/verify-runtime-proof-readback.ts'
 
@@ -114,6 +117,136 @@ describe('runtime proof read-back', () => {
       observed: false,
     }])
     expect(evidence.note).toContain('consumer adoption read-back')
+  })
+
+  it('accepts claim-safe deployed consumer adoption read-back for dependency-only runtime proof', () => {
+    const adoption = extractConsumerAdoptionReadback({
+      success: true,
+      schema: 'ContractsConsumerAdoptionReadbackResult',
+      evidence_level: 'diagnostic_only',
+      readback: {
+        schema_version: 'contracts.consumer_adoption_readback.v1',
+        package_name: '@widgetdc/contracts',
+        package_version: '0.8.1',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+        consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+        consumer_service: 'orchestrator',
+        consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+        source_protocol: 'scheduled_job',
+        generated_at: '2026-05-26T20:47:41.396Z',
+        runtime_correlation_id: 'lin-1339-contracts-adoption',
+        eventspine_replay_count: 1,
+        evidence_refs: ['github:Clauskraft/widgetdc-orchestrator#266'],
+        runtime_proof_claimed: false,
+        claim_promotion_eligible: false,
+      },
+    })
+
+    expect(adoption?.fingerprint).toEqual({
+      deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+      runtime_correlation_id: 'lin-1339-contracts-adoption',
+      eventspine_replay_count: 1,
+    })
+
+    const checks = evaluateConsumerAdoptionReadback(
+      '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      adoption,
+      surface.required_runtime_proof,
+    )
+
+    const evidence = buildRuntimeEvidence({
+      surface: {
+        ...surface,
+        runtime_surface: {
+          deployment_model: 'package_consumer_adoption',
+          standalone_runtime: false,
+          adoption_readback_required: true,
+          consumer_repos: ['widgetdc-orchestrator'],
+        },
+      },
+      expectedSha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      branch: 'main',
+      runtimeUrl: null,
+      consumerAdoptionReadback: adoption,
+      fingerprint: adoption?.fingerprint ?? {
+        deployed_sha: null,
+        runtime_correlation_id: null,
+        eventspine_replay_count: null,
+      },
+      checks,
+    })
+
+    expect(checks.every((check) => check.status === 'PASS')).toBe(true)
+    expect(evidence.status).toBe('PASS')
+    expect(evidence.evidence_level).toBe('runtime_proof')
+    expect(evidence.consumer_adoption_readback).toMatchObject({
+      configured: true,
+      consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+      consumer_service: 'orchestrator',
+      evidence_level: 'diagnostic_only',
+      runtime_proof_claimed: false,
+      claim_promotion_eligible: false,
+    })
+    expect(evidence.note).toContain('consumer adoption read-back requirements passed')
+  })
+
+  it('blocks consumer adoption read-back that attempts claim promotion', () => {
+    const adoption = extractConsumerAdoptionReadback({
+      readback: {
+        package_name: '@widgetdc/contracts',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+        consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+        runtime_correlation_id: 'lin-1339-contracts-adoption',
+        eventspine_replay_count: 1,
+        runtime_proof_claimed: false,
+        claim_promotion_eligible: true,
+      },
+    })
+
+    const checks = evaluateConsumerAdoptionReadback(
+      '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      adoption,
+      surface.required_runtime_proof,
+    )
+
+    expect(checks).toContainEqual({
+      id: 'consumer_claim_promotion_not_eligible',
+      status: 'BLOCKED_RUNTIME',
+      expected: false,
+      observed: true,
+    })
+  })
+
+  it('loads consumer adoption read-back from environment JSON before workflow evaluation', () => {
+    const env = {
+      CONSUMER_ADOPTION_READBACK_JSON: JSON.stringify({
+        data: {
+          result: JSON.stringify({
+            schema: 'ContractsConsumerAdoptionReadbackResult',
+            evidence_level: 'diagnostic_only',
+            readback: {
+              package_name: '@widgetdc/contracts',
+              package_version: '0.8.1',
+              contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+              consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+              consumer_service: 'orchestrator',
+              consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+              runtime_correlation_id: 'lin-1339-contracts-adoption',
+              eventspine_replay_count: 1,
+              runtime_proof_claimed: false,
+              claim_promotion_eligible: false,
+            },
+          }),
+        },
+      }),
+    }
+
+    const adoption = readConsumerAdoptionReadbackFromEnv(env)
+
+    expect(adoption?.consumer_repo).toBe('Clauskraft/widgetdc-orchestrator')
+    expect(adoption?.fingerprint.eventspine_replay_count).toBe(1)
+    expect(adoption?.runtime_proof_claimed).toBe(false)
+    expect(adoption?.claim_promotion_eligible).toBe(false)
   })
 
   it('accepts short deployed SHA read-back when it prefixes the merge commit', () => {

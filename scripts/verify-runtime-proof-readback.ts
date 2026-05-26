@@ -40,6 +40,27 @@ type RuntimeFingerprint = {
   eventspine_replay_count: number | null
 }
 
+type ConsumerAdoptionReadback = {
+  configured: boolean
+  schema: string | null
+  evidence_level: string | null
+  package_name: string | null
+  package_version: string | null
+  contracts_commit_sha: string | null
+  consumer_repo: string | null
+  consumer_service: string | null
+  source_protocol: string | null
+  generated_at: string | null
+  fingerprint: RuntimeFingerprint
+  runtime_proof_claimed: boolean | null
+  claim_promotion_eligible: boolean | null
+}
+
+type ConsumerAdoptionReadbackEnv = {
+  CONSUMER_ADOPTION_READBACK_JSON?: string
+  CONSUMER_ADOPTION_READBACK_PATH?: string
+}
+
 type RuntimeEvidenceCheck = {
   id: string
   status: RuntimeProofStatus
@@ -64,6 +85,7 @@ type RuntimeEvidence = {
     configured: boolean
     env_name: string | null
   }
+  consumer_adoption_readback?: Omit<ConsumerAdoptionReadback, 'fingerprint'>
   runtime_surface?: RuntimeSurfaceMetadata
   runtime: RuntimeFingerprint
   checks: RuntimeEvidenceCheck[]
@@ -118,6 +140,29 @@ function firstNumber(records: Array<JsonRecord | null>, paths: string[][]): numb
   }
 
   return null
+}
+
+function parseJsonRecord(value: unknown): JsonRecord | null {
+  if (typeof value !== 'string') return asRecord(value)
+  try {
+    return asRecord(JSON.parse(value))
+  } catch {
+    return null
+  }
+}
+
+function unwrapConsumerAdoptionReadback(value: unknown): JsonRecord | null {
+  const record = parseJsonRecord(value)
+  if (!record) return null
+
+  const data = asRecord(record.data)
+  const dataResult = parseJsonRecord(data?.result)
+  if (dataResult) return dataResult
+
+  const result = parseJsonRecord(record.result)
+  if (result) return result
+
+  return record
 }
 
 export function normalizeBaseUrl(value: string | undefined): string {
@@ -197,6 +242,48 @@ export function extractRuntimeFingerprint(
   }
 }
 
+export function extractConsumerAdoptionReadback(value: unknown): ConsumerAdoptionReadback | null {
+  const record = unwrapConsumerAdoptionReadback(value)
+  const readback = asRecord(record?.readback)
+  if (!record || !readback) return null
+
+  return {
+    configured: true,
+    schema: firstString([record], [['schema']]),
+    evidence_level: firstString([record], [['evidence_level']]),
+    package_name: firstString([readback], [['package_name']]),
+    package_version: firstString([readback], [['package_version']]),
+    contracts_commit_sha: firstString([readback], [['contracts_commit_sha']]),
+    consumer_repo: firstString([readback], [['consumer_repo']]),
+    consumer_service: firstString([readback], [['consumer_service']]),
+    source_protocol: firstString([readback], [['source_protocol']]),
+    generated_at: firstString([readback], [['generated_at']]),
+    fingerprint: {
+      deployed_sha: firstString([readback], [['consumer_deployed_sha']]),
+      runtime_correlation_id: firstString([readback], [['runtime_correlation_id']]),
+      eventspine_replay_count: firstNumber([readback], [['eventspine_replay_count']]),
+    },
+    runtime_proof_claimed: typeof readback.runtime_proof_claimed === 'boolean'
+      ? readback.runtime_proof_claimed
+      : null,
+    claim_promotion_eligible: typeof readback.claim_promotion_eligible === 'boolean'
+      ? readback.claim_promotion_eligible
+      : null,
+  }
+}
+
+export function readConsumerAdoptionReadbackFromEnv(
+  env: ConsumerAdoptionReadbackEnv = process.env,
+): ConsumerAdoptionReadback | null {
+  const inlineJson = String(env.CONSUMER_ADOPTION_READBACK_JSON || '').trim()
+  if (inlineJson) return extractConsumerAdoptionReadback(inlineJson)
+
+  const filePath = String(env.CONSUMER_ADOPTION_READBACK_PATH || '').trim()
+  if (!filePath) return null
+
+  return extractConsumerAdoptionReadback(readFileSync(filePath, 'utf8'))
+}
+
 export function evaluateRuntimeProof(
   expectedSha: string,
   fingerprint: RuntimeFingerprint,
@@ -235,6 +322,77 @@ export function evaluateRuntimeProof(
   return checks
 }
 
+export function evaluateConsumerAdoptionReadback(
+  expectedSha: string,
+  adoption: ConsumerAdoptionReadback | null,
+  required: RuntimeProofSurface['required_runtime_proof'],
+): RuntimeEvidenceCheck[] {
+  if (!adoption) return missingRuntimeUrlChecks({
+    repo_id: 'widgetdc-contracts',
+    surface_id: 'widgetdc-contracts-merge-runtime-proof',
+    runtime_url_env_names: [],
+    health_path: '/health',
+    required_runtime_proof: required,
+    runtime_surface: {
+      deployment_model: 'package_consumer_adoption',
+      standalone_runtime: false,
+      adoption_readback_required: true,
+      consumer_repos: [],
+    },
+  })
+
+  const checks: RuntimeEvidenceCheck[] = [{
+    id: 'consumer_adoption_readback_configured',
+    status: 'PASS',
+    observed: true,
+  }]
+
+  if (required.deployed_sha_matches) {
+    checks.push({
+      id: 'contracts_commit_sha_matches',
+      status: shaMatches(expectedSha, adoption.contracts_commit_sha) ? 'PASS' : 'BLOCKED_RUNTIME',
+      expected: expectedSha,
+      observed: adoption.contracts_commit_sha,
+    })
+    checks.push({
+      id: 'consumer_deployed_sha_present',
+      status: adoption.fingerprint.deployed_sha ? 'PASS' : 'BLOCKED_RUNTIME',
+      observed: adoption.fingerprint.deployed_sha ? 'present' : null,
+    })
+  }
+
+  if (required.runtime_correlation_id) {
+    checks.push({
+      id: 'runtime_correlation_id_present',
+      status: adoption.fingerprint.runtime_correlation_id ? 'PASS' : 'BLOCKED_RUNTIME',
+      observed: adoption.fingerprint.runtime_correlation_id ? 'present' : null,
+    })
+  }
+
+  checks.push({
+    id: 'eventspine_replay_count_gte',
+    status:
+      typeof adoption.fingerprint.eventspine_replay_count === 'number' &&
+      adoption.fingerprint.eventspine_replay_count >= required.eventspine_replay_count_gte
+        ? 'PASS'
+        : 'BLOCKED_RUNTIME',
+    expected: required.eventspine_replay_count_gte,
+    observed: adoption.fingerprint.eventspine_replay_count,
+  }, {
+    id: 'consumer_runtime_proof_not_claimed',
+    status: adoption.runtime_proof_claimed === false ? 'PASS' : 'BLOCKED_RUNTIME',
+    expected: false,
+    observed: adoption.runtime_proof_claimed,
+  }, {
+    id: 'consumer_claim_promotion_not_eligible',
+    status: adoption.claim_promotion_eligible === false ? 'PASS' : 'BLOCKED_RUNTIME',
+    expected: false,
+    observed: adoption.claim_promotion_eligible,
+  })
+
+  return checks
+}
+
 function missingRuntimeUrlChecks(surface: RuntimeProofSurface): RuntimeEvidenceCheck[] {
   if (surface.runtime_surface?.deployment_model === 'package_consumer_adoption') {
     return [{
@@ -265,14 +423,21 @@ export function buildRuntimeEvidence(input: {
   expectedSha: string
   branch: string
   runtimeUrl: RuntimeUrlDetection | null
+  consumerAdoptionReadback?: ConsumerAdoptionReadback | null
   fingerprint: RuntimeFingerprint
   checks: RuntimeEvidenceCheck[]
 }): RuntimeEvidence {
-  const status = input.runtimeUrl && input.checks.every((check) => check.status === 'PASS')
+  const hasEvidenceSource = Boolean(input.runtimeUrl) || Boolean(input.consumerAdoptionReadback)
+  const status = hasEvidenceSource && input.checks.every((check) => check.status === 'PASS')
     ? 'PASS'
     : 'BLOCKED_RUNTIME'
   const runId = process.env.GITHUB_RUN_ID || null
   const runAttempt = process.env.GITHUB_RUN_ATTEMPT || null
+  let consumerAdoptionReadback: Omit<ConsumerAdoptionReadback, 'fingerprint'> | undefined
+  if (input.consumerAdoptionReadback) {
+    const { fingerprint: _fingerprint, ...rest } = input.consumerAdoptionReadback
+    consumerAdoptionReadback = rest
+  }
 
   return {
     repo: input.surface.repo_id,
@@ -291,13 +456,20 @@ export function buildRuntimeEvidence(input: {
       configured: Boolean(input.runtimeUrl),
       env_name: input.runtimeUrl?.env_name || null,
     },
+    ...(input.consumerAdoptionReadback
+      ? { consumer_adoption_readback: consumerAdoptionReadback }
+      : {}),
     runtime_surface: input.surface.runtime_surface,
     runtime: input.fingerprint,
     checks: input.runtimeUrl
       ? input.checks
+      : input.consumerAdoptionReadback
+        ? input.checks
       : missingRuntimeUrlChecks(input.surface),
     note: status === 'PASS'
-      ? 'Runtime proof requirements passed for this merge commit.'
+      ? input.consumerAdoptionReadback
+        ? 'Runtime proof consumer adoption read-back requirements passed for this merge commit. No claim promotion was performed.'
+        : 'Runtime proof requirements passed for this merge commit.'
       : blockedRuntimeNote(input.surface),
   }
 }
@@ -405,6 +577,7 @@ function writeEvidence(evidence: RuntimeEvidence): void {
       `- Branch: \`${evidence.branch}\``,
       `- Runtime URL configured: \`${String(evidence.runtime_url.configured)}\``,
       `- Runtime URL env: \`${evidence.runtime_url.env_name || 'none'}\``,
+      `- Consumer adoption read-back configured: \`${String(Boolean(evidence.consumer_adoption_readback?.configured))}\``,
       `- Status: \`${evidence.status}\``,
       `- Evidence level: \`${evidence.evidence_level}\``,
       '',
@@ -432,8 +605,18 @@ async function main(): Promise<void> {
     eventspine_replay_count: null,
   }
   let checks: RuntimeEvidenceCheck[] = []
+  const consumerAdoptionReadback = surface.runtime_surface?.deployment_model === 'package_consumer_adoption'
+    ? readConsumerAdoptionReadbackFromEnv(process.env)
+    : null
 
-  if (runtimeUrl) {
+  if (consumerAdoptionReadback) {
+    fingerprint = consumerAdoptionReadback.fingerprint
+    checks = evaluateConsumerAdoptionReadback(
+      expectedSha,
+      consumerAdoptionReadback,
+      surface.required_runtime_proof,
+    )
+  } else if (runtimeUrl) {
     const probe = await probeRuntime(runtimeUrl, surface, expectedSha)
     fingerprint = probe.fingerprint
     checks = probe.checks
@@ -444,6 +627,7 @@ async function main(): Promise<void> {
     expectedSha,
     branch,
     runtimeUrl,
+    consumerAdoptionReadback,
     fingerprint,
     checks,
   })
