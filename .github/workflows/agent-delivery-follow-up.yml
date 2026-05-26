@@ -10,6 +10,10 @@ on:
         description: "Runtime base URL override"
         required: false
         type: string
+      consumer_adoption_readback_json:
+        description: "Structured consumer adoption read-back JSON from a deployed consumer or governed runner"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -24,6 +28,8 @@ jobs:
       WIDGETDC_CONTRACTS_RUNTIME_URL: ${{ inputs.runtime_url || secrets.WIDGETDC_CONTRACTS_RUNTIME_URL || vars.WIDGETDC_CONTRACTS_RUNTIME_URL }}
       RAILWAY_URL: ${{ secrets.RAILWAY_URL || vars.RAILWAY_URL }}
       BACKEND_URL: ${{ secrets.BACKEND_URL || vars.BACKEND_URL }}
+      CONSUMER_ADOPTION_READBACK_JSON: ${{ inputs.consumer_adoption_readback_json || secrets.CONSUMER_ADOPTION_READBACK_JSON || vars.CONSUMER_ADOPTION_READBACK_JSON }}
+      CONSUMER_ADOPTION_READBACK_PATH: ${{ vars.CONSUMER_ADOPTION_READBACK_PATH }}
       RUNTIME_EVIDENCE_PATH: runtime-evidence.json
     steps:
       - name: Checkout
@@ -66,6 +72,7 @@ jobs:
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Branch: \`${GITHUB_REF_NAME}\`"
             echo "- Runtime URL configured: \`${{ env.WIDGETDC_CONTRACTS_RUNTIME_URL != '' || env.RAILWAY_URL != '' || env.BACKEND_URL != '' }}\`"
+            echo "- Consumer adoption read-back configured: \`${{ env.CONSUMER_ADOPTION_READBACK_JSON != '' || env.CONSUMER_ADOPTION_READBACK_PATH != '' }}\`"
             echo "- Runtime proof status: \`${{ steps.runtime-proof.outputs.status || 'unavailable' }}\`"
             echo "- Runtime evidence artifact: \`runtime-evidence-${GITHUB_SHA}\`"
             echo "- Result: ${{ job.status }}"
