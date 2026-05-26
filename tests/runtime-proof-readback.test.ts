@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  buildConsumerAdoptionBaseline,
   buildRuntimeEvidence,
   detectRuntimeUrl,
   evaluateRuntimeProof,
@@ -12,6 +13,7 @@ import {
   parseProbeTimeoutMs,
   probeRuntime,
   readConsumerAdoptionReadbackFromEnv,
+  isProofPipelineOnlyDiff,
   shaMatches,
 } from '../scripts/verify-runtime-proof-readback.ts'
 
@@ -188,6 +190,103 @@ describe('runtime proof read-back', () => {
       claim_promotion_eligible: false,
     })
     expect(evidence.note).toContain('consumer adoption read-back requirements passed')
+  })
+
+  it('accepts an older consumer adoption SHA when only proof-pipeline files changed', () => {
+    const adoption = extractConsumerAdoptionReadback({
+      schema: 'ContractsConsumerAdoptionReadbackResult',
+      evidence_level: 'diagnostic_only',
+      readback: {
+        package_name: '@widgetdc/contracts',
+        package_version: '0.8.1',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+        consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+        consumer_service: 'orchestrator',
+        consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+        source_protocol: 'scheduled_job',
+        generated_at: '2026-05-26T20:47:41.396Z',
+        runtime_correlation_id: 'lin-1339-contracts-adoption',
+        eventspine_replay_count: 1,
+        runtime_proof_claimed: false,
+        claim_promotion_eligible: false,
+      },
+    })
+    const baseline = buildConsumerAdoptionBaseline(
+      '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+      adoption?.contracts_commit_sha ?? null,
+      {
+        isAncestor: true,
+        diffFiles: [
+          '.github/workflows/agent-delivery-follow-up.yml',
+          'scripts/verify-runtime-proof-readback.ts',
+          'tests/runtime-proof-readback.test.ts',
+        ],
+      },
+    )
+
+    const checks = evaluateConsumerAdoptionReadback(
+      '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+      adoption,
+      surface.required_runtime_proof,
+      baseline,
+    )
+
+    expect(isProofPipelineOnlyDiff(baseline.diff_files ?? [])).toBe(true)
+    expect(checks).toContainEqual({
+      id: 'contracts_commit_sha_matches',
+      status: 'PASS',
+      expected: {
+        current_commit_sha: '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+        accepted_modes: ['exact', 'proof_pipeline_only_diff'],
+      },
+      observed: expect.objectContaining({
+        mode: 'proof_pipeline_only_diff',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      }),
+    })
+    expect(checks.every((check) => check.status === 'PASS')).toBe(true)
+  })
+
+  it('blocks an older consumer adoption SHA when runtime package files changed', () => {
+    const adoption = extractConsumerAdoptionReadback({
+      readback: {
+        package_name: '@widgetdc/contracts',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+        consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+        runtime_correlation_id: 'lin-1339-contracts-adoption',
+        eventspine_replay_count: 1,
+        runtime_proof_claimed: false,
+        claim_promotion_eligible: false,
+      },
+    })
+    const baseline = buildConsumerAdoptionBaseline(
+      '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+      adoption?.contracts_commit_sha ?? null,
+      {
+        isAncestor: true,
+        diffFiles: ['src/index.ts'],
+      },
+    )
+
+    const checks = evaluateConsumerAdoptionReadback(
+      '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+      adoption,
+      surface.required_runtime_proof,
+      baseline,
+    )
+
+    expect(checks).toContainEqual({
+      id: 'contracts_commit_sha_matches',
+      status: 'BLOCKED_RUNTIME',
+      expected: {
+        current_commit_sha: '3cf6476a3e968d9035a7831a908cc6a019fe5c62',
+        accepted_modes: ['exact', 'proof_pipeline_only_diff'],
+      },
+      observed: expect.objectContaining({
+        mode: 'mismatch',
+        diff_files: ['src/index.ts'],
+      }),
+    })
   })
 
   it('blocks consumer adoption read-back that attempts claim promotion', () => {
