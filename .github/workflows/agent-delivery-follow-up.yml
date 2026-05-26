@@ -6,22 +6,26 @@ on:
       - main
   workflow_dispatch:
     inputs:
-      railway_url:
-        description: "Railway base URL override"
+      runtime_url:
+        description: "Runtime base URL override"
         required: false
         type: string
 
 permissions:
   contents: read
   issues: write
+  actions: read
 
 jobs:
   follow-up:
-    name: Verify main push and Railway runtime
+    name: Verify main push runtime proof
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      RAILWAY_URL: ${{ inputs.railway_url || secrets.RAILWAY_URL || vars.RAILWAY_URL }}
+      WIDGETDC_CONTRACTS_RUNTIME_URL: ${{ inputs.runtime_url || secrets.WIDGETDC_CONTRACTS_RUNTIME_URL || vars.WIDGETDC_CONTRACTS_RUNTIME_URL }}
+      RAILWAY_URL: ${{ secrets.RAILWAY_URL || vars.RAILWAY_URL }}
+      BACKEND_URL: ${{ secrets.BACKEND_URL || vars.BACKEND_URL }}
+      RUNTIME_EVIDENCE_PATH: runtime-evidence.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,26 +41,21 @@ jobs:
         run: npm install --legacy-peer-deps --ignore-scripts
 
       - name: Wait for Railway rollout window
-        if: ${{ env.RAILWAY_URL != '' }}
+        if: ${{ env.WIDGETDC_CONTRACTS_RUNTIME_URL != '' || env.RAILWAY_URL != '' || env.BACKEND_URL != '' }}
         run: sleep 45
 
-      - name: Verify runtime endpoint
-        if: ${{ env.RAILWAY_URL != '' }}
-        run: |
-          set -e
-          curl -fsSL "${RAILWAY_URL}/health" > /tmp/railway-health.json
-          cat /tmp/railway-health.json
+      - name: Verify runtime proof read-back
+        id: runtime-proof
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm run runtime:proof:readback
 
-      - name: Run production smoke script when available
-        if: ${{ hashFiles('package.json') != '' && env.RAILWAY_URL != '' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts['test:production'] ? 0 : 1)"; then
-            npm run test:production
-          else
-            echo "No test:production script present; health check only"
-          fi
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-evidence-${{ github.sha }}
+          path: runtime-evidence.json
+          if-no-files-found: warn
 
       - name: Write summary
         if: always()
@@ -67,11 +66,9 @@ jobs:
             echo ""
             echo "- Commit: \`${GITHUB_SHA}\`"
             echo "- Branch: \`${GITHUB_REF_NAME}\`"
-            if [ -n "${RAILWAY_URL:-}" ]; then
-              echo "- Railway URL: \`${RAILWAY_URL}\`"
-            else
-              echo "- Railway URL: not configured"
-            fi
+            echo "- Runtime URL configured: \`${{ env.WIDGETDC_CONTRACTS_RUNTIME_URL != '' || env.RAILWAY_URL != '' || env.BACKEND_URL != '' }}\`"
+            echo "- Runtime proof status: \`${{ steps.runtime-proof.outputs.status || 'unavailable' }}\`"
+            echo "- Runtime evidence artifact: \`runtime-evidence-${GITHUB_SHA}\`"
             echo "- Result: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -91,10 +88,11 @@ jobs:
                 `- Branch: ${context.ref}`,
                 `- Workflow: ${context.workflow}`,
                 '',
-                'The repository reached `main`, but the required Railway/runtime follow-up did not complete successfully.',
-                'The executing agent remains accountable for verification and remediation.',
+                'The repository reached `main`, but runtime proof read-back did not complete with claim-grade evidence.',
+                'Expected evidence includes deployed SHA, runtime correlation ID, and EventSpine replay count >= 1.',
+                'Treat this as `BLOCKED_RUNTIME`; do not claim deployed, runtime-proven, or promoted status from this run.',
                 '',
                 `[Open workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`
               ].join('\n'),
-              labels: ['deployment', 'follow-up', 'main']
+              labels: ['deployment', 'follow-up', 'main', 'runtime-proof']
             });
