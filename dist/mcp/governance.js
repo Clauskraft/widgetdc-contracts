@@ -19,6 +19,12 @@
  * gate's internal policy logic is the enforcement authority.
  */
 import { Type } from '@sinclair/typebox';
+const GitCommitSha = Type.String({
+    minLength: 40,
+    maxLength: 40,
+    pattern: '^[0-9a-f]{40}$',
+    description: 'Full lowercase git commit SHA.',
+});
 // ─── Risk / cost / audit unions ─────────────────────────────────────
 export const GovernanceRiskLevel = Type.Union([
     Type.Literal('read_only'),
@@ -360,5 +366,57 @@ export const ClaimPromotionEvidence = Type.Object({
     description: 'Evidence bundle pinned to a claim promotion. Promotion is gated by ' +
         'canary_run_ids + evidence_refs + policy_bundle_digest — no PR-merge-only ' +
         'promotion is permitted.',
+});
+export const ContractsConsumerAdoptionReadback = Type.Object({
+    schema_version: Type.Literal('contracts.consumer_adoption_readback.v1'),
+    package_name: Type.Literal('@widgetdc/contracts'),
+    package_version: Type.String({
+        minLength: 1,
+        description: 'Resolved @widgetdc/contracts package version used by the deployed consumer.',
+    }),
+    contracts_commit_sha: GitCommitSha,
+    consumer_repo: Type.String({
+        minLength: 1,
+        description: 'Repository or governed runtime that emitted this adoption read-back.',
+    }),
+    consumer_service: Type.String({
+        minLength: 1,
+        description: 'Deployed service, job, or runner inside the consumer boundary.',
+    }),
+    consumer_deployed_sha: GitCommitSha,
+    source_protocol: GovernanceSourceProtocol,
+    generated_at: Type.String({ format: 'date-time' }),
+    runtime_correlation_id: Type.String({
+        minLength: 1,
+        description: 'Correlation id emitted by the deployed consumer runtime.',
+    }),
+    eventspine_replay_count: Type.Integer({
+        minimum: 1,
+        description: 'EventSpine replay count observed by the deployed consumer runtime; must be >= 1.',
+    }),
+    evidence_refs: Type.Array(Type.String({ minLength: 1 }), {
+        minItems: 1,
+        description: 'Evidence URIs or artifact identifiers backing the read-back.',
+    }),
+    spine_event_id: Type.Optional(Type.String({
+        minLength: 1,
+        description: 'Optional EventSpine event id for the adoption read-back.',
+    })),
+    workflow_id: Type.Optional(Type.String({
+        minLength: 1,
+        description: 'Optional workflow id associated with the deployed consumer run.',
+    })),
+    run_id: Type.Optional(Type.String({
+        minLength: 1,
+        description: 'Optional CI/runtime run id associated with the consumer read-back.',
+    })),
+    runtime_proof_claimed: Type.Literal(false),
+    claim_promotion_eligible: Type.Literal(false),
+}, {
+    $id: 'ContractsConsumerAdoptionReadback',
+    additionalProperties: false,
+    description: 'Read-back envelope emitted by a deployed consumer or governed runner to prove ' +
+        '@widgetdc/contracts adoption metadata. This is not claim-promotion evidence ' +
+        'and must not be treated as runtime-proof claim promotion by itself.',
 });
 //# sourceMappingURL=governance.js.map

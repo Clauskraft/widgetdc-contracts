@@ -1,0 +1,144 @@
+{
+  "$id": "ContractsConsumerAdoptionReadback",
+  "additionalProperties": false,
+  "description": "Read-back envelope emitted by a deployed consumer or governed runner to prove @widgetdc/contracts adoption metadata. This is not claim-promotion evidence and must not be treated as runtime-proof claim promotion by itself.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "package_name",
+    "package_version",
+    "contracts_commit_sha",
+    "consumer_repo",
+    "consumer_service",
+    "consumer_deployed_sha",
+    "source_protocol",
+    "generated_at",
+    "runtime_correlation_id",
+    "eventspine_replay_count",
+    "evidence_refs",
+    "runtime_proof_claimed",
+    "claim_promotion_eligible"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "contracts.consumer_adoption_readback.v1",
+      "type": "string"
+    },
+    "package_name": {
+      "const": "@widgetdc/contracts",
+      "type": "string"
+    },
+    "package_version": {
+      "minLength": 1,
+      "description": "Resolved @widgetdc/contracts package version used by the deployed consumer.",
+      "type": "string"
+    },
+    "contracts_commit_sha": {
+      "minLength": 40,
+      "maxLength": 40,
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Full lowercase git commit SHA.",
+      "type": "string"
+    },
+    "consumer_repo": {
+      "minLength": 1,
+      "description": "Repository or governed runtime that emitted this adoption read-back.",
+      "type": "string"
+    },
+    "consumer_service": {
+      "minLength": 1,
+      "description": "Deployed service, job, or runner inside the consumer boundary.",
+      "type": "string"
+    },
+    "consumer_deployed_sha": {
+      "minLength": 40,
+      "maxLength": 40,
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Full lowercase git commit SHA.",
+      "type": "string"
+    },
+    "source_protocol": {
+      "$id": "GovernanceSourceProtocol",
+      "anyOf": [
+        {
+          "const": "rest",
+          "type": "string"
+        },
+        {
+          "const": "mcp",
+          "type": "string"
+        },
+        {
+          "const": "streamable",
+          "type": "string"
+        },
+        {
+          "const": "openai",
+          "type": "string"
+        },
+        {
+          "const": "websocket",
+          "type": "string"
+        },
+        {
+          "const": "agent_chain",
+          "type": "string"
+        },
+        {
+          "const": "scheduled_job",
+          "type": "string"
+        },
+        {
+          "const": "internal",
+          "type": "string"
+        }
+      ]
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "runtime_correlation_id": {
+      "minLength": 1,
+      "description": "Correlation id emitted by the deployed consumer runtime.",
+      "type": "string"
+    },
+    "eventspine_replay_count": {
+      "minimum": 1,
+      "description": "EventSpine replay count observed by the deployed consumer runtime; must be >= 1.",
+      "type": "integer"
+    },
+    "evidence_refs": {
+      "minItems": 1,
+      "description": "Evidence URIs or artifact identifiers backing the read-back.",
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "spine_event_id": {
+      "minLength": 1,
+      "description": "Optional EventSpine event id for the adoption read-back.",
+      "type": "string"
+    },
+    "workflow_id": {
+      "minLength": 1,
+      "description": "Optional workflow id associated with the deployed consumer run.",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "description": "Optional CI/runtime run id associated with the consumer read-back.",
+      "type": "string"
+    },
+    "runtime_proof_claimed": {
+      "const": false,
+      "type": "boolean"
+    },
+    "claim_promotion_eligible": {
+      "const": false,
+      "type": "boolean"
+    }
+  }
+}

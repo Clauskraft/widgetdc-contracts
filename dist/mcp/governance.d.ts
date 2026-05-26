@@ -231,4 +231,24 @@ export declare const ClaimPromotionEvidence: import("@sinclair/typebox").TObject
     reason: import("@sinclair/typebox").TString;
 }>;
 export type ClaimPromotionEvidence = Static<typeof ClaimPromotionEvidence>;
+export declare const ContractsConsumerAdoptionReadback: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"contracts.consumer_adoption_readback.v1">;
+    package_name: import("@sinclair/typebox").TLiteral<"@widgetdc/contracts">;
+    package_version: import("@sinclair/typebox").TString;
+    contracts_commit_sha: import("@sinclair/typebox").TString;
+    consumer_repo: import("@sinclair/typebox").TString;
+    consumer_service: import("@sinclair/typebox").TString;
+    consumer_deployed_sha: import("@sinclair/typebox").TString;
+    source_protocol: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"rest">, import("@sinclair/typebox").TLiteral<"mcp">, import("@sinclair/typebox").TLiteral<"streamable">, import("@sinclair/typebox").TLiteral<"openai">, import("@sinclair/typebox").TLiteral<"websocket">, import("@sinclair/typebox").TLiteral<"agent_chain">, import("@sinclair/typebox").TLiteral<"scheduled_job">, import("@sinclair/typebox").TLiteral<"internal">]>;
+    generated_at: import("@sinclair/typebox").TString;
+    runtime_correlation_id: import("@sinclair/typebox").TString;
+    eventspine_replay_count: import("@sinclair/typebox").TInteger;
+    evidence_refs: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+    spine_event_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    workflow_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    run_id: import("@sinclair/typebox").TOptional<import("@sinclair/typebox").TString>;
+    runtime_proof_claimed: import("@sinclair/typebox").TLiteral<false>;
+    claim_promotion_eligible: import("@sinclair/typebox").TLiteral<false>;
+}>;
+export type ContractsConsumerAdoptionReadback = Static<typeof ContractsConsumerAdoptionReadback>;
 //# sourceMappingURL=governance.d.ts.map
