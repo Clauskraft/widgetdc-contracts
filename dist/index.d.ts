@@ -17,6 +17,7 @@
  *   import { ProduceRequest, ProductionOrder } from '@widgetdc/contracts/mrp'
  *   import { AuditHashChainEntry } from '@widgetdc/contracts/security'
  *   import { BOMItem, ConfigurationSnapshot, WorkArtifact } from '@widgetdc/contracts/decision-bom'
+ *   import { PARLReasonRequest, PARLReasonResponse } from '@widgetdc/contracts/parl'
  */
 export * from './cognitive/index.js';
 export * from './health/index.js';
@@ -33,4 +34,5 @@ export * from './normalization/index.js';
 export * from './adoption/index.js';
 export * from './llm/index.js';
 export * from './decision-bom/index.js';
+export * from './parl/index.js';
 //# sourceMappingURL=index.d.ts.map

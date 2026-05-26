@@ -10,4 +10,5 @@
 export * from './bomItem.js';
 export * from './workArtifact.js';
 export * from './configurationSnapshot.js';
+export * from './composeRequest.js';
 //# sourceMappingURL=index.d.ts.map

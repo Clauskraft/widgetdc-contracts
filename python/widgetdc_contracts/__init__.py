@@ -7,6 +7,7 @@ from . import adoption
 from . import agent
 from . import cognitive
 from . import consulting
+from . import decision_bom
 from . import graph
 from . import health
 from . import http_ as http
@@ -14,4 +15,5 @@ from . import mcp
 from . import mrp
 from . import opportunities
 from . import orchestrator
+from . import parl
 from . import security

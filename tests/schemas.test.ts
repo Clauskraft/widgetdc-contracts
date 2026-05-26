@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import '../src/formats.js' // register uuid + date-time format validators
 import { Value } from '@sinclair/typebox/value'
 import {
@@ -32,6 +34,20 @@ import {
   RelationshipType,
   DOMAIN_SHORT_IDS,
 } from '../src/index.js'
+
+describe('schema export coverage', () => {
+  it('exports schemas for every TypeBox-backed public module', () => {
+    const root = process.cwd()
+    for (const rel of [
+      'schemas/parl/PARLReasonRequest.json',
+      'schemas/parl/PARLReasonResponse.json',
+      'schemas/mcp/GovernanceContext.json',
+      'schemas/decision-bom/PhantomBOMComposeRequest.json',
+    ]) {
+      expect(existsSync(join(root, rel)), `missing ${rel}`).toBe(true)
+    }
+  })
+})
 
 describe('cognitive/', () => {
   it('CognitiveRequest validates a minimal request', () => {

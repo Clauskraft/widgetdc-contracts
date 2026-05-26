@@ -104,6 +104,10 @@ function toPythonClassName(schemaName: string): string {
     .join('')
 }
 
+function toPythonModuleName(moduleName: string): string {
+  return moduleName.replace(/[^A-Za-z0-9_]/g, '_')
+}
+
 function generateModuleFiles(moduleName: string, datamodelCodegen: string): {
   outputName: string,
   schemaNames: string[],
@@ -117,7 +121,7 @@ function generateModuleFiles(moduleName: string, datamodelCodegen: string): {
     .map((name) => basename(name, '.json'))
   const classNames = schemaNames.map(toPythonClassName)
 
-  const outputName = moduleName === 'http' ? 'http_' : moduleName
+  const outputName = moduleName === 'http' ? 'http_' : toPythonModuleName(moduleName)
   const moduleTempDir = join(tempDir, moduleName)
   mkdirSync(moduleTempDir, { recursive: true })
 
@@ -283,8 +287,11 @@ function writeInit(modules: string[]): void {
   ]
 
   for (const moduleName of modules) {
+    const outputName = moduleName === 'http' ? 'http_' : toPythonModuleName(moduleName)
     if (moduleName === 'http') {
       lines.push('from . import http_ as http')
+    } else if (outputName !== moduleName) {
+      lines.push(`from . import ${outputName}`)
     } else {
       lines.push(`from . import ${moduleName}`)
     }

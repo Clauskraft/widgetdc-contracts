@@ -19,4 +19,20 @@ describe('python generation hygiene', () => {
     expect(graphModule).toContain("'NormalizerConfig'")
     expect(graphModule).toContain("'DEVIATES_FROM_BASELINE'")
   })
+
+  it('emits importable Python modules for schema names with hyphens', () => {
+    const compile = spawnSync('python', ['-m', 'py_compile', 'python/widgetdc_contracts/__init__.py'], {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+    })
+
+    expect(compile.status, `${compile.stdout}\n${compile.stderr}`).toBe(0)
+
+    const importCheck = spawnSync('python', ['-c', 'import widgetdc_contracts; from widgetdc_contracts import decision_bom'], {
+      cwd: join(repoRoot, 'python'),
+      encoding: 'utf-8',
+    })
+
+    expect(importCheck.status, `${importCheck.stdout}\n${importCheck.stderr}`).toBe(0)
+  })
 })

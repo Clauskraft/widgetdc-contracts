@@ -1,0 +1,8 @@
+{
+  "$id": "PARLPatternUsed",
+  "description": "Agentic pattern node returned from retrieval.",
+  "type": "object",
+  "patternProperties": {
+    "^(.*)$": {}
+  }
+}
