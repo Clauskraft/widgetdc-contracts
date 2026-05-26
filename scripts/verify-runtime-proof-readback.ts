@@ -62,7 +62,8 @@ type RuntimeEvidence = {
 
 const DEFAULT_SURFACE_PATH = 'config/runtime_proof_surface.json'
 const DEFAULT_EVIDENCE_PATH = 'runtime-evidence.json'
-const PROBE_TIMEOUT_MS = Number(process.env.RUNTIME_PROOF_TIMEOUT_MS || 30000)
+const DEFAULT_PROBE_TIMEOUT_MS = 30000
+const PROBE_TIMEOUT_MS = parseProbeTimeoutMs(process.env.RUNTIME_PROOF_TIMEOUT_MS)
 
 function asRecord(value: unknown): JsonRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -110,6 +111,11 @@ function firstNumber(records: Array<JsonRecord | null>, paths: string[][]): numb
 
 export function normalizeBaseUrl(value: string | undefined): string {
   return String(value || '').trim().replace(/\/+$/, '')
+}
+
+export function parseProbeTimeoutMs(value: string | undefined): number {
+  const parsed = Number(String(value || '').trim())
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PROBE_TIMEOUT_MS
 }
 
 export function detectRuntimeUrl(
@@ -250,7 +256,20 @@ export function buildRuntimeEvidence(input: {
   }
 }
 
-async function fetchJson(url: string): Promise<JsonRecord> {
+function safeProbeErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.name === 'AbortError') {
+    return 'request timed out'
+  }
+
+  const rawMessage = error instanceof Error ? error.message : String(error || '')
+  const sanitized = rawMessage
+    .replace(/https?:\/\/[^\s"'<>]+/gi, '[runtime-url]')
+    .trim()
+
+  return sanitized || 'runtime probe failed'
+}
+
+export async function fetchJson(url: string): Promise<JsonRecord> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS)
 
@@ -262,15 +281,58 @@ async function fetchJson(url: string): Promise<JsonRecord> {
       },
     })
     const text = await response.text()
-    const data = text ? JSON.parse(text) : {}
 
     if (!response.ok) {
-      throw new Error(`${response.status} ${response.statusText}`)
+      throw new Error(`HTTP ${response.status} ${response.statusText}`.trim())
     }
 
-    return data as JsonRecord
+    if (!text.trim()) {
+      return {}
+    }
+
+    try {
+      const data = JSON.parse(text) as unknown
+      return asRecord(data) || {}
+    } catch {
+      throw new Error('invalid JSON response')
+    }
   } finally {
     clearTimeout(timeout)
+  }
+}
+
+export async function probeRuntime(
+  runtimeUrl: RuntimeUrlDetection,
+  surface: RuntimeProofSurface,
+  expectedSha: string,
+): Promise<{
+  fingerprint: RuntimeFingerprint
+  checks: RuntimeEvidenceCheck[]
+}> {
+  try {
+    const health = await fetchJson(`${runtimeUrl.url}${surface.health_path}`)
+    const release = surface.release_path
+      ? await fetchJson(`${runtimeUrl.url}${surface.release_path}`)
+      : null
+
+    const fingerprint = extractRuntimeFingerprint(health, release)
+    return {
+      fingerprint,
+      checks: evaluateRuntimeProof(expectedSha, fingerprint, surface.required_runtime_proof),
+    }
+  } catch (error: unknown) {
+    return {
+      fingerprint: {
+        deployed_sha: null,
+        runtime_correlation_id: null,
+        eventspine_replay_count: null,
+      },
+      checks: [{
+        id: 'runtime_probe_succeeded',
+        status: 'BLOCKED_RUNTIME',
+        observed: safeProbeErrorMessage(error),
+      }],
+    }
   }
 }
 
@@ -314,7 +376,7 @@ async function main(): Promise<void> {
   }
 
   const runtimeUrl = detectRuntimeUrl(process.env, surface.runtime_url_env_names)
-  if (runtimeUrl) {
+  if (runtimeUrl && process.env.GITHUB_ACTIONS === 'true') {
     console.log(`::add-mask::${runtimeUrl.url}`)
   }
 
@@ -326,13 +388,9 @@ async function main(): Promise<void> {
   let checks: RuntimeEvidenceCheck[] = []
 
   if (runtimeUrl) {
-    const health = await fetchJson(`${runtimeUrl.url}${surface.health_path}`)
-    const release = surface.release_path
-      ? await fetchJson(`${runtimeUrl.url}${surface.release_path}`).catch(() => null)
-      : null
-
-    fingerprint = extractRuntimeFingerprint(health, release)
-    checks = evaluateRuntimeProof(expectedSha, fingerprint, surface.required_runtime_proof)
+    const probe = await probeRuntime(runtimeUrl, surface, expectedSha)
+    fingerprint = probe.fingerprint
+    checks = probe.checks
   }
 
   const evidence = buildRuntimeEvidence({

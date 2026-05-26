@@ -1,11 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildRuntimeEvidence,
   detectRuntimeUrl,
   evaluateRuntimeProof,
   extractRuntimeFingerprint,
+  fetchJson,
   normalizeBaseUrl,
+  parseProbeTimeoutMs,
+  probeRuntime,
   shaMatches,
 } from '../scripts/verify-runtime-proof-readback.ts'
 
@@ -23,6 +26,10 @@ const surface = {
 }
 
 describe('runtime proof read-back', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('normalizes runtime URLs without exposing values as evidence', () => {
     expect(normalizeBaseUrl('https://example.test///')).toBe('https://example.test')
     expect(detectRuntimeUrl({
@@ -60,6 +67,16 @@ describe('runtime proof read-back', () => {
     )).toBe(true)
   })
 
+  it('defaults invalid runtime probe timeouts', () => {
+    expect(parseProbeTimeoutMs(undefined)).toBe(30000)
+    expect(parseProbeTimeoutMs('')).toBe(30000)
+    expect(parseProbeTimeoutMs(' ')).toBe(30000)
+    expect(parseProbeTimeoutMs('0')).toBe(30000)
+    expect(parseProbeTimeoutMs('-1')).toBe(30000)
+    expect(parseProbeTimeoutMs('abc')).toBe(30000)
+    expect(parseProbeTimeoutMs('2500')).toBe(2500)
+  })
+
   it('extracts runtime proof fields from health and release payloads', () => {
     expect(extractRuntimeFingerprint(
       {
@@ -94,6 +111,44 @@ describe('runtime proof read-back', () => {
     )
 
     expect(checks.every((check) => check.status === 'PASS')).toBe(true)
+  })
+
+  it('reports non-JSON HTTP failures without parsing the response body', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html></html>', {
+      status: 503,
+      statusText: 'Service Unavailable',
+    })))
+
+    await expect(fetchJson('https://runtime.test/health'))
+      .rejects
+      .toThrow('HTTP 503 Service Unavailable')
+  })
+
+  it('turns runtime probe failures into structured BLOCKED_RUNTIME evidence checks', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new Error('connect ECONNREFUSED https://runtime.test/health')
+    }))
+
+    const probe = await probeRuntime(
+      {
+        env_name: 'WIDGETDC_CONTRACTS_RUNTIME_URL',
+        url: 'https://runtime.test',
+      },
+      surface,
+      'fdf23433a450fc7041b33ef208480469ec4a4bd1',
+    )
+
+    expect(probe.fingerprint).toEqual({
+      deployed_sha: null,
+      runtime_correlation_id: null,
+      eventspine_replay_count: null,
+    })
+    expect(probe.checks).toEqual([{
+      id: 'runtime_probe_succeeded',
+      status: 'BLOCKED_RUNTIME',
+      observed: 'connect ECONNREFUSED [runtime-url]',
+    }])
+    expect(JSON.stringify(probe)).not.toContain('https://runtime.test')
   })
 
   it('blocks runtime proof when EventSpine replay is absent', () => {
