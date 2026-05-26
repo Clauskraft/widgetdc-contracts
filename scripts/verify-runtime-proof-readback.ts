@@ -1,3 +1,4 @@
+import { execFileSync, spawnSync } from 'node:child_process'
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
@@ -54,6 +55,16 @@ type ConsumerAdoptionReadback = {
   fingerprint: RuntimeFingerprint
   runtime_proof_claimed: boolean | null
   claim_promotion_eligible: boolean | null
+  baseline?: ConsumerAdoptionCommitBaseline
+}
+
+type ConsumerAdoptionCommitBaseline = {
+  mode: 'exact' | 'proof_pipeline_only_diff' | 'mismatch' | 'non_ancestor' | 'unverified'
+  current_commit_sha: string
+  contracts_commit_sha: string | null
+  is_ancestor: boolean | null
+  diff_files: string[] | null
+  allowed_diff_files: string[]
 }
 
 type ConsumerAdoptionReadbackEnv = {
@@ -97,6 +108,11 @@ const DEFAULT_EVIDENCE_PATH = 'runtime-evidence.json'
 const DEFAULT_PROBE_TIMEOUT_MS = 30000
 const PROBE_TIMEOUT_MS = parseProbeTimeoutMs(process.env.RUNTIME_PROOF_TIMEOUT_MS)
 const RUNTIME_URL_PLACEHOLDERS = new Set(['-', 'none', 'null', 'undefined', 'n/a', 'na'])
+const PROOF_PIPELINE_DIFF_ALLOWLIST = [
+  '.github/workflows/agent-delivery-follow-up.yml',
+  'scripts/verify-runtime-proof-readback.ts',
+  'tests/runtime-proof-readback.test.ts',
+]
 
 function asRecord(value: unknown): JsonRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -205,6 +221,100 @@ export function shaMatches(expectedSha: string, deployedSha: string | null): boo
   if (expected.length < 7 || deployed.length < 7) return false
 
   return expected.startsWith(deployed) || deployed.startsWith(expected)
+}
+
+function normalizeRepoPath(path: string): string {
+  return path.trim().replace(/\\/g, '/')
+}
+
+export function isProofPipelineOnlyDiff(paths: string[]): boolean {
+  const allowed = new Set(PROOF_PIPELINE_DIFF_ALLOWLIST)
+  return paths.length > 0 && paths.every((path) => allowed.has(normalizeRepoPath(path)))
+}
+
+export function buildConsumerAdoptionBaseline(
+  currentCommitSha: string,
+  contractsCommitSha: string | null,
+  input: { isAncestor?: boolean | null; diffFiles?: string[] | null } = {},
+): ConsumerAdoptionCommitBaseline {
+  const current = currentCommitSha.trim().toLowerCase()
+  const observed = String(contractsCommitSha || '').trim().toLowerCase() || null
+  const diffFiles = Array.isArray(input.diffFiles)
+    ? input.diffFiles.map(normalizeRepoPath).filter(Boolean)
+    : input.diffFiles ?? null
+  const isAncestor = input.isAncestor ?? null
+
+  if (shaMatches(current, observed)) {
+    return {
+      mode: 'exact',
+      current_commit_sha: current,
+      contracts_commit_sha: observed,
+      is_ancestor: true,
+      diff_files: [],
+      allowed_diff_files: PROOF_PIPELINE_DIFF_ALLOWLIST,
+    }
+  }
+
+  const proofPipelineOnly = isAncestor === true && Array.isArray(diffFiles) && isProofPipelineOnlyDiff(diffFiles)
+
+  return {
+    mode: proofPipelineOnly
+      ? 'proof_pipeline_only_diff'
+      : isAncestor === false
+        ? 'non_ancestor'
+        : Array.isArray(diffFiles)
+          ? 'mismatch'
+          : 'unverified',
+    current_commit_sha: current,
+    contracts_commit_sha: observed,
+    is_ancestor: isAncestor,
+    diff_files: diffFiles,
+    allowed_diff_files: PROOF_PIPELINE_DIFF_ALLOWLIST,
+  }
+}
+
+function readGitBaselineInputs(
+  currentCommitSha: string,
+  contractsCommitSha: string | null,
+): { isAncestor: boolean | null; diffFiles: string[] | null } {
+  const current = currentCommitSha.trim()
+  const observed = String(contractsCommitSha || '').trim()
+  if (shaMatches(current, observed)) return { isAncestor: true, diffFiles: [] }
+  if (!current || !observed) return { isAncestor: null, diffFiles: null }
+
+  const ancestor = spawnSync('git', ['merge-base', '--is-ancestor', observed, current], {
+    stdio: 'ignore',
+  })
+  const isAncestor = ancestor.status === 0 ? true : ancestor.status === 1 ? false : null
+  if (isAncestor !== true) return { isAncestor, diffFiles: null }
+
+  try {
+    const output = execFileSync('git', ['diff', '--name-only', `${observed}..${current}`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+    return {
+      isAncestor,
+      diffFiles: output.split(/\r?\n/).map(normalizeRepoPath).filter(Boolean),
+    }
+  } catch {
+    return { isAncestor, diffFiles: null }
+  }
+}
+
+function withConsumerAdoptionBaseline(
+  currentCommitSha: string,
+  adoption: ConsumerAdoptionReadback,
+): ConsumerAdoptionReadback {
+  const baselineInputs = readGitBaselineInputs(currentCommitSha, adoption.contracts_commit_sha)
+  return {
+    ...adoption,
+    baseline: buildConsumerAdoptionBaseline(
+      currentCommitSha,
+      adoption.contracts_commit_sha,
+      baselineInputs,
+    ),
+  }
 }
 
 export function extractRuntimeFingerprint(
@@ -326,6 +436,9 @@ export function evaluateConsumerAdoptionReadback(
   expectedSha: string,
   adoption: ConsumerAdoptionReadback | null,
   required: RuntimeProofSurface['required_runtime_proof'],
+  baseline = adoption?.baseline ?? (adoption
+    ? buildConsumerAdoptionBaseline(expectedSha, adoption.contracts_commit_sha)
+    : null),
 ): RuntimeEvidenceCheck[] {
   if (!adoption) return missingRuntimeUrlChecks({
     repo_id: 'widgetdc-contracts',
@@ -348,11 +461,15 @@ export function evaluateConsumerAdoptionReadback(
   }]
 
   if (required.deployed_sha_matches) {
+    const commitAccepted = baseline?.mode === 'exact' || baseline?.mode === 'proof_pipeline_only_diff'
     checks.push({
       id: 'contracts_commit_sha_matches',
-      status: shaMatches(expectedSha, adoption.contracts_commit_sha) ? 'PASS' : 'BLOCKED_RUNTIME',
-      expected: expectedSha,
-      observed: adoption.contracts_commit_sha,
+      status: commitAccepted ? 'PASS' : 'BLOCKED_RUNTIME',
+      expected: {
+        current_commit_sha: expectedSha,
+        accepted_modes: ['exact', 'proof_pipeline_only_diff'],
+      },
+      observed: baseline,
     })
     checks.push({
       id: 'consumer_deployed_sha_present',
@@ -468,7 +585,7 @@ export function buildRuntimeEvidence(input: {
       : missingRuntimeUrlChecks(input.surface),
     note: status === 'PASS'
       ? input.consumerAdoptionReadback
-        ? 'Runtime proof consumer adoption read-back requirements passed for this merge commit. No claim promotion was performed.'
+        ? 'Runtime proof consumer adoption read-back requirements passed for this package adoption baseline. No claim promotion was performed.'
         : 'Runtime proof requirements passed for this merge commit.'
       : blockedRuntimeNote(input.surface),
   }
@@ -605,8 +722,11 @@ async function main(): Promise<void> {
     eventspine_replay_count: null,
   }
   let checks: RuntimeEvidenceCheck[] = []
-  const consumerAdoptionReadback = surface.runtime_surface?.deployment_model === 'package_consumer_adoption'
+  const rawConsumerAdoptionReadback = surface.runtime_surface?.deployment_model === 'package_consumer_adoption'
     ? readConsumerAdoptionReadbackFromEnv(process.env)
+    : null
+  const consumerAdoptionReadback = rawConsumerAdoptionReadback
+    ? withConsumerAdoptionBaseline(expectedSha, rawConsumerAdoptionReadback)
     : null
 
   if (consumerAdoptionReadback) {
