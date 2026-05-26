@@ -1,0 +1,49 @@
+{
+  "$id": "PARLReasonRequest",
+  "description": "POST /parl/reason request payload.",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "task"
+  ],
+  "properties": {
+    "task": {
+      "minLength": 1,
+      "maxLength": 10000,
+      "description": "Reasoning task description.",
+      "type": "string"
+    },
+    "context": {
+      "maxLength": 100000,
+      "description": "Additional context injected into the reasoning loop.",
+      "type": "string"
+    },
+    "mode": {
+      "$id": "PARLMode",
+      "anyOf": [
+        {
+          "const": "quick",
+          "type": "string"
+        },
+        {
+          "const": "deep",
+          "type": "string"
+        },
+        {
+          "const": "strategic",
+          "type": "string"
+        }
+      ]
+    },
+    "pattern_limit": {
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Max agentic patterns retrieved (default: 3).",
+      "type": "integer"
+    },
+    "feedback_enabled": {
+      "description": "Whether to record feedback for flywheel training (default: true).",
+      "type": "boolean"
+    }
+  }
+}

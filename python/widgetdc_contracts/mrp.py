@@ -7,18 +7,20 @@ Do not edit manually — regenerate with: npm run python
 from __future__ import annotations
 
 from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 from pydantic import Field, RootModel
 from pydantic import RootModel
 from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "BridgeMessage", "BridgeMessageType", "BuilderTrack", "CanvasIntent", "CanvasNodeSeed", "CanvasResolution", "CanvasTrackOutcome", "ConfiguratorRule", "ConfiguratorRuleMatchKind", "ConfiguratorRuleStatus", "DocumentBom", "DocumentFormat", "DocumentSection", "FitnessVector", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "PaneId", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance", "RuleMutationProposal", "RulePrior"]
+__all__ = ["ArchitectureBom", "BomComponent", "BomComponentKind", "BridgeMessage", "BridgeMessageType", "BuilderTrack", "CanvasIntent", "CanvasNodeSeed", "CanvasResolution", "CanvasTrackOutcome", "ConfiguratorRule", "ConfiguratorRuleMatchKind", "ConfiguratorRuleStatus", "CreateOperatorAnchoredPheromoneRequest", "CreateOperatorAnchoredPheromoneResponse", "DocumentBom", "DocumentFormat", "DocumentSection", "FitnessVector", "FoldStrategyChoice", "FoldStrategyDefinition", "FoldTier", "GenericBom", "HumanSignaledPheromoneTriggerRequest", "HumanSignaledPheromoneTriggerResponse", "InspectOperatorAnchoredPheromoneResponse", "OperatorPheromoneSignalType", "PaneId", "PheromoneClientSurface", "PheromoneInspectionVerdict", "ProduceRequest", "ProductType", "ProductionOrder", "ProductionOrderStatus", "ProductionOrderVariance", "PromoteOperatorAnchoredPheromoneRequest", "PromoteOperatorAnchoredPheromoneResponse", "ResourceAnchorInput", "RuleMutationProposal", "RulePrior"]
 
 class ArchitectureBom(BaseModel):
     product_type: Literal['architecture']
@@ -299,6 +301,63 @@ class ConfiguratorRuleStatus(
 ):
     root: Literal['active', 'shadow', 'disabled', 'proposed']
 
+class Anchor(BaseModel):
+    anchor_kind: Literal[
+        'docx-page',
+        'docx-paragraph',
+        'xlsx-cell',
+        'xlsx-range',
+        'file',
+        'folder',
+        'pdf-page',
+        'web-url',
+        'web-selection',
+        'code-span',
+    ]
+    resource_uri: str = Field(..., max_length=2048, min_length=1)
+    resource_label: str | None = Field(None, max_length=255, min_length=1)
+    locator_json: dict[constr(pattern=r'^(.*)$'), Any]
+    anchor_text: str | None = Field(None, max_length=4000)
+    content_fingerprint: str | None = Field(None, max_length=255)
+
+
+class CreateOperatorAnchoredPheromoneRequest(BaseModel):
+    anchor: Anchor = Field(
+        ...,
+        description='Stable locator payload for operator-anchored pheromone placement.',
+    )
+    signal_type: Literal[
+        'risk',
+        'novelty',
+        'question',
+        'claim',
+        'contradiction',
+        'breaking_change',
+        'opportunity',
+        'attention',
+    ] = Field(
+        ..., description='Canonical signal types for operator-anchored pheromones.'
+    )
+    rationale: str | None = Field(None, max_length=1000)
+    strength: float | None = Field(None, ge=0.0, le=1.0)
+    created_by: str | None = Field(None, max_length=255, min_length=1)
+    client_surface: Literal[
+        'canvas', 'word_addin', 'excel_addin', 'web_overlay', 'filesystem_shell'
+    ] = Field(
+        ...,
+        description='Client surfaces allowed to create operator-anchored pheromones.',
+    )
+    client_session_id: str | None = Field(None, max_length=255)
+    consent_grant_id: str | None = Field(None, max_length=255)
+
+class CreateOperatorAnchoredPheromoneResponse(BaseModel):
+    status: Literal['accepted']
+    pheromone_id: str
+    anchor_id: str
+    inspection_enqueued: bool
+    accepted_at: AwareDatetime
+    directive_run_id: str
+
 class Section(BaseModel):
     heading: str
     content: str
@@ -393,8 +452,167 @@ class GenericBom(BaseModel):
     ] = Field(..., description='Kind of artifact the MRP pipeline should produce.')
     bom_version: Literal['2.0']
 
+class Anchor(BaseModel):
+    anchor_kind: Literal[
+        'docx-page',
+        'docx-paragraph',
+        'xlsx-cell',
+        'xlsx-range',
+        'file',
+        'folder',
+        'pdf-page',
+        'web-url',
+        'web-selection',
+        'code-span',
+    ]
+    resource_uri: str = Field(..., max_length=2048, min_length=1)
+    resource_label: str | None = Field(None, max_length=255, min_length=1)
+    locator_json: dict[constr(pattern=r'^(.*)$'), Any]
+    anchor_text: str | None = Field(None, max_length=4000)
+    content_fingerprint: str | None = Field(None, max_length=255)
+
+
+class HumanSignaledPheromoneTriggerRequest(BaseModel):
+    source: str = Field(..., max_length=128, min_length=1)
+    domain: str = Field(..., max_length=128, min_length=1)
+    label: str = Field(..., max_length=256, min_length=1)
+    signal_type: Literal[
+        'risk',
+        'novelty',
+        'question',
+        'claim',
+        'contradiction',
+        'breaking_change',
+        'opportunity',
+        'attention',
+    ] = Field(
+        ..., description='Canonical signal types for operator-anchored pheromones.'
+    )
+    client_surface: Literal[
+        'canvas', 'word_addin', 'excel_addin', 'web_overlay', 'filesystem_shell'
+    ] = Field(
+        ...,
+        description='Client surfaces allowed to create operator-anchored pheromones.',
+    )
+    strength: float | None = Field(None, ge=0.0, le=1.0)
+    rationale: str | None = Field(None, max_length=1000)
+    metrics: dict[constr(pattern=r'^(.*)$'), float] | None = None
+    anchor: Anchor | None = Field(
+        None,
+        description='Stable locator payload for operator-anchored pheromone placement.',
+    )
+
+class HumanSignaledPheromoneTriggerResponse(BaseModel):
+    status: Literal['accepted', 'rejected']
+    domain: str
+    signal_type: Literal[
+        'risk',
+        'novelty',
+        'question',
+        'claim',
+        'contradiction',
+        'breaking_change',
+        'opportunity',
+        'attention',
+    ] = Field(
+        ..., description='Canonical signal types for operator-anchored pheromones.'
+    )
+    client_surface: Literal[
+        'canvas', 'word_addin', 'excel_addin', 'web_overlay', 'filesystem_shell'
+    ] = Field(
+        ...,
+        description='Client surfaces allowed to create operator-anchored pheromones.',
+    )
+    message: str
+    accepted_at: AwareDatetime | None = None
+
+class InspectOperatorAnchoredPheromoneResponse(BaseModel):
+    status: Literal['completed']
+    pheromone_id: str
+    inspection_id: str
+    verdict: Literal[
+        'informational',
+        'relevant',
+        'novel',
+        'contradictory',
+        'breaking',
+        'incorrect',
+        'needs_review',
+    ] = Field(
+        ...,
+        description='Canonical inspection verdicts for operator-anchored pheromones.',
+    )
+    candidate_actions: list[str]
+
+class OperatorPheromoneSignalType(
+    RootModel[
+        Literal[
+            'risk',
+            'novelty',
+            'question',
+            'claim',
+            'contradiction',
+            'breaking_change',
+            'opportunity',
+            'attention',
+        ]
+    ]
+):
+    root: Literal[
+        'risk',
+        'novelty',
+        'question',
+        'claim',
+        'contradiction',
+        'breaking_change',
+        'opportunity',
+        'attention',
+    ] = Field(
+        ..., description='Canonical signal types for operator-anchored pheromones.'
+    )
+
 class PaneId(RootModel[Literal['canvas', 'markdown', 'slides', 'drawio', 'split']]):
     root: Literal['canvas', 'markdown', 'slides', 'drawio', 'split']
+
+class PheromoneClientSurface(
+    RootModel[
+        Literal[
+            'canvas', 'word_addin', 'excel_addin', 'web_overlay', 'filesystem_shell'
+        ]
+    ]
+):
+    root: Literal[
+        'canvas', 'word_addin', 'excel_addin', 'web_overlay', 'filesystem_shell'
+    ] = Field(
+        ...,
+        description='Client surfaces allowed to create operator-anchored pheromones.',
+    )
+
+class PheromoneInspectionVerdict(
+    RootModel[
+        Literal[
+            'informational',
+            'relevant',
+            'novel',
+            'contradictory',
+            'breaking',
+            'incorrect',
+            'needs_review',
+        ]
+    ]
+):
+    root: Literal[
+        'informational',
+        'relevant',
+        'novel',
+        'contradictory',
+        'breaking',
+        'incorrect',
+        'needs_review',
+    ] = Field(
+        ...,
+        description='Canonical inspection verdicts for operator-anchored pheromones.',
+    )
 
 class Section(BaseModel):
     heading: str
@@ -550,6 +768,37 @@ class ProductionOrderVariance(BaseModel):
     planned_latency_ms: int | None = None
     actual_latency_ms: int | None = None
     quality_score: float | None = Field(None, ge=0.0, le=1.0)
+
+class PromoteOperatorAnchoredPheromoneRequest(BaseModel):
+    target_kind: Literal[
+        'innovation_ticket', 'training_proposal', 'contradiction_review'
+    ]
+
+class PromoteOperatorAnchoredPheromoneResponse(BaseModel):
+    status: Literal['accepted', 'rejected']
+    pheromone_id: str
+    target_kind: str
+    target_id: str | None
+    rejection_reason: str | None = None
+
+class ResourceAnchorInput(BaseModel):
+    anchor_kind: Literal[
+        'docx-page',
+        'docx-paragraph',
+        'xlsx-cell',
+        'xlsx-range',
+        'file',
+        'folder',
+        'pdf-page',
+        'web-url',
+        'web-selection',
+        'code-span',
+    ]
+    resource_uri: str = Field(..., max_length=2048, min_length=1)
+    resource_label: str | None = Field(None, max_length=255, min_length=1)
+    locator_json: dict[constr(pattern=r'^(.*)$'), Any]
+    anchor_text: str | None = Field(None, max_length=4000)
+    content_fingerprint: str | None = Field(None, max_length=255)
 
 ProposedRule = ConfiguratorRule
 

@@ -1,0 +1,54 @@
+{
+  "$id": "PARLReasonResponse",
+  "description": "POST /parl/reason response (nested under success envelope).",
+  "type": "object",
+  "required": [
+    "parl_run_id",
+    "reasoning",
+    "patterns_used",
+    "compressed_tokens",
+    "feedback_status"
+  ],
+  "properties": {
+    "parl_run_id": {
+      "description": "Unique identifier for this PARL run (e.g. \"parl-abc123-ts\").",
+      "type": "string"
+    },
+    "reasoning": {
+      "description": "Final synthesised reasoning output.",
+      "type": "string"
+    },
+    "patterns_used": {
+      "description": "Agentic patterns retrieved and applied.",
+      "type": "array",
+      "items": {
+        "$id": "PARLPatternUsed",
+        "description": "Agentic pattern node returned from retrieval.",
+        "type": "object",
+        "patternProperties": {
+          "^(.*)$": {}
+        }
+      }
+    },
+    "compressed_tokens": {
+      "minimum": 0,
+      "description": "Token count after context compression.",
+      "type": "integer"
+    },
+    "feedback_status": {
+      "description": "\"recorded\" | \"skipped\" | error message.",
+      "type": "string"
+    },
+    "error": {
+      "description": "Present when success=false.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

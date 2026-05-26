@@ -7,6 +7,7 @@ Do not edit manually — regenerate with: npm run python
 from __future__ import annotations
 
 from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
 from pydantic import BaseModel
@@ -18,7 +19,7 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
 
 class AgentCapability(
     RootModel[
@@ -577,6 +578,114 @@ class FabricProof(BaseModel):
     issuer: str | None = Field(None, description='Canonical issuer of the proof')
     handshake_id: str | None = Field(
         None, description='Associated handshake identifier or fingerprint'
+    )
+
+class SuccessMetrics(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    hard_gates: list[str] = Field(
+        ...,
+        description='Must-pass criteria. Plan does not close until all hard_gates evaluate true.',
+        min_length=1,
+    )
+    soft_gates: list[str] | None = Field(
+        None,
+        description='Aspirational criteria; plan can close yellow if soft_gates partially met.',
+    )
+
+
+class InventorGovernance(BaseModel):
+    max_token_cost_per_experiment: int | None = Field(None, ge=0)
+    max_concurrent_experiments: int | None = Field(None, ge=1)
+    fail_closed: bool | None = None
+
+
+class HyperAgentPlan(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    plan_id: str = Field(
+        ...,
+        description="Globally unique plan identifier. Format: 'plan:<slug>-<date>' (e.g. 'plan:psr-rollout-phase-delta-2026-04-28').",
+        pattern='^plan:[a-z0-9-]+$',
+    )
+    plan_version: str | None = Field(
+        None,
+        description='Iterative plan version (v1, v2, v3, ...). Used when RLM critique or operator feedback produces a synthesized successor plan.',
+        pattern='^v[0-9]+$',
+    )
+    parent_plan: str | None = Field(
+        None,
+        description='Optional reference to a parent plan_id when this plan is a sub-plan or successor.',
+    )
+    correlation_id: str = Field(
+        ...,
+        description='Trace-id propagated through every event and write produced under this plan. Connects spine_events, AgentMemory entries, governance audits.',
+    )
+    risk_level: Literal['low', 'medium', 'medium-high', 'high'] = Field(
+        ...,
+        description="Plan-wide risk classification. 'low' = additive-only; 'medium' = additive + minor mutations; 'medium-high' = production-write with rollback; 'high' = irreversible or wide blast radius.",
+    )
+    budget_lane: Literal['micro', 'standard', 'deep'] = Field(
+        ...,
+        description="Token + cost lane. 'micro' = cheap inline ops; 'standard' = normal LLM-path mutations; 'deep' = escalation-only premium reasoning.",
+    )
+    target_services: list[str] = Field(
+        ...,
+        description='Services the plan will modify. Used for blast-radius pre-check and impact assessment.',
+        min_length=1,
+    )
+    success_metrics: SuccessMetrics = Field(
+        ..., description='Hard and soft gates that determine plan success.'
+    )
+    premium_allowed: Literal['NO', 'ESCALATION_ONLY', 'ALLOWED'] | None = Field(
+        None,
+        description="Premium escalation policy. 'NO' = never; 'ESCALATION_ONLY' = with explicit premium_escalation_used event; 'ALLOWED' = unrestricted.",
+    )
+    max_agent_fanout: int | None = Field(
+        None,
+        description='Maximum concurrent sub-agents the plan may dispatch in a single mission step.',
+        ge=1,
+        le=10,
+    )
+    max_recursion_depth: int | None = Field(
+        None,
+        description='Maximum nested chain depth. Prevents unbounded recursion in router or materializer.',
+        ge=1,
+        le=8,
+    )
+    rollback_plan: dict[str, str] = Field(
+        ...,
+        description='Per-phase rollback procedure keyed by phase identifier. Each phase entry describes the reversal action.',
+    )
+    approval_policy: dict[
+        str,
+        Literal[
+            'captain_self_with_evidence', 'operator_only', 'hyperagent_required', 'auto'
+        ],
+    ] = Field(
+        ...,
+        description='Per-phase approval gate. Maps phase to required approver class.',
+    )
+    policy_profile: str | None = Field(
+        None,
+        description='Compliance + governance profile applied to this plan. Determines which gates and policies apply at runtime.',
+    )
+    spof_rollback_triggers: dict[str, Any] | None = Field(
+        None,
+        description='Single-point-of-failure rollback triggers per Plan v2 §SPOF. Each entry maps a SPOF condition to the trigger threshold and rollback action.',
+    )
+    inventor_governance: InventorGovernance | None = Field(
+        None,
+        description='Inventor experiment cost cap and concurrency limits per Plan v2 §inventor_governance.',
+    )
+    created_at: AwareDatetime | None = Field(
+        None, description='ISO-8601 datetime of plan registration.'
+    )
+    captain: str | None = Field(
+        None,
+        description='Identifier of the captain agent that authored / owns the plan.',
     )
 
 class LauncherEvidenceFamily(

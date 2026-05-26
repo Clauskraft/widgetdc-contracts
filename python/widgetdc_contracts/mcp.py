@@ -6,6 +6,7 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AwareDatetime, BaseModel
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel
 from pydantic import BaseModel, Field
@@ -16,12 +17,412 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["ComplianceTier", "McpClientDiscoveryPolicy", "McpClientLimits", "McpClientPoliciesDocument", "McpClientPolicy", "McpClientSelfResource", "McpPolicyRisk", "McpResourcePolicyMetadata", "McpToolPolicyMetadata", "McpTransport", "MrpRouteEnvelope", "RequestFeatures", "RequestTaskType"]
+__all__ = ["CapabilityLifecycleState", "CapabilityTier", "ClaimPromotionEvidence", "ComplianceTier", "GovernanceActorType", "GovernanceAudience", "GovernanceAuditCategory", "GovernanceContext", "GovernanceCostTier", "GovernanceDecision", "GovernanceDecisionCode", "GovernanceRejectionEnvelope", "GovernanceRejectionNextStep", "GovernanceRiskLevel", "GovernanceSourceProtocol", "GovernanceStandingApproval", "GraphPromotionRequest", "GraphPromotionResult", "MCPToolGovernance", "McpClientDiscoveryPolicy", "McpClientLimits", "McpClientPoliciesDocument", "McpClientPolicy", "McpClientSelfResource", "McpPolicyRisk", "McpResourcePolicyMetadata", "McpToolPolicyMetadata", "McpTransport", "MrpRouteEnvelope", "RequestFeatures", "RequestTaskType", "SpineEventBase", "SpineEventType", "ToolInvocationEnvelope", "ToolResultEnvelope"]
+
+class RecentCanaryHistoryItem(BaseModel):
+    run_id: str
+    status: Literal['green', 'red']
+    checked_at: AwareDatetime
+    evidence_ref: str | None = None
+
+
+class CapabilityLifecycleState(BaseModel):
+    capability_id: str
+    current_tier: Literal['untrusted', 'observed', 'governed', 'canonical']
+    promoted_at: AwareDatetime | None = None
+    recent_canary_history: list[RecentCanaryHistoryItem]
+
+class CapabilityTier(
+    RootModel[Literal['untrusted', 'observed', 'governed', 'canonical']]
+):
+    root: Literal['untrusted', 'observed', 'governed', 'canonical']
+
+class ClaimPromotionEvidence(BaseModel):
+    claim_id: str
+    current_level: Literal['L0', 'L1', 'L2', 'L3']
+    proposed_level: Literal['L0', 'L1', 'L2', 'L3']
+    evidence_refs: list[str]
+    canary_run_ids: list[str]
+    policy_bundle_digest: str
+    promoted_at: AwareDatetime | None = None
+    reason: str
 
 class ComplianceTier(RootModel[Literal['public', 'internal', 'legal', 'health']]):
     root: Literal['public', 'internal', 'legal', 'health'] = Field(
         ...,
         description='Data-handling compliance tier — drives crypto-shred + PII routing.',
+    )
+
+class GovernanceActorType(
+    RootModel[Literal['agent', 'user', 'system', 'cron', 'operator']]
+):
+    root: Literal['agent', 'user', 'system', 'cron', 'operator']
+
+class GovernanceAudience(
+    RootModel[Literal['external_agent', 'internal_system', 'operator_only']]
+):
+    root: Literal['external_agent', 'internal_system', 'operator_only']
+
+class GovernanceAuditCategory(
+    RootModel[
+        Literal[
+            'graph_promotion',
+            'memory_promotion',
+            'data_read',
+            'tool_invocation',
+            'plan_lifecycle',
+            'policy_decision',
+            'external_call',
+            'security_event',
+        ]
+    ]
+):
+    root: Literal[
+        'graph_promotion',
+        'memory_promotion',
+        'data_read',
+        'tool_invocation',
+        'plan_lifecycle',
+        'policy_decision',
+        'external_call',
+        'security_event',
+    ]
+
+class GovernanceContext(BaseModel):
+    actor_id: str
+    actor_type: Literal['agent', 'user', 'system', 'cron', 'operator']
+    correlation_id: str = Field(
+        ..., description='Cross-service correlation id; required for replay/audit'
+    )
+    parent_event_id: str | None = None
+    workflow_id: str | None = None
+    plan_id: str | None = None
+    approval_id: str | None = None
+    tenant_id: str | None = None
+    source_protocol: Literal[
+        'rest',
+        'mcp',
+        'streamable',
+        'openai',
+        'websocket',
+        'agent_chain',
+        'scheduled_job',
+        'internal',
+    ]
+    server_trusted: Literal[True]
+
+class GovernanceCostTier(
+    RootModel[Literal['free', 'low', 'medium', 'high', 'premium']]
+):
+    root: Literal['free', 'low', 'medium', 'high', 'premium']
+
+class StandingApproval(BaseModel):
+    approval_token_digest: str = Field(
+        ..., description='sha256 of the standing approval token (no plaintext)'
+    )
+    granted_by: str = Field(..., description='Operator identity (user id or role)')
+    granted_at: AwareDatetime = Field(
+        ..., description='ISO datetime when the approval was granted'
+    )
+    expires_at: AwareDatetime = Field(
+        ...,
+        description='ISO datetime — MUST be set; null forbidden for standing approvals',
+    )
+    review_after: AwareDatetime = Field(
+        ..., description='ISO datetime — operator review cadence'
+    )
+    policy_bundle_digest: str = Field(
+        ..., description='sha256 of the active policy bundle this approval is bound to'
+    )
+
+
+class Governance(BaseModel):
+    risk_level: Literal['read_only', 'staged_write', 'production_write']
+    requires_plan: bool = Field(
+        ...,
+        description='If true, the gate rejects direct execution and routes through HyperAgent (create_plan → approve_plan → execute_plan → evaluate_plan).',
+    )
+    requires_approval: bool = Field(
+        ...,
+        description='If true, plan creation alone is insufficient — operator OR policy-profile approval token required before execute_plan.',
+    )
+    cost_tier: Literal['free', 'low', 'medium', 'high', 'premium']
+    audit_category: Literal[
+        'graph_promotion',
+        'memory_promotion',
+        'data_read',
+        'tool_invocation',
+        'plan_lifecycle',
+        'policy_decision',
+        'external_call',
+        'security_event',
+    ]
+    audience: Literal['external_agent', 'internal_system', 'operator_only'] | None = (
+        None
+    )
+    source_protocol: (
+        Literal[
+            'rest',
+            'mcp',
+            'streamable',
+            'openai',
+            'websocket',
+            'agent_chain',
+            'scheduled_job',
+            'internal',
+        ]
+        | None
+    ) = None
+    standing_approval: StandingApproval | None = Field(
+        None,
+        description='Standing approval block for scheduled internal governed mutation. Replaces the per-call HyperAgent plan+approval flow for cron-driven callers while preserving auditable lifecycle (granted/expires/review/policy).',
+    )
+    system_plan_id: str | None = Field(
+        None, description='Pinned plan-id for scheduled internal callers (Option B)'
+    )
+
+
+class GovernanceDecision(BaseModel):
+    allowed: bool
+    code: Literal[
+        'OK',
+        'PLAN_REQUIRED',
+        'APPROVAL_REQUIRED',
+        'UNCLASSIFIED_DANGEROUS_CALLER',
+        'BYPASS_EXPIRED',
+        'BYPASS_TOOL_NOT_ALLOWED',
+        'BYPASS_RISK_TOO_HIGH',
+        'POLICY_VIOLATION',
+        'COST_BUDGET_EXCEEDED',
+        'INTERNAL_ERROR',
+    ]
+    reason: str
+    governance: Governance = Field(
+        ...,
+        description='Governance metadata declared on every MCP tool definition. The gate consults `risk_level` + `requires_plan` + `requires_approval` to decide execution path. Audience / source_protocol / standing_approval express the Architect Option B scheduled-internal-mutation lifecycle.',
+    )
+    policy_bundle_digest: str | None = None
+    policy_version: str | None = None
+    correlation_id: str | None = None
+
+class GovernanceDecisionCode(
+    RootModel[
+        Literal[
+            'OK',
+            'PLAN_REQUIRED',
+            'APPROVAL_REQUIRED',
+            'UNCLASSIFIED_DANGEROUS_CALLER',
+            'BYPASS_EXPIRED',
+            'BYPASS_TOOL_NOT_ALLOWED',
+            'BYPASS_RISK_TOO_HIGH',
+            'POLICY_VIOLATION',
+            'COST_BUDGET_EXCEEDED',
+            'INTERNAL_ERROR',
+        ]
+    ]
+):
+    root: Literal[
+        'OK',
+        'PLAN_REQUIRED',
+        'APPROVAL_REQUIRED',
+        'UNCLASSIFIED_DANGEROUS_CALLER',
+        'BYPASS_EXPIRED',
+        'BYPASS_TOOL_NOT_ALLOWED',
+        'BYPASS_RISK_TOO_HIGH',
+        'POLICY_VIOLATION',
+        'COST_BUDGET_EXCEEDED',
+        'INTERNAL_ERROR',
+    ]
+
+class NextStep(BaseModel):
+    action: Literal[
+        'create_plan',
+        'request_approval',
+        'classify_caller',
+        'refresh_bypass',
+        'contact_operator',
+    ]
+    endpoint: str | None = Field(
+        None, description='Endpoint or tool name the caller should invoke next'
+    )
+    required_fields: list[str] | None = None
+    hint: str | None = None
+
+
+class GovernanceRejectionEnvelope(BaseModel):
+    error_class: Literal['governance_rejection']
+    tool: str
+    risk_level: Literal['read_only', 'staged_write', 'production_write'] | None = None
+    code: Literal[
+        'OK',
+        'PLAN_REQUIRED',
+        'APPROVAL_REQUIRED',
+        'UNCLASSIFIED_DANGEROUS_CALLER',
+        'BYPASS_EXPIRED',
+        'BYPASS_TOOL_NOT_ALLOWED',
+        'BYPASS_RISK_TOO_HIGH',
+        'POLICY_VIOLATION',
+        'COST_BUDGET_EXCEEDED',
+        'INTERNAL_ERROR',
+    ]
+    requirement: str
+    reason: str
+    next_step: NextStep = Field(
+        ...,
+        description='Action-oriented next-step instruction returned with every rejection so callers can self-recover (matches the Learning Interface Contract — GOV-2.1).',
+    )
+    correlation_id: str
+    policy_bundle_digest: str | None = None
+
+class GovernanceRejectionNextStep(BaseModel):
+    action: Literal[
+        'create_plan',
+        'request_approval',
+        'classify_caller',
+        'refresh_bypass',
+        'contact_operator',
+    ]
+    endpoint: str | None = Field(
+        None, description='Endpoint or tool name the caller should invoke next'
+    )
+    required_fields: list[str] | None = None
+    hint: str | None = None
+
+class GovernanceRiskLevel(
+    RootModel[Literal['read_only', 'staged_write', 'production_write']]
+):
+    root: Literal['read_only', 'staged_write', 'production_write']
+
+class GovernanceSourceProtocol(
+    RootModel[
+        Literal[
+            'rest',
+            'mcp',
+            'streamable',
+            'openai',
+            'websocket',
+            'agent_chain',
+            'scheduled_job',
+            'internal',
+        ]
+    ]
+):
+    root: Literal[
+        'rest',
+        'mcp',
+        'streamable',
+        'openai',
+        'websocket',
+        'agent_chain',
+        'scheduled_job',
+        'internal',
+    ]
+
+class GovernanceStandingApproval(BaseModel):
+    approval_token_digest: str = Field(
+        ..., description='sha256 of the standing approval token (no plaintext)'
+    )
+    granted_by: str = Field(..., description='Operator identity (user id or role)')
+    granted_at: AwareDatetime = Field(
+        ..., description='ISO datetime when the approval was granted'
+    )
+    expires_at: AwareDatetime = Field(
+        ...,
+        description='ISO datetime — MUST be set; null forbidden for standing approvals',
+    )
+    review_after: AwareDatetime = Field(
+        ..., description='ISO datetime — operator review cadence'
+    )
+    policy_bundle_digest: str = Field(
+        ..., description='sha256 of the active policy bundle this approval is bound to'
+    )
+
+class GraphPromotionRequest(BaseModel):
+    promotion_type: Literal[
+        'metric', 'capability', 'observation', 'decision', 'pattern', 'lineage'
+    ]
+    evidence_ref: str = Field(
+        ...,
+        description='URL or identifier pointing to the evidence backing this promotion',
+    )
+    intent: str = Field(
+        ..., description='One-line description of the business intent for audit replay'
+    )
+    payload: dict[str, Any]
+
+class GraphPromotionResult(BaseModel):
+    tool: str
+    promotion_type: str
+    promoted: bool
+    node_id: str | None = None
+    relationship_id: str | None = None
+    correlation_id: str
+    evidence_ref: str
+    spine_event_id: str | None = None
+
+class StandingApproval(BaseModel):
+    approval_token_digest: str = Field(
+        ..., description='sha256 of the standing approval token (no plaintext)'
+    )
+    granted_by: str = Field(..., description='Operator identity (user id or role)')
+    granted_at: AwareDatetime = Field(
+        ..., description='ISO datetime when the approval was granted'
+    )
+    expires_at: AwareDatetime = Field(
+        ...,
+        description='ISO datetime — MUST be set; null forbidden for standing approvals',
+    )
+    review_after: AwareDatetime = Field(
+        ..., description='ISO datetime — operator review cadence'
+    )
+    policy_bundle_digest: str = Field(
+        ..., description='sha256 of the active policy bundle this approval is bound to'
+    )
+
+
+class MCPToolGovernance(BaseModel):
+    risk_level: Literal['read_only', 'staged_write', 'production_write']
+    requires_plan: bool = Field(
+        ...,
+        description='If true, the gate rejects direct execution and routes through HyperAgent (create_plan → approve_plan → execute_plan → evaluate_plan).',
+    )
+    requires_approval: bool = Field(
+        ...,
+        description='If true, plan creation alone is insufficient — operator OR policy-profile approval token required before execute_plan.',
+    )
+    cost_tier: Literal['free', 'low', 'medium', 'high', 'premium']
+    audit_category: Literal[
+        'graph_promotion',
+        'memory_promotion',
+        'data_read',
+        'tool_invocation',
+        'plan_lifecycle',
+        'policy_decision',
+        'external_call',
+        'security_event',
+    ]
+    audience: Literal['external_agent', 'internal_system', 'operator_only'] | None = (
+        None
+    )
+    source_protocol: (
+        Literal[
+            'rest',
+            'mcp',
+            'streamable',
+            'openai',
+            'websocket',
+            'agent_chain',
+            'scheduled_job',
+            'internal',
+        ]
+        | None
+    ) = None
+    standing_approval: StandingApproval | None = Field(
+        None,
+        description='Standing approval block for scheduled internal governed mutation. Replaces the per-call HyperAgent plan+approval flow for cron-driven callers while preserving auditable lifecycle (granted/expires/review/policy).',
+    )
+    system_plan_id: str | None = Field(
+        None, description='Pinned plan-id for scheduled internal callers (Option B)'
     )
 
 class McpClientDiscoveryPolicy(BaseModel):
@@ -302,3 +703,124 @@ class RequestTaskType(
         ...,
         description='Canonical request-level task-type dimension (distinct from llm.TaskType model-routing taxonomy).',
     )
+
+class SpineEventBase(BaseModel):
+    id: str
+    type: str
+    timestamp: AwareDatetime
+    actor_id: str
+    actor_type: Literal['agent', 'user', 'system', 'cron', 'operator']
+    correlation_id: str
+    parent_event_id: str | None = None
+    tool_name: str | None = None
+    plan_id: str | None = None
+    workflow_id: str | None = None
+    tenant_id: str | None = None
+    risk_level: Literal['read_only', 'staged_write', 'production_write'] | None = None
+    audit_category: (
+        Literal[
+            'graph_promotion',
+            'memory_promotion',
+            'data_read',
+            'tool_invocation',
+            'plan_lifecycle',
+            'policy_decision',
+            'external_call',
+            'security_event',
+        ]
+        | None
+    ) = None
+    cost_tier: Literal['free', 'low', 'medium', 'high', 'premium'] | None = None
+    outcome: Literal['success', 'failure', 'rejected', 'pending']
+    error_class: str | None = None
+    error_message: str | None = None
+    payload: Any
+
+class SpineEventType(
+    RootModel[
+        Literal[
+            'tool_called',
+            'tool_succeeded',
+            'tool_failed',
+            'tool_rejected',
+            'governance_rejection',
+            'policy_decision_made',
+            'plan_created',
+            'plan_approved',
+            'plan_executed',
+            'plan_evaluated',
+            'graph_promotion_completed',
+            'lineage_linked',
+            'memory_promoted',
+            'premium_escalation_used',
+            'cost_budget_exceeded',
+            'capability_canary_run',
+            'policy_violation_detected',
+        ]
+    ]
+):
+    root: Literal[
+        'tool_called',
+        'tool_succeeded',
+        'tool_failed',
+        'tool_rejected',
+        'governance_rejection',
+        'policy_decision_made',
+        'plan_created',
+        'plan_approved',
+        'plan_executed',
+        'plan_evaluated',
+        'graph_promotion_completed',
+        'lineage_linked',
+        'memory_promoted',
+        'premium_escalation_used',
+        'cost_budget_exceeded',
+        'capability_canary_run',
+        'policy_violation_detected',
+    ]
+
+class Context(BaseModel):
+    actor_id: str
+    actor_type: Literal['agent', 'user', 'system', 'cron', 'operator']
+    correlation_id: str = Field(
+        ..., description='Cross-service correlation id; required for replay/audit'
+    )
+    parent_event_id: str | None = None
+    workflow_id: str | None = None
+    plan_id: str | None = None
+    approval_id: str | None = None
+    tenant_id: str | None = None
+    source_protocol: Literal[
+        'rest',
+        'mcp',
+        'streamable',
+        'openai',
+        'websocket',
+        'agent_chain',
+        'scheduled_job',
+        'internal',
+    ]
+    server_trusted: Literal[True]
+
+
+class ToolInvocationEnvelope(BaseModel):
+    tool: str
+    payload: Any = Field(
+        ..., description='Tool-specific business payload (typed at the tool level)'
+    )
+    context: Context = Field(
+        ...,
+        description='Server-trusted execution context. Carries actor identity, correlation, and source protocol so EventSpine and the gate can reason about who is calling and why. Client-supplied context.governance fields are rejected.',
+    )
+
+class Cost(BaseModel):
+    cost_tier: Literal['free', 'low', 'medium', 'high', 'premium']
+    units: float | None = None
+
+
+class ToolResultEnvelope(BaseModel):
+    tool: str
+    result: Any
+    correlation_id: str
+    duration_ms: float | None = None
+    cost: Cost | None = None

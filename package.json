@@ -88,6 +88,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-sync.ts",
+    "validate:full": "npm run validate && npm run wonder:gateway:verify && npm test",
     "datapulse:scribd:audit": "node scripts/datapulse-scribd-refresh-audit.mjs",
     "prepublishOnly": "npm run generate && npm run test",
     "arch:scan": "mkdir -p arch && depcruise --config .dependency-cruiser.cjs --output-type json src > arch/contracts-graph.json",
@@ -95,7 +96,8 @@
     "arch:view": "npx serve .",
     "start": "npx tsx scripts/arch-mcp-server.ts",
     "prepare": "husky || true",
-    "wonder:gateway:verify": "node scripts/verify-wonder-gateway.mjs"
+    "wonder:gateway:verify": "node scripts/verify-wonder-gateway.mjs",
+    "wonder:routing:smoke": "node scripts/verify-wonder-routing-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
