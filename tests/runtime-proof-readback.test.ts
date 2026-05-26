@@ -78,6 +78,44 @@ describe('runtime proof read-back', () => {
     expect(JSON.stringify(evidence)).not.toContain('https://')
   })
 
+  it('classifies dependency-only runtime proof as missing consumer adoption read-back', () => {
+    const evidence = buildRuntimeEvidence({
+      surface: {
+        ...surface,
+        runtime_surface: {
+          deployment_model: 'package_consumer_adoption',
+          standalone_runtime: false,
+          adoption_readback_required: true,
+          consumer_repos: ['WidgeTDC', 'widgetdc-rlm-engine'],
+        },
+      },
+      expectedSha: 'cc9e441f47178ec6289468562af081ba6d76f391',
+      branch: 'main',
+      runtimeUrl: null,
+      fingerprint: {
+        deployed_sha: null,
+        runtime_correlation_id: null,
+        eventspine_replay_count: null,
+      },
+      checks: [],
+    })
+
+    expect(evidence.status).toBe('BLOCKED_RUNTIME')
+    expect(evidence.runtime_surface).toEqual({
+      deployment_model: 'package_consumer_adoption',
+      standalone_runtime: false,
+      adoption_readback_required: true,
+      consumer_repos: ['WidgeTDC', 'widgetdc-rlm-engine'],
+    })
+    expect(evidence.checks).toEqual([{
+      id: 'consumer_adoption_readback_configured',
+      status: 'BLOCKED_RUNTIME',
+      expected: 'deployed consumer or governed runner emits contracts SHA, correlation ID, and EventSpine replay count',
+      observed: false,
+    }])
+    expect(evidence.note).toContain('consumer adoption read-back')
+  })
+
   it('accepts short deployed SHA read-back when it prefixes the merge commit', () => {
     expect(shaMatches(
       'fdf23433a450fc7041b33ef208480469ec4a4bd1',

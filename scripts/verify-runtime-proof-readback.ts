@@ -10,6 +10,7 @@ type RuntimeProofStatus = 'PASS' | 'BLOCKED_RUNTIME'
 type RuntimeProofSurface = {
   repo_id: string
   surface_id: string
+  runtime_surface?: RuntimeSurfaceMetadata
   runtime_url_env_names: string[]
   health_path: string
   release_path?: string
@@ -18,6 +19,14 @@ type RuntimeProofSurface = {
     runtime_correlation_id: boolean
     eventspine_replay_count_gte: number
   }
+}
+
+type RuntimeSurfaceMetadata = {
+  deployment_model: 'standalone_runtime' | 'package_consumer_adoption'
+  standalone_runtime: boolean
+  adoption_readback_required: boolean
+  consumer_repos: string[]
+  evidence_anchor?: string
 }
 
 type RuntimeUrlDetection = {
@@ -55,6 +64,7 @@ type RuntimeEvidence = {
     configured: boolean
     env_name: string | null
   }
+  runtime_surface?: RuntimeSurfaceMetadata
   runtime: RuntimeFingerprint
   checks: RuntimeEvidenceCheck[]
   note: string
@@ -225,6 +235,31 @@ export function evaluateRuntimeProof(
   return checks
 }
 
+function missingRuntimeUrlChecks(surface: RuntimeProofSurface): RuntimeEvidenceCheck[] {
+  if (surface.runtime_surface?.deployment_model === 'package_consumer_adoption') {
+    return [{
+      id: 'consumer_adoption_readback_configured',
+      status: 'BLOCKED_RUNTIME',
+      expected: 'deployed consumer or governed runner emits contracts SHA, correlation ID, and EventSpine replay count',
+      observed: false,
+    }]
+  }
+
+  return [{
+    id: 'runtime_url_configured',
+    status: 'BLOCKED_RUNTIME',
+    observed: false,
+  }]
+}
+
+function blockedRuntimeNote(surface: RuntimeProofSurface): string {
+  if (surface.runtime_surface?.deployment_model === 'package_consumer_adoption') {
+    return 'Runtime proof is blocked until consumer adoption read-back or a governed deployed runner emits contracts SHA, runtime correlation ID, and EventSpine replay count. Do not claim deployed, runtime-proven, or promoted status from this evidence.'
+  }
+
+  return 'Runtime proof is blocked. Do not claim deployed, runtime-proven, or promoted status from this evidence.'
+}
+
 export function buildRuntimeEvidence(input: {
   surface: RuntimeProofSurface
   expectedSha: string
@@ -256,17 +291,14 @@ export function buildRuntimeEvidence(input: {
       configured: Boolean(input.runtimeUrl),
       env_name: input.runtimeUrl?.env_name || null,
     },
+    runtime_surface: input.surface.runtime_surface,
     runtime: input.fingerprint,
     checks: input.runtimeUrl
       ? input.checks
-      : [{
-          id: 'runtime_url_configured',
-          status: 'BLOCKED_RUNTIME',
-          observed: false,
-        }],
+      : missingRuntimeUrlChecks(input.surface),
     note: status === 'PASS'
       ? 'Runtime proof requirements passed for this merge commit.'
-      : 'Runtime proof is blocked. Do not claim deployed, runtime-proven, or promoted status from this evidence.',
+      : blockedRuntimeNote(input.surface),
   }
 }
 

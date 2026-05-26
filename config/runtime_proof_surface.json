@@ -2,6 +2,17 @@
   "$schema": "https://widgetdc.ai/schemas/runtime-proof-surface.json",
   "repo_id": "widgetdc-contracts",
   "surface_id": "widgetdc-contracts-merge-runtime-proof",
+  "runtime_surface": {
+    "deployment_model": "package_consumer_adoption",
+    "standalone_runtime": false,
+    "adoption_readback_required": true,
+    "consumer_repos": [
+      "WidgeTDC",
+      "widgetdc-rlm-engine",
+      "widgetdc-orchestrator"
+    ],
+    "evidence_anchor": "WidgeTDC/docs/WIDGETDC_CANONICAL_SITREP_2026-03-17.md:84 states widgetdc-contracts has no standalone Railway runtime and must be treated as dependency truth."
+  },
   "runtime_url_env_names": [
     "WIDGETDC_CONTRACTS_RUNTIME_URL",
     "RAILWAY_URL",
