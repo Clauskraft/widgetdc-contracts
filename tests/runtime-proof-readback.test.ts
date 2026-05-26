@@ -40,6 +40,24 @@ describe('runtime proof read-back', () => {
     })
   })
 
+  it('ignores placeholder and invalid runtime URL values before probing', () => {
+    const envNames = ['WIDGETDC_CONTRACTS_RUNTIME_URL', 'RAILWAY_URL', 'BACKEND_URL']
+
+    expect(detectRuntimeUrl({
+      WIDGETDC_CONTRACTS_RUNTIME_URL: '-',
+      RAILWAY_URL: 'runtime.test',
+      BACKEND_URL: 'none',
+    }, envNames)).toBeNull()
+
+    expect(detectRuntimeUrl({
+      WIDGETDC_CONTRACTS_RUNTIME_URL: '-',
+      RAILWAY_URL: 'https://runtime.test/',
+    }, envNames)).toEqual({
+      env_name: 'RAILWAY_URL',
+      url: 'https://runtime.test',
+    })
+  })
+
   it('marks missing runtime URL as BLOCKED_RUNTIME', () => {
     const evidence = buildRuntimeEvidence({
       surface,

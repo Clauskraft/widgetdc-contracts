@@ -64,6 +64,7 @@ const DEFAULT_SURFACE_PATH = 'config/runtime_proof_surface.json'
 const DEFAULT_EVIDENCE_PATH = 'runtime-evidence.json'
 const DEFAULT_PROBE_TIMEOUT_MS = 30000
 const PROBE_TIMEOUT_MS = parseProbeTimeoutMs(process.env.RUNTIME_PROOF_TIMEOUT_MS)
+const RUNTIME_URL_PLACEHOLDERS = new Set(['-', 'none', 'null', 'undefined', 'n/a', 'na'])
 
 function asRecord(value: unknown): JsonRecord | null {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -113,6 +114,19 @@ export function normalizeBaseUrl(value: string | undefined): string {
   return String(value || '').trim().replace(/\/+$/, '')
 }
 
+function isRuntimeBaseUrl(value: string): boolean {
+  if (!value || RUNTIME_URL_PLACEHOLDERS.has(value.toLowerCase())) {
+    return false
+  }
+
+  try {
+    const parsed = new URL(value)
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && Boolean(parsed.hostname)
+  } catch {
+    return false
+  }
+}
+
 export function parseProbeTimeoutMs(value: string | undefined): number {
   const parsed = Number(String(value || '').trim())
   return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PROBE_TIMEOUT_MS
@@ -124,7 +138,7 @@ export function detectRuntimeUrl(
 ): RuntimeUrlDetection | null {
   for (const envName of envNames) {
     const url = normalizeBaseUrl(env[envName])
-    if (url) return { env_name: envName, url }
+    if (isRuntimeBaseUrl(url)) return { env_name: envName, url }
   }
 
   return null
