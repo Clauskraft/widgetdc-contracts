@@ -121,7 +121,7 @@ describe('runtime proof read-back', () => {
     expect(evidence.note).toContain('consumer adoption read-back')
   })
 
-  it('accepts claim-safe deployed consumer adoption read-back for dependency-only runtime proof', () => {
+  it('blocks diagnostic-only consumer adoption read-back for dependency-only runtime proof', () => {
     const adoption = extractConsumerAdoptionReadback({
       success: true,
       schema: 'ContractsConsumerAdoptionReadbackResult',
@@ -178,6 +178,76 @@ describe('runtime proof read-back', () => {
       checks,
     })
 
+    expect(checks).toContainEqual({
+      id: 'consumer_evidence_level_claim_grade',
+      status: 'BLOCKED_RUNTIME',
+      expected: 'runtime_proof',
+      observed: 'diagnostic_only',
+    })
+    expect(evidence.status).toBe('BLOCKED_RUNTIME')
+    expect(evidence.evidence_level).toBe('diagnostic_only')
+    expect(evidence.consumer_adoption_readback).toMatchObject({
+      configured: true,
+      consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+      consumer_service: 'orchestrator',
+      evidence_level: 'diagnostic_only',
+      runtime_proof_claimed: false,
+      claim_promotion_eligible: false,
+    })
+    expect(evidence.note).toContain('consumer adoption read-back')
+  })
+
+  it('accepts claim-grade deployed consumer adoption read-back for dependency-only runtime proof', () => {
+    const adoption = extractConsumerAdoptionReadback({
+      success: true,
+      schema: 'ContractsConsumerAdoptionReadbackResult',
+      evidence_level: 'runtime_proof',
+      readback: {
+        schema_version: 'contracts.consumer_adoption_readback.v1',
+        package_name: '@widgetdc/contracts',
+        package_version: '0.8.1',
+        contracts_commit_sha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+        consumer_repo: 'Clauskraft/widgetdc-orchestrator',
+        consumer_service: 'orchestrator',
+        consumer_deployed_sha: 'a84ffcabde541e1fee360cbe3984fdce3db33285',
+        source_protocol: 'scheduled_job',
+        generated_at: '2026-05-26T20:47:41.396Z',
+        runtime_correlation_id: 'lin-1339-contracts-adoption',
+        eventspine_replay_count: 1,
+        evidence_refs: ['github:Clauskraft/widgetdc-orchestrator#266'],
+        runtime_proof_claimed: false,
+        claim_promotion_eligible: false,
+      },
+    })
+
+    const checks = evaluateConsumerAdoptionReadback(
+      '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      adoption,
+      surface.required_runtime_proof,
+    )
+
+    const evidence = buildRuntimeEvidence({
+      surface: {
+        ...surface,
+        runtime_surface: {
+          deployment_model: 'package_consumer_adoption',
+          standalone_runtime: false,
+          adoption_readback_required: true,
+          consumer_repos: ['widgetdc-orchestrator'],
+        },
+      },
+      expectedSha: '47f82ab0e7a8c4f15453358d57398be703e8d5df',
+      branch: 'main',
+      runtimeUrl: null,
+      consumerAdoptionReadback: adoption,
+      fingerprint: adoption?.fingerprint ?? {
+        deployed_sha: null,
+        runtime_correlation_id: null,
+        eventspine_replay_count: null,
+      },
+      checks,
+    })
+
     expect(checks.every((check) => check.status === 'PASS')).toBe(true)
     expect(evidence.status).toBe('PASS')
     expect(evidence.evidence_level).toBe('runtime_proof')
@@ -185,7 +255,7 @@ describe('runtime proof read-back', () => {
       configured: true,
       consumer_repo: 'Clauskraft/widgetdc-orchestrator',
       consumer_service: 'orchestrator',
-      evidence_level: 'diagnostic_only',
+      evidence_level: 'runtime_proof',
       runtime_proof_claimed: false,
       claim_promotion_eligible: false,
     })
@@ -195,7 +265,7 @@ describe('runtime proof read-back', () => {
   it('accepts an older consumer adoption SHA when only proof-pipeline files changed', () => {
     const adoption = extractConsumerAdoptionReadback({
       schema: 'ContractsConsumerAdoptionReadbackResult',
-      evidence_level: 'diagnostic_only',
+      evidence_level: 'runtime_proof',
       readback: {
         package_name: '@widgetdc/contracts',
         package_version: '0.8.1',
