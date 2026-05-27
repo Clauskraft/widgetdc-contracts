@@ -101,7 +101,7 @@ If any service DOWN: report to user before proceeding.
 **Step 2 — Lesson Check**
 ```json
 POST https://backend-production-d3da.up.railway.app/api/mcp/route
-Authorization: Bearer Heravej_22
+Authorization: Bearer ${BACKEND_API_KEY}
 {"tool":"audit.lessons","payload":{"agentId":"codex"}}
 ```
 
@@ -123,16 +123,16 @@ Scan Backlog for stale issues (>14d + Urgent/High). Zero tolerance for backlog r
 ### 1. Neural Bridge (MCP — Primary)
 ```
 POST https://backend-production-d3da.up.railway.app/api/mcp/route
-Authorization: Bearer Heravej_22
+Authorization: Bearer ${BACKEND_API_KEY}
 {"tool":"<TOOL_NAME>","payload":{...}}
 ```
 `payload` only — never `args`.
 
 ### 2. Orchestrator + A2A + RLM
-- Orchestrator: `POST https://orchestrator-production-c27e.up.railway.app/api/chains/execute` — `Bearer Heravej_22`
+- Orchestrator: `POST https://orchestrator-production-c27e.up.railway.app/api/chains/execute` — `Bearer ${BACKEND_API_KEY}`
 - A2A Claim: `{"tool":"graph.write_cypher","payload":{"query":"MERGE (m:AgentMemory {agentId:'codex',key:$scope}) SET m.value=$claim,m.type='claim',m.updatedAt=datetime()","params":{...}}}`
 - Read peers: `{"tool":"graph.read_cypher","payload":{"query":"MATCH (m:AgentMemory) WHERE m.type IN ['claim','heartbeat'] AND m.agentId <> 'codex' RETURN m ORDER BY m.updatedAt DESC LIMIT 20"}}`
-- RLM: `POST https://rlm-engine-production.up.railway.app/reason` — `Bearer Heravej_22`
+- RLM: `POST https://rlm-engine-production.up.railway.app/reason` — `Bearer ${BACKEND_API_KEY}`
 - Slack: Human escalation only. Bot: kaptajn_klo, T09K7Q2D1GB.
 
 ---
