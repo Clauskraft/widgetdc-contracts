@@ -1,0 +1,328 @@
+{
+  "$id": "PlatformCompletionLedger",
+  "additionalProperties": false,
+  "description": "Governed ledger snapshot for tracking platform completion without overstating runtime proof.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "platform_completion_ledger.v1",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "description": "Timestamp when the ledger snapshot was generated.",
+      "type": "string"
+    },
+    "entries": {
+      "minItems": 1,
+      "description": "Platform completion entries grouped across completion, consolidation, routing, and adoption.",
+      "type": "array",
+      "items": {
+        "$id": "PlatformCompletionLedgerEntry",
+        "description": "One anchored platform completion ledger entry. Merged/deployed/blocked/unverified states cannot claim runtime proof or promotion eligibility.",
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "repo",
+              "workstream",
+              "evidence_refs",
+              "updated_at",
+              "lifecycle_state",
+              "runtime_proof_claimed",
+              "claim_promotion_eligible"
+            ],
+            "properties": {
+              "repo": {
+                "description": "Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.",
+                "type": "string"
+              },
+              "workstream": {
+                "$id": "PlatformCompletionWorkstream",
+                "description": "Platform completion plane tracked by the consolidation ledger.",
+                "anyOf": [
+                  {
+                    "const": "completion",
+                    "type": "string"
+                  },
+                  {
+                    "const": "consolidation",
+                    "type": "string"
+                  },
+                  {
+                    "const": "routing",
+                    "type": "string"
+                  },
+                  {
+                    "const": "adoption",
+                    "type": "string"
+                  }
+                ]
+              },
+              "issue_id": {
+                "pattern": "^LIN-[0-9]+$",
+                "description": "Linear issue anchor when this entry maps to a tracked slice.",
+                "type": "string"
+              },
+              "pr_number": {
+                "minimum": 1,
+                "description": "GitHub pull request number when code evidence exists.",
+                "type": "integer"
+              },
+              "commit_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "deployed_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "evidence_refs": {
+                "minItems": 1,
+                "description": "Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "updated_at": {
+                "format": "date-time",
+                "description": "Timestamp when this ledger entry was last anchored.",
+                "type": "string"
+              },
+              "lifecycle_state": {
+                "anyOf": [
+                  {
+                    "const": "planned",
+                    "type": "string"
+                  },
+                  {
+                    "const": "in_progress",
+                    "type": "string"
+                  },
+                  {
+                    "const": "merged",
+                    "type": "string"
+                  },
+                  {
+                    "const": "deployed",
+                    "type": "string"
+                  }
+                ]
+              },
+              "runtime_proof_claimed": {
+                "const": false,
+                "type": "boolean"
+              },
+              "claim_promotion_eligible": {
+                "const": false,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "repo",
+              "workstream",
+              "evidence_refs",
+              "updated_at",
+              "lifecycle_state",
+              "runtime_proof_claimed",
+              "claim_promotion_eligible"
+            ],
+            "properties": {
+              "repo": {
+                "description": "Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.",
+                "type": "string"
+              },
+              "workstream": {
+                "$id": "PlatformCompletionWorkstream",
+                "description": "Platform completion plane tracked by the consolidation ledger.",
+                "anyOf": [
+                  {
+                    "const": "completion",
+                    "type": "string"
+                  },
+                  {
+                    "const": "consolidation",
+                    "type": "string"
+                  },
+                  {
+                    "const": "routing",
+                    "type": "string"
+                  },
+                  {
+                    "const": "adoption",
+                    "type": "string"
+                  }
+                ]
+              },
+              "issue_id": {
+                "pattern": "^LIN-[0-9]+$",
+                "description": "Linear issue anchor when this entry maps to a tracked slice.",
+                "type": "string"
+              },
+              "pr_number": {
+                "minimum": 1,
+                "description": "GitHub pull request number when code evidence exists.",
+                "type": "integer"
+              },
+              "commit_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "deployed_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "evidence_refs": {
+                "minItems": 1,
+                "description": "Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "updated_at": {
+                "format": "date-time",
+                "description": "Timestamp when this ledger entry was last anchored.",
+                "type": "string"
+              },
+              "lifecycle_state": {
+                "anyOf": [
+                  {
+                    "const": "blocked",
+                    "type": "string"
+                  },
+                  {
+                    "const": "unverified",
+                    "type": "string"
+                  }
+                ]
+              },
+              "blocker_code": {
+                "minLength": 1,
+                "description": "Stable blocker code when the entry cannot advance.",
+                "type": "string"
+              },
+              "runtime_proof_claimed": {
+                "const": false,
+                "type": "boolean"
+              },
+              "claim_promotion_eligible": {
+                "const": false,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "repo",
+              "workstream",
+              "evidence_refs",
+              "updated_at",
+              "lifecycle_state",
+              "runtime_proof_claimed",
+              "claim_promotion_eligible"
+            ],
+            "properties": {
+              "repo": {
+                "description": "Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.",
+                "type": "string"
+              },
+              "workstream": {
+                "$id": "PlatformCompletionWorkstream",
+                "description": "Platform completion plane tracked by the consolidation ledger.",
+                "anyOf": [
+                  {
+                    "const": "completion",
+                    "type": "string"
+                  },
+                  {
+                    "const": "consolidation",
+                    "type": "string"
+                  },
+                  {
+                    "const": "routing",
+                    "type": "string"
+                  },
+                  {
+                    "const": "adoption",
+                    "type": "string"
+                  }
+                ]
+              },
+              "issue_id": {
+                "pattern": "^LIN-[0-9]+$",
+                "description": "Linear issue anchor when this entry maps to a tracked slice.",
+                "type": "string"
+              },
+              "pr_number": {
+                "minimum": 1,
+                "description": "GitHub pull request number when code evidence exists.",
+                "type": "integer"
+              },
+              "commit_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "deployed_sha": {
+                "pattern": "^[a-f0-9]{40}$",
+                "description": "Lowercase 40-character git commit SHA.",
+                "type": "string"
+              },
+              "evidence_refs": {
+                "minItems": 1,
+                "description": "Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "updated_at": {
+                "format": "date-time",
+                "description": "Timestamp when this ledger entry was last anchored.",
+                "type": "string"
+              },
+              "lifecycle_state": {
+                "anyOf": [
+                  {
+                    "const": "verified",
+                    "type": "string"
+                  },
+                  {
+                    "const": "adopted",
+                    "type": "string"
+                  }
+                ]
+              },
+              "runtime_proof_claimed": {
+                "description": "True only when runtime proof has been observed for this entry.",
+                "type": "boolean"
+              },
+              "claim_promotion_eligible": {
+                "description": "True only when the entry satisfies the claim-promotion gate.",
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

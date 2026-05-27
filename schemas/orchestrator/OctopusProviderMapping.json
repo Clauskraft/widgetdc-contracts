@@ -1,0 +1,39 @@
+{
+  "$id": "OctopusProviderMapping",
+  "additionalProperties": false,
+  "description": "Observed Octopus persona mapping used to route provider work.",
+  "type": "object",
+  "required": [
+    "requested_persona",
+    "spawn_agent",
+    "mapping_status"
+  ],
+  "properties": {
+    "requested_persona": {
+      "description": "Persona requested by the skill or plan, for example backend-architect.",
+      "type": "string"
+    },
+    "spawn_agent": {
+      "description": "Actual spawn agent observed in the local Octopus runtime.",
+      "type": "string"
+    },
+    "mapping_status": {
+      "$id": "OctopusProviderMappingStatus",
+      "description": "Runtime validity of the requested Octopus persona to spawn-agent mapping.",
+      "anyOf": [
+        {
+          "const": "runtime_valid",
+          "type": "string"
+        },
+        {
+          "const": "runtime_invalid",
+          "type": "string"
+        },
+        {
+          "const": "unverified",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

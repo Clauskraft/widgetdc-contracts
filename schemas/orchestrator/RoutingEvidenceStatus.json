@@ -1,0 +1,26 @@
+{
+  "$id": "RoutingEvidenceStatus",
+  "description": "Readback status for an Octopus routing artifact.",
+  "anyOf": [
+    {
+      "const": "pending",
+      "type": "string"
+    },
+    {
+      "const": "artifact_ready",
+      "type": "string"
+    },
+    {
+      "const": "empty_artifact",
+      "type": "string"
+    },
+    {
+      "const": "timeout",
+      "type": "string"
+    },
+    {
+      "const": "failed",
+      "type": "string"
+    }
+  ]
+}
