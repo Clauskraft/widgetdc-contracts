@@ -1,0 +1,18 @@
+{
+  "$id": "OctopusProviderMappingStatus",
+  "description": "Runtime validity of the requested Octopus persona to spawn-agent mapping.",
+  "anyOf": [
+    {
+      "const": "runtime_valid",
+      "type": "string"
+    },
+    {
+      "const": "runtime_invalid",
+      "type": "string"
+    },
+    {
+      "const": "unverified",
+      "type": "string"
+    }
+  ]
+}

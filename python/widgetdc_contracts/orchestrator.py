@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pydantic import AnyUrl, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, Field, constr
 from pydantic import BaseModel
@@ -19,7 +20,7 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OctopusProviderMapping", "OctopusProviderMappingStatus", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "PlatformCompletionLedger", "PlatformCompletionLedgerEntry", "PlatformCompletionLifecycleState", "PlatformCompletionWorkstream", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingEvidenceReadback", "RoutingEvidenceStatus", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
 
 class AgentCapability(
     RootModel[
@@ -1248,6 +1249,30 @@ class LauncherResponse(BaseModel):
     )
     execution: Execution = Field(..., description='Shared launcher execution contract.')
 
+class OctopusProviderMapping(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    requested_persona: str = Field(
+        ...,
+        description='Persona requested by the skill or plan, for example backend-architect.',
+    )
+    spawn_agent: str = Field(
+        ..., description='Actual spawn agent observed in the local Octopus runtime.'
+    )
+    mapping_status: Literal['runtime_valid', 'runtime_invalid', 'unverified'] = Field(
+        ...,
+        description='Runtime validity of the requested Octopus persona to spawn-agent mapping.',
+    )
+
+class OctopusProviderMappingStatus(
+    RootModel[Literal['runtime_valid', 'runtime_invalid', 'unverified']]
+):
+    root: Literal['runtime_valid', 'runtime_invalid', 'unverified'] = Field(
+        ...,
+        description='Runtime validity of the requested Octopus persona to spawn-agent mapping.',
+    )
+
 class OodaRuntimeContext(BaseModel):
     graph_summary: str = Field(
         ...,
@@ -1403,6 +1428,350 @@ class OrchestratorToolStatus(
 ):
     root: Literal['success', 'error', 'timeout', 'rate_limited', 'unauthorized'] = (
         Field(..., description='Outcome status of an Orchestrator tool call')
+    )
+
+class Entries(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['planned', 'in_progress', 'merged', 'deployed']
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+
+
+class Entries1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['blocked', 'unverified']
+    blocker_code: str | None = Field(
+        None,
+        description='Stable blocker code when the entry cannot advance.',
+        min_length=1,
+    )
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+
+
+class Entries2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['verified', 'adopted']
+    runtime_proof_claimed: bool = Field(
+        ...,
+        description='True only when runtime proof has been observed for this entry.',
+    )
+    claim_promotion_eligible: bool = Field(
+        ..., description='True only when the entry satisfies the claim-promotion gate.'
+    )
+
+
+class PlatformCompletionLedger(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['platform_completion_ledger.v1']
+    generated_at: AwareDatetime = Field(
+        ..., description='Timestamp when the ledger snapshot was generated.'
+    )
+    entries: list[Entries | Entries1 | Entries2] = Field(
+        ...,
+        description='Platform completion entries grouped across completion, consolidation, routing, and adoption.',
+        min_length=1,
+    )
+
+class PlatformCompletionLedgerEntry1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['planned', 'in_progress', 'merged', 'deployed']
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+
+
+class PlatformCompletionLedgerEntry2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['blocked', 'unverified']
+    blocker_code: str | None = Field(
+        None,
+        description='Stable blocker code when the entry cannot advance.',
+        min_length=1,
+    )
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+
+
+class PlatformCompletionLedgerEntry3(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    repo: str = Field(
+        ...,
+        description='Repository owning this ledger entry, for example Clauskraft/widgetdc-contracts.',
+    )
+    workstream: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
+    )
+    issue_id: str | None = Field(
+        None,
+        description='Linear issue anchor when this entry maps to a tracked slice.',
+        pattern='^LIN-[0-9]+$',
+    )
+    pr_number: int | None = Field(
+        None, description='GitHub pull request number when code evidence exists.', ge=1
+    )
+    commit_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    deployed_sha: str | None = Field(
+        None,
+        description='Lowercase 40-character git commit SHA.',
+        pattern='^[a-f0-9]{40}$',
+    )
+    evidence_refs: list[str] = Field(
+        ...,
+        description='Observed evidence references for the state, such as PRs, checks, Linear issues, or artifact ids.',
+        min_length=1,
+    )
+    updated_at: AwareDatetime = Field(
+        ..., description='Timestamp when this ledger entry was last anchored.'
+    )
+    lifecycle_state: Literal['verified', 'adopted']
+    runtime_proof_claimed: bool = Field(
+        ...,
+        description='True only when runtime proof has been observed for this entry.',
+    )
+    claim_promotion_eligible: bool = Field(
+        ..., description='True only when the entry satisfies the claim-promotion gate.'
+    )
+
+
+class PlatformCompletionLedgerEntry(
+    RootModel[
+        PlatformCompletionLedgerEntry1
+        | PlatformCompletionLedgerEntry2
+        | PlatformCompletionLedgerEntry3
+    ]
+):
+    root: (
+        PlatformCompletionLedgerEntry1
+        | PlatformCompletionLedgerEntry2
+        | PlatformCompletionLedgerEntry3
+    ) = Field(
+        ...,
+        description='One anchored platform completion ledger entry. Merged/deployed/blocked/unverified states cannot claim runtime proof or promotion eligibility.',
+    )
+
+class PlatformCompletionLifecycleState(
+    RootModel[
+        Literal[
+            'unverified',
+            'planned',
+            'in_progress',
+            'merged',
+            'deployed',
+            'verified',
+            'adopted',
+            'blocked',
+        ]
+    ]
+):
+    root: Literal[
+        'unverified',
+        'planned',
+        'in_progress',
+        'merged',
+        'deployed',
+        'verified',
+        'adopted',
+        'blocked',
+    ] = Field(
+        ...,
+        description='Observed lifecycle state for a platform completion workstream entry.',
+    )
+
+class PlatformCompletionWorkstream(
+    RootModel[Literal['completion', 'consolidation', 'routing', 'adoption']]
+):
+    root: Literal['completion', 'consolidation', 'routing', 'adoption'] = Field(
+        ...,
+        description='Platform completion plane tracked by the consolidation ledger.',
     )
 
 class ResponseContract(BaseModel):
@@ -1689,6 +2058,104 @@ class RoutingDecision(BaseModel):
     decided_at: AwareDatetime = Field(
         ..., description='Timestamp when the routing decision was made.'
     )
+
+class ProviderMapping(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    requested_persona: str = Field(
+        ...,
+        description='Persona requested by the skill or plan, for example backend-architect.',
+    )
+    spawn_agent: str = Field(
+        ..., description='Actual spawn agent observed in the local Octopus runtime.'
+    )
+    mapping_status: Literal['runtime_valid', 'runtime_invalid', 'unverified'] = Field(
+        ...,
+        description='Runtime validity of the requested Octopus persona to spawn-agent mapping.',
+    )
+
+
+class RoutingEvidenceReadback1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['routing_evidence_readback.v1']
+    route_id: str = Field(
+        ...,
+        description='Stable identifier for the chained route that produced the evidence.',
+        min_length=1,
+    )
+    provider_mapping: ProviderMapping = Field(
+        ..., description='Observed Octopus persona mapping used to route provider work.'
+    )
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+    checked_at: AwareDatetime = Field(
+        ..., description='Timestamp when the routing artifact was checked.'
+    )
+    evidence_status: Literal['artifact_ready']
+    artifact_ref: str = Field(
+        ...,
+        description='Observed non-empty artifact path or durable artifact reference.',
+        min_length=1,
+    )
+    artifact_bytes: int = Field(
+        ...,
+        description='Observed artifact byte size. artifact_ready requires a non-empty artifact.',
+        ge=1,
+    )
+    polled: Literal[True]
+
+
+class RoutingEvidenceReadback2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['routing_evidence_readback.v1']
+    route_id: str = Field(
+        ...,
+        description='Stable identifier for the chained route that produced the evidence.',
+        min_length=1,
+    )
+    provider_mapping: ProviderMapping = Field(
+        ..., description='Observed Octopus persona mapping used to route provider work.'
+    )
+    runtime_proof_claimed: Literal[False]
+    claim_promotion_eligible: Literal[False]
+    checked_at: AwareDatetime = Field(
+        ..., description='Timestamp when the routing artifact was checked.'
+    )
+    evidence_status: Literal['pending', 'empty_artifact', 'timeout', 'failed']
+    artifact_ref: str | None = Field(
+        None,
+        description='Artifact path or reference when one was observed.',
+        min_length=1,
+    )
+    artifact_bytes: int | None = Field(
+        None, description='Observed artifact byte size when available.', ge=0
+    )
+    polled: bool = Field(
+        ..., description='Whether the route was polled after dispatch.'
+    )
+
+
+class RoutingEvidenceReadback(
+    RootModel[RoutingEvidenceReadback1 | RoutingEvidenceReadback2]
+):
+    root: RoutingEvidenceReadback1 | RoutingEvidenceReadback2 = Field(
+        ...,
+        description='Readback envelope for Octopus routing evidence. It never claims runtime proof or claim-promotion eligibility.',
+    )
+
+class RoutingEvidenceStatus(
+    RootModel[
+        Literal['pending', 'artifact_ready', 'empty_artifact', 'timeout', 'failed']
+    ]
+):
+    root: Literal[
+        'pending', 'artifact_ready', 'empty_artifact', 'timeout', 'failed'
+    ] = Field(..., description='Readback status for an Octopus routing artifact.')
 
 class RoutingIntent(BaseModel):
     intent_id: str = Field(

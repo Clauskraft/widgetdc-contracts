@@ -1,0 +1,22 @@
+{
+  "$id": "PlatformCompletionWorkstream",
+  "description": "Platform completion plane tracked by the consolidation ledger.",
+  "anyOf": [
+    {
+      "const": "completion",
+      "type": "string"
+    },
+    {
+      "const": "consolidation",
+      "type": "string"
+    },
+    {
+      "const": "routing",
+      "type": "string"
+    },
+    {
+      "const": "adoption",
+      "type": "string"
+    }
+  ]
+}

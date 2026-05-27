@@ -1,0 +1,38 @@
+{
+  "$id": "PlatformCompletionLifecycleState",
+  "description": "Observed lifecycle state for a platform completion workstream entry.",
+  "anyOf": [
+    {
+      "const": "unverified",
+      "type": "string"
+    },
+    {
+      "const": "planned",
+      "type": "string"
+    },
+    {
+      "const": "in_progress",
+      "type": "string"
+    },
+    {
+      "const": "merged",
+      "type": "string"
+    },
+    {
+      "const": "deployed",
+      "type": "string"
+    },
+    {
+      "const": "verified",
+      "type": "string"
+    },
+    {
+      "const": "adopted",
+      "type": "string"
+    },
+    {
+      "const": "blocked",
+      "type": "string"
+    }
+  ]
+}

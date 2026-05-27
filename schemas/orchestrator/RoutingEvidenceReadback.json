@@ -1,0 +1,214 @@
+{
+  "$id": "RoutingEvidenceReadback",
+  "description": "Readback envelope for Octopus routing evidence. It never claims runtime proof or claim-promotion eligibility.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "route_id",
+        "provider_mapping",
+        "runtime_proof_claimed",
+        "claim_promotion_eligible",
+        "checked_at",
+        "evidence_status",
+        "artifact_ref",
+        "artifact_bytes",
+        "polled"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "routing_evidence_readback.v1",
+          "type": "string"
+        },
+        "route_id": {
+          "minLength": 1,
+          "description": "Stable identifier for the chained route that produced the evidence.",
+          "type": "string"
+        },
+        "provider_mapping": {
+          "$id": "OctopusProviderMapping",
+          "additionalProperties": false,
+          "description": "Observed Octopus persona mapping used to route provider work.",
+          "type": "object",
+          "required": [
+            "requested_persona",
+            "spawn_agent",
+            "mapping_status"
+          ],
+          "properties": {
+            "requested_persona": {
+              "description": "Persona requested by the skill or plan, for example backend-architect.",
+              "type": "string"
+            },
+            "spawn_agent": {
+              "description": "Actual spawn agent observed in the local Octopus runtime.",
+              "type": "string"
+            },
+            "mapping_status": {
+              "$id": "OctopusProviderMappingStatus",
+              "description": "Runtime validity of the requested Octopus persona to spawn-agent mapping.",
+              "anyOf": [
+                {
+                  "const": "runtime_valid",
+                  "type": "string"
+                },
+                {
+                  "const": "runtime_invalid",
+                  "type": "string"
+                },
+                {
+                  "const": "unverified",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        "runtime_proof_claimed": {
+          "const": false,
+          "type": "boolean"
+        },
+        "claim_promotion_eligible": {
+          "const": false,
+          "type": "boolean"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "description": "Timestamp when the routing artifact was checked.",
+          "type": "string"
+        },
+        "evidence_status": {
+          "const": "artifact_ready",
+          "type": "string"
+        },
+        "artifact_ref": {
+          "minLength": 1,
+          "description": "Observed non-empty artifact path or durable artifact reference.",
+          "type": "string"
+        },
+        "artifact_bytes": {
+          "minimum": 1,
+          "description": "Observed artifact byte size. artifact_ready requires a non-empty artifact.",
+          "type": "integer"
+        },
+        "polled": {
+          "const": true,
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "route_id",
+        "provider_mapping",
+        "runtime_proof_claimed",
+        "claim_promotion_eligible",
+        "checked_at",
+        "evidence_status",
+        "polled"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "routing_evidence_readback.v1",
+          "type": "string"
+        },
+        "route_id": {
+          "minLength": 1,
+          "description": "Stable identifier for the chained route that produced the evidence.",
+          "type": "string"
+        },
+        "provider_mapping": {
+          "$id": "OctopusProviderMapping",
+          "additionalProperties": false,
+          "description": "Observed Octopus persona mapping used to route provider work.",
+          "type": "object",
+          "required": [
+            "requested_persona",
+            "spawn_agent",
+            "mapping_status"
+          ],
+          "properties": {
+            "requested_persona": {
+              "description": "Persona requested by the skill or plan, for example backend-architect.",
+              "type": "string"
+            },
+            "spawn_agent": {
+              "description": "Actual spawn agent observed in the local Octopus runtime.",
+              "type": "string"
+            },
+            "mapping_status": {
+              "$id": "OctopusProviderMappingStatus",
+              "description": "Runtime validity of the requested Octopus persona to spawn-agent mapping.",
+              "anyOf": [
+                {
+                  "const": "runtime_valid",
+                  "type": "string"
+                },
+                {
+                  "const": "runtime_invalid",
+                  "type": "string"
+                },
+                {
+                  "const": "unverified",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        "runtime_proof_claimed": {
+          "const": false,
+          "type": "boolean"
+        },
+        "claim_promotion_eligible": {
+          "const": false,
+          "type": "boolean"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "description": "Timestamp when the routing artifact was checked.",
+          "type": "string"
+        },
+        "evidence_status": {
+          "anyOf": [
+            {
+              "const": "pending",
+              "type": "string"
+            },
+            {
+              "const": "empty_artifact",
+              "type": "string"
+            },
+            {
+              "const": "timeout",
+              "type": "string"
+            },
+            {
+              "const": "failed",
+              "type": "string"
+            }
+          ]
+        },
+        "artifact_ref": {
+          "minLength": 1,
+          "description": "Artifact path or reference when one was observed.",
+          "type": "string"
+        },
+        "artifact_bytes": {
+          "minimum": 0,
+          "description": "Observed artifact byte size when available.",
+          "type": "integer"
+        },
+        "polled": {
+          "description": "Whether the route was polled after dispatch.",
+          "type": "boolean"
+        }
+      }
+    }
+  ]
+}
