@@ -1,8 +1,8 @@
 {
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
-  "version": "1.1.0",
-  "updated_at": "2026-04-29",
+  "version": "1.1.1",
+  "updated_at": "2026-05-27",
   "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
@@ -120,16 +120,6 @@
       "strengths": ["chat", "classification", "cost_efficiency"],
       "weaknesses": []
     },
-    "qwen3-235b-a22b": {
-      "provider": "qwen",
-      "context_window": 128000,
-      "max_output_tokens": 16384,
-      "cost_per_1k_input_usd": 0.0,
-      "cost_per_1k_output_usd": 0.0,
-      "avg_latency_ms": 900,
-      "strengths": ["planning", "reasoning", "code_generation", "long_context", "multilingual"],
-      "weaknesses": []
-    },
     "claude-haiku-4-5-20251001": {
       "provider": "anthropic",
       "context_window": 200000,
@@ -227,10 +217,11 @@
     },
     "code_generation": {
       "description": "Generate code from natural language or spec.",
-      "chain": ["deepseek-coder", "qwen3-235b-a22b", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o"],
       "override_env": "CODE_GEN_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix."
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
@@ -264,10 +255,11 @@
     },
     "self_healing": {
       "description": "Auto-repair of broken code / failed tests / runtime errors.",
-      "chain": ["deepseek-coder", "qwen3-235b-a22b", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o"],
       "override_env": "SELF_HEALING_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix."
     },
     "embedding_text": {
       "description": "Generate text embeddings for semantic search / RAG.",
