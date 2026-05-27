@@ -15,8 +15,9 @@
   .view-toggle a { padding: 5px 12px; font-size: 11px; border-radius: 4px; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.15s; }
   .view-toggle a.active { background: #1e2740; color: #e2e8f0; }
   .view-toggle a:hover:not(.active) { color: #94a3b8; }
-  #refresh-btn { margin-left: auto; padding: 5px 14px; font-size: 11px; border-radius: 4px; border: 1px solid #1a1f2e; background: #141824; color: #94a3b8; cursor: pointer; font-weight: 500; }
-  #refresh-btn:hover { background: #1e2740; color: #e2e8f0; }
+  #auth-btn { margin-left: auto; }
+  #auth-btn, #refresh-btn { padding: 5px 14px; font-size: 11px; border-radius: 4px; border: 1px solid #1a1f2e; background: #141824; color: #94a3b8; cursor: pointer; font-weight: 500; }
+  #auth-btn:hover, #refresh-btn:hover { background: #1e2740; color: #e2e8f0; }
   #status { font-size: 10px; color: #475569; }
 
   /* Main */
@@ -84,6 +85,7 @@
     <a href="/strategic-audit" class="active">Strategic Audit</a>
     <a href="/graph">Graph</a>
   </div>
+  <button id="auth-btn" onclick="configureBackendToken()">Set Token</button>
   <button id="refresh-btn" onclick="loadData()">Refresh</button>
   <span id="status"></span>
 </div>
@@ -96,7 +98,7 @@
 
 <script>
 const API = window.location.origin;
-const BACKEND = 'https://backend-production-d3da.up.railway.app';
+const BACKEND_TOKEN_STORAGE_KEY = 'widgetdc.strategicAudit.backendToken';
 
 function showToast(msg, isError) {
   const t = document.getElementById('toast');
@@ -116,6 +118,37 @@ function scoreClass(score) {
   if (score < 0.4) return 'color:#ef4444';
   if (score < 0.7) return 'color:#eab308';
   return 'color:#22d3ee';
+}
+
+function getBackendToken() {
+  const injectedToken = window.WIDGETDC_BACKEND_BEARER_TOKEN;
+  if (typeof injectedToken === 'string' && injectedToken.trim()) {
+    return injectedToken.trim();
+  }
+  return sessionStorage.getItem(BACKEND_TOKEN_STORAGE_KEY);
+}
+
+function getMcpRouteHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = getBackendToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+function configureBackendToken() {
+  const token = window.prompt('Backend bearer token');
+  if (token && token.trim()) {
+    sessionStorage.setItem(BACKEND_TOKEN_STORAGE_KEY, token.trim());
+    showToast('Backend token set for this browser session.');
+  }
+}
+
+async function postMcpRoute(body) {
+  return fetch(API + '/api/mcp/route', {
+    method: 'POST',
+    headers: getMcpRouteHeaders(),
+    body: JSON.stringify(body)
+  });
 }
 
 async function loadData() {
@@ -252,24 +285,20 @@ async function triggerS1S4(modulePath) {
   showToast('S1: Analyzing FailureMemory for ' + modulePath + '...');
 
   try {
-    const resp = await fetch(BACKEND + '/api/mcp/route', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer Heravej_22' },
-      body: JSON.stringify({
-        tool: 'integration.source.ingest',
-        payload: {
-          target_module: modulePath,
-          flow: 'S1-4',
-          search_depth: 'EXTENSIVE',
-          sources: ['github', 'npm', 'huggingface'],
-          audit_required: true,
-          metadata: {
-            context: 'Fixing integrity violations and improving StrategicInsight coverage',
-            system_role: 'PARTNER::Strategy',
-            initiator: 'omega-sentinel'
-          }
+    const resp = await postMcpRoute({
+      tool: 'integration.source.ingest',
+      payload: {
+        target_module: modulePath,
+        flow: 'S1-4',
+        search_depth: 'EXTENSIVE',
+        sources: ['github', 'npm', 'huggingface'],
+        audit_required: true,
+        metadata: {
+          context: 'Fixing integrity violations and improving StrategicInsight coverage',
+          system_role: 'PARTNER::Strategy',
+          initiator: 'omega-sentinel'
         }
-      })
+      }
     });
 
     if (resp.ok) {
@@ -288,10 +317,9 @@ async function triggerS1S4(modulePath) {
 async function resolveVote(voteId, decision) {
   showToast('Resolving vote ' + voteId + ' as ' + decision + '...');
   try {
-    const resp = await fetch(BACKEND + '/api/mcp/route', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer Heravej_22' },
-      body: JSON.stringify({ tool: 'custodian.vote', payload: { voteId, decision, resolvedBy: 'dashboard-user' } })
+    const resp = await postMcpRoute({
+      tool: 'custodian.vote',
+      payload: { voteId, decision, resolvedBy: 'dashboard-user' }
     });
     if (resp.ok) {
       showToast('Vote ' + voteId + ' ' + decision);
