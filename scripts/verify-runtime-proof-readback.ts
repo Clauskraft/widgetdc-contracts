@@ -458,6 +458,11 @@ export function evaluateConsumerAdoptionReadback(
     id: 'consumer_adoption_readback_configured',
     status: 'PASS',
     observed: true,
+  }, {
+    id: 'consumer_evidence_level_claim_grade',
+    status: adoption.evidence_level === 'runtime_proof' ? 'PASS' : 'BLOCKED_RUNTIME',
+    expected: 'runtime_proof',
+    observed: adoption.evidence_level,
   }]
 
   if (required.deployed_sha_matches) {
