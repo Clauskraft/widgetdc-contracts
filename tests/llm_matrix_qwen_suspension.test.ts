@@ -3,9 +3,13 @@ import { describe, expect, it } from 'vitest'
 import { LlmMatrix } from '../src/llm/LlmMatrix.js'
 
 describe('llm matrix provider suspension', () => {
-  it('keeps the v1.1.0 provider-suspension matrix internally valid', () => {
-    expect(LlmMatrix.version).toBe('1.1.0')
+  it('keeps the v1.1.1 provider-suspension matrix internally valid', () => {
+    expect(LlmMatrix.version).toBe('1.1.1')
     expect(LlmMatrix.validate()).toEqual([])
+  })
+
+  it('does not expose the unavailable qwen3 model', () => {
+    expect(LlmMatrix.listModels()).not.toContain('qwen3-235b-a22b')
   })
 
   it.each(['reasoning_deep', 'planning', 'chat_premium'] as const)(
