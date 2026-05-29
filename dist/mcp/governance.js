@@ -284,6 +284,10 @@ export const SpineEventType = Type.Union([
     Type.Literal('cost_budget_exceeded'),
     Type.Literal('capability_canary_run'),
     Type.Literal('policy_violation_detected'),
+    Type.Literal('token_telemetry_recorded'),
+    Type.Literal('trust_score_evaluated'),
+    Type.Literal('economic_proof_evaluated'),
+    Type.Literal('capital_ledger_entry_recorded'),
 ], { $id: 'SpineEventType' });
 // ─── Graph promotion request / result ──────────────────────────────
 export const GraphPromotionRequest = Type.Object({

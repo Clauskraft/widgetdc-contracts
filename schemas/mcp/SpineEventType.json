@@ -68,6 +68,22 @@
     {
       "const": "policy_violation_detected",
       "type": "string"
+    },
+    {
+      "const": "token_telemetry_recorded",
+      "type": "string"
+    },
+    {
+      "const": "trust_score_evaluated",
+      "type": "string"
+    },
+    {
+      "const": "economic_proof_evaluated",
+      "type": "string"
+    },
+    {
+      "const": "capital_ledger_entry_recorded",
+      "type": "string"
     }
   ]
 }
