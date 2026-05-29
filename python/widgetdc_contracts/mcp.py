@@ -840,6 +840,10 @@ class SpineEventType(
             'cost_budget_exceeded',
             'capability_canary_run',
             'policy_violation_detected',
+            'token_telemetry_recorded',
+            'trust_score_evaluated',
+            'economic_proof_evaluated',
+            'capital_ledger_entry_recorded',
         ]
     ]
 ):
@@ -861,6 +865,10 @@ class SpineEventType(
         'cost_budget_exceeded',
         'capability_canary_run',
         'policy_violation_detected',
+        'token_telemetry_recorded',
+        'trust_score_evaluated',
+        'economic_proof_evaluated',
+        'capital_ledger_entry_recorded',
     ]
 
 class Context(BaseModel):
