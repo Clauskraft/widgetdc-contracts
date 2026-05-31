@@ -1,0 +1,101 @@
+{
+  "$id": "CandidateScoreStats",
+  "description": "Permanent scoring-component aggregate per strategy. Survives the EPHEMERAL_TRACE_LABELS purge of raw DecisionCandidate rows.",
+  "type": "object",
+  "required": [
+    "strategy",
+    "total_candidates",
+    "sum_score",
+    "sum_evidence_strength",
+    "sum_service_fit",
+    "sum_policy_fit",
+    "sum_prior_success",
+    "sum_novelty_bonus",
+    "sum_cost_penalty",
+    "sum_latency_penalty",
+    "sum_contradiction_penalty",
+    "avg_score",
+    "avg_evidence_strength",
+    "avg_service_fit",
+    "avg_policy_fit",
+    "avg_prior_success",
+    "avg_novelty_bonus",
+    "avg_cost_penalty",
+    "avg_latency_penalty",
+    "avg_contradiction_penalty",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "strategy": {
+      "description": "Strategy the candidate was scored against",
+      "type": "string"
+    },
+    "total_candidates": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sum_score": {
+      "type": "number"
+    },
+    "sum_evidence_strength": {
+      "type": "number"
+    },
+    "sum_service_fit": {
+      "type": "number"
+    },
+    "sum_policy_fit": {
+      "type": "number"
+    },
+    "sum_prior_success": {
+      "type": "number"
+    },
+    "sum_novelty_bonus": {
+      "type": "number"
+    },
+    "sum_cost_penalty": {
+      "type": "number"
+    },
+    "sum_latency_penalty": {
+      "type": "number"
+    },
+    "sum_contradiction_penalty": {
+      "type": "number"
+    },
+    "avg_score": {
+      "type": "number"
+    },
+    "avg_evidence_strength": {
+      "type": "number"
+    },
+    "avg_service_fit": {
+      "type": "number"
+    },
+    "avg_policy_fit": {
+      "type": "number"
+    },
+    "avg_prior_success": {
+      "type": "number"
+    },
+    "avg_novelty_bonus": {
+      "type": "number"
+    },
+    "avg_cost_penalty": {
+      "type": "number"
+    },
+    "avg_latency_penalty": {
+      "type": "number"
+    },
+    "avg_contradiction_penalty": {
+      "type": "number"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

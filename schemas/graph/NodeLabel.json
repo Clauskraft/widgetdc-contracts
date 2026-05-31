@@ -293,6 +293,22 @@
     {
       "const": "InteractiveWidget",
       "type": "string"
+    },
+    {
+      "const": "RLMTool",
+      "type": "string"
+    },
+    {
+      "const": "LLMModelStats",
+      "type": "string"
+    },
+    {
+      "const": "StrategyStats",
+      "type": "string"
+    },
+    {
+      "const": "CandidateScoreStats",
+      "type": "string"
     }
   ]
 }

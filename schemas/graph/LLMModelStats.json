@@ -1,0 +1,95 @@
+{
+  "$id": "LLMModelStats",
+  "description": "Permanent cost/quality/latency aggregate per (model, domain). Survives the EPHEMERAL_TRACE_LABELS purge of raw LLMDecision rows.",
+  "type": "object",
+  "required": [
+    "model",
+    "domain",
+    "total_calls",
+    "success_count",
+    "total_cost",
+    "total_tokens",
+    "total_latency_ms",
+    "total_quality",
+    "success_rate",
+    "avg_cost",
+    "avg_tokens",
+    "avg_latency_ms",
+    "avg_quality",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "model": {
+      "description": "Model identifier (e.g. \"gemini-2.0-flash\")",
+      "type": "string"
+    },
+    "domain": {
+      "description": "Routing domain (e.g. \"Learning\", \"Strategy\")",
+      "type": "string"
+    },
+    "provider": {
+      "description": "Provider id (set ON CREATE)",
+      "type": "string"
+    },
+    "total_calls": {
+      "minimum": 0,
+      "description": "Number of recorded calls",
+      "type": "integer"
+    },
+    "success_count": {
+      "minimum": 0,
+      "description": "Calls with success=true",
+      "type": "integer"
+    },
+    "total_cost": {
+      "description": "Sum of cost (USD)",
+      "type": "number"
+    },
+    "total_tokens": {
+      "minimum": 0,
+      "description": "Sum of tokens_used",
+      "type": "integer"
+    },
+    "total_latency_ms": {
+      "description": "Sum of latency_ms",
+      "type": "number"
+    },
+    "total_quality": {
+      "description": "Sum of quality_score",
+      "type": "number"
+    },
+    "success_rate": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "success_count / total_calls",
+      "type": "number"
+    },
+    "avg_cost": {
+      "description": "total_cost / total_calls (USD/call)",
+      "type": "number"
+    },
+    "avg_tokens": {
+      "description": "total_tokens / total_calls",
+      "type": "number"
+    },
+    "avg_latency_ms": {
+      "description": "total_latency_ms / total_calls",
+      "type": "number"
+    },
+    "avg_quality": {
+      "description": "total_quality / total_calls",
+      "type": "number"
+    },
+    "created_at": {
+      "format": "date-time",
+      "description": "ISO datetime; ON CREATE",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "description": "ISO datetime; on every flush",
+      "type": "string"
+    }
+  }
+}

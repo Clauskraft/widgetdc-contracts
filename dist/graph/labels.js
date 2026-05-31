@@ -101,5 +101,12 @@ export const NodeLabel = Type.Union([
     Type.Literal('CompoundingStrategy'),
     Type.Literal('RefinementObservation'),
     Type.Literal('InteractiveWidget'),
+    // Learning aggregates — permanent per-key cost/quality/strategy stats that
+    // survive the EPHEMERAL_TRACE_LABELS retention purge. See
+    // ./learning-aggregates.ts for the property schemas.
+    Type.Literal('RLMTool'), // per-tool stats; written by RLMDecisionLogger
+    Type.Literal('LLMModelStats'), // per-(model, domain); written by ensemble_logger
+    Type.Literal('StrategyStats'), // per-(strategy, complexity); written by thinking_tools
+    Type.Literal('CandidateScoreStats'), // per-strategy; written by thinking_tools
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' });
 //# sourceMappingURL=labels.js.map

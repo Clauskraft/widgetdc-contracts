@@ -1,0 +1,69 @@
+{
+  "$id": "StrategyStats",
+  "description": "Permanent strategy-selection aggregate per (strategy, complexity). Survives the EPHEMERAL_TRACE_LABELS purge of raw ReasonStep rows.",
+  "type": "object",
+  "required": [
+    "strategy",
+    "complexity",
+    "total_steps",
+    "retrieval_count",
+    "folding_count",
+    "swarm_count",
+    "retrieval_rate",
+    "folding_rate",
+    "swarm_rate",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "strategy": {
+      "description": "Selected reasoning strategy (e.g. \"evidence_bounded_reasoning\")",
+      "type": "string"
+    },
+    "complexity": {
+      "description": "Complexity bucket the step ran at (e.g. \"medium\")",
+      "type": "string"
+    },
+    "total_steps": {
+      "minimum": 0,
+      "description": "Number of steps observed at this (strategy, complexity)",
+      "type": "integer"
+    },
+    "retrieval_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "folding_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "swarm_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "retrieval_rate": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "retrieval_count / total_steps",
+      "type": "number"
+    },
+    "folding_rate": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "swarm_rate": {
+      "minimum": 0,
+      "maximum": 1,
+      "type": "number"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
