@@ -12,7 +12,31 @@ from pydantic import Field, RootModel
 from typing import Any
 from typing import Literal
 
-__all__ = ["CyberIntelligence", "FabricController", "NodeLabel", "RelationshipType", "StrategicLeverage"]
+__all__ = ["CandidateScoreStats", "CyberIntelligence", "FabricController", "LLMModelStats", "NodeLabel", "RelationshipType", "StrategicLeverage", "StrategyStats"]
+
+class CandidateScoreStats(BaseModel):
+    strategy: str = Field(..., description='Strategy the candidate was scored against')
+    total_candidates: int = Field(..., ge=0)
+    sum_score: float
+    sum_evidence_strength: float
+    sum_service_fit: float
+    sum_policy_fit: float
+    sum_prior_success: float
+    sum_novelty_bonus: float
+    sum_cost_penalty: float
+    sum_latency_penalty: float
+    sum_contradiction_penalty: float
+    avg_score: float
+    avg_evidence_strength: float
+    avg_service_fit: float
+    avg_policy_fit: float
+    avg_prior_success: float
+    avg_novelty_bonus: float
+    avg_cost_penalty: float
+    avg_latency_penalty: float
+    avg_contradiction_penalty: float
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
 
 class CyberIntelligence(BaseModel):
     intel_id: str = Field(
@@ -56,6 +80,26 @@ class FabricController(BaseModel):
         description='Mapping of Scalable Group Tags (SGT) to agent identities (Adoption: Conscia Identity-Based ZTA).',
     )
     health_status: Literal['optimal', 'congested', 'remediating']
+
+class LLMModelStats(BaseModel):
+    model: str = Field(..., description='Model identifier (e.g. "gemini-2.0-flash")')
+    domain: str = Field(..., description='Routing domain (e.g. "Learning", "Strategy")')
+    provider: str | None = Field(None, description='Provider id (set ON CREATE)')
+    total_calls: int = Field(..., description='Number of recorded calls', ge=0)
+    success_count: int = Field(..., description='Calls with success=true', ge=0)
+    total_cost: float = Field(..., description='Sum of cost (USD)')
+    total_tokens: int = Field(..., description='Sum of tokens_used', ge=0)
+    total_latency_ms: float = Field(..., description='Sum of latency_ms')
+    total_quality: float = Field(..., description='Sum of quality_score')
+    success_rate: float = Field(
+        ..., description='success_count / total_calls', ge=0.0, le=1.0
+    )
+    avg_cost: float = Field(..., description='total_cost / total_calls (USD/call)')
+    avg_tokens: float = Field(..., description='total_tokens / total_calls')
+    avg_latency_ms: float = Field(..., description='total_latency_ms / total_calls')
+    avg_quality: float = Field(..., description='total_quality / total_calls')
+    created_at: AwareDatetime = Field(..., description='ISO datetime; ON CREATE')
+    updated_at: AwareDatetime = Field(..., description='ISO datetime; on every flush')
 
 class NodeLabel(
     RootModel[
@@ -133,6 +177,10 @@ class NodeLabel(
             'CompoundingStrategy',
             'RefinementObservation',
             'InteractiveWidget',
+            'RLMTool',
+            'LLMModelStats',
+            'StrategyStats',
+            'CandidateScoreStats',
         ]
     ]
 ):
@@ -210,6 +258,10 @@ class NodeLabel(
         'CompoundingStrategy',
         'RefinementObservation',
         'InteractiveWidget',
+        'RLMTool',
+        'LLMModelStats',
+        'StrategyStats',
+        'CandidateScoreStats',
     ] = Field(..., description='Canonical Neo4j node labels')
 
 class RelationshipType(
@@ -441,3 +493,25 @@ class StrategicLeverage(BaseModel):
         description='Reference to the WidgeTDC contract that resolves the leverage point.',
     )
     calculated_at: AwareDatetime
+
+class StrategyStats(BaseModel):
+    strategy: str = Field(
+        ...,
+        description='Selected reasoning strategy (e.g. "evidence_bounded_reasoning")',
+    )
+    complexity: str = Field(
+        ..., description='Complexity bucket the step ran at (e.g. "medium")'
+    )
+    total_steps: int = Field(
+        ..., description='Number of steps observed at this (strategy, complexity)', ge=0
+    )
+    retrieval_count: int = Field(..., ge=0)
+    folding_count: int = Field(..., ge=0)
+    swarm_count: int = Field(..., ge=0)
+    retrieval_rate: float = Field(
+        ..., description='retrieval_count / total_steps', ge=0.0, le=1.0
+    )
+    folding_rate: float = Field(..., ge=0.0, le=1.0)
+    swarm_rate: float = Field(..., ge=0.0, le=1.0)
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
