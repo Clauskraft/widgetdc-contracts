@@ -1,0 +1,4 @@
+# Force LF for governance + markdown docs (prevents CRLF drift on Windows)
+*.md text eol=lf
+
+* text=auto
