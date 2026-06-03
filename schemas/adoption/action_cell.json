@@ -1,0 +1,25 @@
+{
+  "$id": "action_cell",
+  "description": "Notebook action cell (recommendation + optional Linear issue)",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "recommendation"
+  ],
+  "properties": {
+    "type": {
+      "const": "action",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "recommendation": {
+      "type": "string"
+    },
+    "linear_issue": {
+      "type": "string"
+    }
+  }
+}

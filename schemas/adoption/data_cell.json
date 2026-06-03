@@ -1,0 +1,35 @@
+{
+  "$id": "data_cell",
+  "description": "Notebook data cell (references and visualizes a prior cell result)",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "source_cell_id"
+  ],
+  "properties": {
+    "type": {
+      "const": "data",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "source_cell_id": {
+      "type": "string"
+    },
+    "visualization": {
+      "anyOf": [
+        {
+          "const": "table",
+          "type": "string"
+        },
+        {
+          "const": "chart",
+          "type": "string"
+        }
+      ]
+    },
+    "result": {}
+  }
+}

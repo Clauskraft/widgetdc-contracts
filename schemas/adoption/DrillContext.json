@@ -1,0 +1,50 @@
+{
+  "$id": "DrillContext",
+  "description": "Drill navigation context — current position and traversed stack",
+  "type": "object",
+  "required": [
+    "stack",
+    "current_level",
+    "current_id",
+    "current_label",
+    "domain"
+  ],
+  "properties": {
+    "stack": {
+      "type": "array",
+      "items": {
+        "$id": "DrillLevel",
+        "description": "Single level on the drill navigation stack",
+        "type": "object",
+        "required": [
+          "level",
+          "id",
+          "label"
+        ],
+        "properties": {
+          "level": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "current_level": {
+      "type": "string"
+    },
+    "current_id": {
+      "type": "string"
+    },
+    "current_label": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    }
+  }
+}

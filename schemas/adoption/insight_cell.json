@@ -1,0 +1,25 @@
+{
+  "$id": "insight_cell",
+  "description": "Notebook insight cell (generates content from a prompt)",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "prompt"
+  ],
+  "properties": {
+    "type": {
+      "const": "insight",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "prompt": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    }
+  }
+}
