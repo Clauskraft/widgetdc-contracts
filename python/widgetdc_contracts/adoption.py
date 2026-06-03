@@ -15,7 +15,7 @@ from pydantic import Field, RootModel
 from typing import Any, Literal
 from typing import Literal
 
-__all__ = ["AnalysisArtifact", "AnalysisBlock", "ArtifactSource", "ArtifactStatus", "ChartBlock", "ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "CypherBlock", "DeepLinkBlock", "DegradationTier", "GraphRefs", "HistogramStats", "KpiCardBlock", "LLMTier", "MermaidBlock", "MetricsSummary", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "TableBlock", "TextBlock", "VoteDecision"]
+__all__ = ["AnalysisArtifact", "AnalysisBlock", "ArtifactSource", "ArtifactStatus", "ChartBlock", "ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "CypherBlock", "DeepLinkBlock", "DegradationTier", "DrillContext", "DrillLevel", "GraphRefs", "HistogramStats", "KpiCardBlock", "LLMTier", "MermaidBlock", "MetricsSummary", "NotebookCell", "NotebookSpec", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "TableBlock", "TextBlock", "VoteDecision", "ActionCell", "DataCell", "InsightCell", "QueryCell"]
 
 class Blocks(BaseModel):
     type: Literal['text']
@@ -278,6 +278,24 @@ class DegradationTier(
         ..., description='Service degradation tier'
     )
 
+class StackItem(BaseModel):
+    level: str
+    id: str
+    label: str
+
+
+class DrillContext(BaseModel):
+    stack: list[StackItem]
+    current_level: str
+    current_id: str
+    current_label: str
+    domain: str
+
+class DrillLevel(BaseModel):
+    level: str
+    id: str
+    label: str
+
 class GraphRefs(BaseModel):
     node_ids: list[str]
     domains: list[str]
@@ -330,6 +348,80 @@ class MetricsSummary(BaseModel):
         ..., description='Histogram metrics with percentiles'
     )
     collected_at: float = Field(..., description='Unix timestamp ms')
+
+class NotebookCell1(BaseModel):
+    type: Literal['query']
+    id: str
+    query: str
+    result: Any | None = None
+
+
+class NotebookCell2(BaseModel):
+    type: Literal['insight']
+    id: str
+    prompt: str
+    content: str | None = None
+
+
+class NotebookCell3(BaseModel):
+    type: Literal['data']
+    id: str
+    source_cell_id: str
+    visualization: Literal['table', 'chart'] | None = None
+    result: Any | None = None
+
+
+class NotebookCell4(BaseModel):
+    type: Literal['action']
+    id: str
+    recommendation: str
+    linear_issue: str | None = None
+
+
+class NotebookCell(
+    RootModel[NotebookCell1 | NotebookCell2 | NotebookCell3 | NotebookCell4]
+):
+    root: NotebookCell1 | NotebookCell2 | NotebookCell3 | NotebookCell4 = Field(
+        ..., description='Notebook cell (discriminated on type)'
+    )
+
+class Cells(BaseModel):
+    type: Literal['query']
+    id: str
+    query: str
+    result: Any | None = None
+
+
+class Cells1(BaseModel):
+    type: Literal['insight']
+    id: str
+    prompt: str
+    content: str | None = None
+
+
+class Cells2(BaseModel):
+    type: Literal['data']
+    id: str
+    source_cell_id: str
+    visualization: Literal['table', 'chart'] | None = None
+    result: Any | None = None
+
+
+class Cells3(BaseModel):
+    type: Literal['action']
+    id: str
+    recommendation: str
+    linear_issue: str | None = None
+
+
+class NotebookSpec(BaseModel):
+    field_id: str = Field(..., alias='$id', description='widgetdc:notebook:{uuid}')
+    field_schema: Literal['widgetdc:notebook:v1'] = Field(..., alias='$schema')
+    title: str
+    cells: list[Cells | Cells1 | Cells2 | Cells3]
+    created_at: AwareDatetime = Field(..., description='ISO 8601 timestamp')
+    updated_at: AwareDatetime = Field(..., description='ISO 8601 timestamp')
+    created_by: str = Field(..., description='Agent or user ID')
 
 class RewardDimension(
     RootModel[Literal['quality', 'latency', 'cost', 'satisfaction', 'reliability']]
@@ -454,3 +546,28 @@ class VoteDecision(RootModel[Literal['approve', 'reject', 'abstain']]):
     root: Literal['approve', 'reject', 'abstain'] = Field(
         ..., description='Consensus vote decision'
     )
+
+class ActionCell(BaseModel):
+    type: Literal['action']
+    id: str
+    recommendation: str
+    linear_issue: str | None = None
+
+class DataCell(BaseModel):
+    type: Literal['data']
+    id: str
+    source_cell_id: str
+    visualization: Literal['table', 'chart'] | None = None
+    result: Any | None = None
+
+class InsightCell(BaseModel):
+    type: Literal['insight']
+    id: str
+    prompt: str
+    content: str | None = None
+
+class QueryCell(BaseModel):
+    type: Literal['query']
+    id: str
+    query: str
+    result: Any | None = None

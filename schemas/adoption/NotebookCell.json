@@ -1,0 +1,114 @@
+{
+  "$id": "NotebookCell",
+  "description": "Notebook cell (discriminated on type)",
+  "anyOf": [
+    {
+      "$id": "query_cell",
+      "description": "Notebook query cell (executes a query, caches result)",
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "query"
+      ],
+      "properties": {
+        "type": {
+          "const": "query",
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "result": {}
+      }
+    },
+    {
+      "$id": "insight_cell",
+      "description": "Notebook insight cell (generates content from a prompt)",
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "prompt"
+      ],
+      "properties": {
+        "type": {
+          "const": "insight",
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "$id": "data_cell",
+      "description": "Notebook data cell (references and visualizes a prior cell result)",
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "source_cell_id"
+      ],
+      "properties": {
+        "type": {
+          "const": "data",
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "source_cell_id": {
+          "type": "string"
+        },
+        "visualization": {
+          "anyOf": [
+            {
+              "const": "table",
+              "type": "string"
+            },
+            {
+              "const": "chart",
+              "type": "string"
+            }
+          ]
+        },
+        "result": {}
+      }
+    },
+    {
+      "$id": "action_cell",
+      "description": "Notebook action cell (recommendation + optional Linear issue)",
+      "type": "object",
+      "required": [
+        "type",
+        "id",
+        "recommendation"
+      ],
+      "properties": {
+        "type": {
+          "const": "action",
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "linear_issue": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$id": "DrillLevel",
+  "description": "Single level on the drill navigation stack",
+  "type": "object",
+  "required": [
+    "level",
+    "id",
+    "label"
+  ],
+  "properties": {
+    "level": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    }
+  }
+}

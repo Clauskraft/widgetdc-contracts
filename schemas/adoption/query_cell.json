@@ -1,0 +1,23 @@
+{
+  "$id": "query_cell",
+  "description": "Notebook query cell (executes a query, caches result)",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "query"
+  ],
+  "properties": {
+    "type": {
+      "const": "query",
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "query": {
+      "type": "string"
+    },
+    "result": {}
+  }
+}

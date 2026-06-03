@@ -1,0 +1,158 @@
+{
+  "$id": "NotebookSpec",
+  "description": "Consulting Notebook — interactive notebook with ordered cells",
+  "type": "object",
+  "required": [
+    "$id",
+    "$schema",
+    "title",
+    "cells",
+    "created_at",
+    "updated_at",
+    "created_by"
+  ],
+  "properties": {
+    "$id": {
+      "description": "widgetdc:notebook:{uuid}",
+      "type": "string"
+    },
+    "$schema": {
+      "const": "widgetdc:notebook:v1",
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "$id": "NotebookCell",
+        "description": "Notebook cell (discriminated on type)",
+        "anyOf": [
+          {
+            "$id": "query_cell",
+            "description": "Notebook query cell (executes a query, caches result)",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "query"
+            ],
+            "properties": {
+              "type": {
+                "const": "query",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "query": {
+                "type": "string"
+              },
+              "result": {}
+            }
+          },
+          {
+            "$id": "insight_cell",
+            "description": "Notebook insight cell (generates content from a prompt)",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "prompt"
+            ],
+            "properties": {
+              "type": {
+                "const": "insight",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "prompt": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "$id": "data_cell",
+            "description": "Notebook data cell (references and visualizes a prior cell result)",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "source_cell_id"
+            ],
+            "properties": {
+              "type": {
+                "const": "data",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "source_cell_id": {
+                "type": "string"
+              },
+              "visualization": {
+                "anyOf": [
+                  {
+                    "const": "table",
+                    "type": "string"
+                  },
+                  {
+                    "const": "chart",
+                    "type": "string"
+                  }
+                ]
+              },
+              "result": {}
+            }
+          },
+          {
+            "$id": "action_cell",
+            "description": "Notebook action cell (recommendation + optional Linear issue)",
+            "type": "object",
+            "required": [
+              "type",
+              "id",
+              "recommendation"
+            ],
+            "properties": {
+              "type": {
+                "const": "action",
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "recommendation": {
+                "type": "string"
+              },
+              "linear_issue": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "created_at": {
+      "format": "date-time",
+      "description": "ISO 8601 timestamp",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "description": "ISO 8601 timestamp",
+      "type": "string"
+    },
+    "created_by": {
+      "description": "Agent or user ID",
+      "type": "string"
+    }
+  }
+}
