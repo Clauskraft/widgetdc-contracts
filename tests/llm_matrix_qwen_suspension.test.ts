@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { LlmMatrix } from '../src/llm/LlmMatrix.js'
+import matrixData from '../src/llm/llm-matrix.json' with { type: 'json' }
 
 describe('llm matrix provider suspension', () => {
-  it('keeps the v1.1.1 provider-suspension matrix internally valid', () => {
-    expect(LlmMatrix.version).toBe('1.1.1')
+  it('keeps the provider-suspension matrix internally valid + version aligned to source', () => {
+    // Assert against the JSON source-of-truth (not a hardcoded literal) so a
+    // matrix version bump never re-breaks this test. validate() is the real
+    // consistency check.
+    expect(LlmMatrix.version).toBe((matrixData as { version: string }).version)
+    expect(LlmMatrix.version).toMatch(/^\d+\.\d+\.\d+$/)
     expect(LlmMatrix.validate()).toEqual([])
   })
 

@@ -1,8 +1,8 @@
 {
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
-  "version": "1.1.1",
-  "updated_at": "2026-05-27",
+  "version": "1.2.0",
+  "updated_at": "2026-06-06",
   "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
@@ -90,14 +90,24 @@
       "strengths": ["code_generation", "code_review", "refactoring"],
       "weaknesses": ["multimodal"]
     },
-    "gemini-2.0-flash": {
+    "gemini-2.5-flash": {
       "provider": "gemini",
       "context_window": 1048576,
       "max_output_tokens": 8192,
-      "cost_per_1k_input_usd": 0.000125,
-      "cost_per_1k_output_usd": 0.000375,
+      "cost_per_1k_input_usd": 0.0003,
+      "cost_per_1k_output_usd": 0.0025,
       "avg_latency_ms": 600,
-      "strengths": ["multimodal", "large_context", "ner", "speed"],
+      "strengths": ["multimodal", "large_context", "ner", "speed", "reasoning"],
+      "weaknesses": []
+    },
+    "gemini-2.5-flash-lite": {
+      "provider": "gemini",
+      "context_window": 1048576,
+      "max_output_tokens": 8192,
+      "cost_per_1k_input_usd": 0.0001,
+      "cost_per_1k_output_usd": 0.0004,
+      "avg_latency_ms": 500,
+      "strengths": ["multimodal", "large_context", "classification", "speed", "cost_efficiency"],
       "weaknesses": []
     },
     "gpt-4o": {
@@ -187,25 +197,27 @@
     },
     "classification": {
       "description": "Short-label classification (sentiment, intent, category).",
-      "chain": ["mercury-2", "gemini-2.0-flash", "qwen-plus"],
+      "chain": ["mercury-2", "gemini-2.5-flash-lite", "qwen-plus"],
       "override_env": "CLASSIFICATION_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404). Replaced with gemini-2.5-flash-lite (newest, cheapest Flash) for short-label classification."
     },
     "fold_context": {
       "description": "Context folding / compression — reduce large context to fit downstream token budget.",
-      "chain": ["gemini-2.0-flash", "deepseek-chat", "qwen-plus"],
+      "chain": ["gemini-2.5-flash", "deepseek-chat", "qwen-plus"],
       "override_env": "FOLD_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "Mercury-2 was never wired to LLM folding (only local compressors used). Gemini-2.0-flash tested 2026-04-09 — 1M context window ideal for large context compression, fast (600ms avg), multimodal strength aligns with polyglot input. Haiku removed: chain now tests real LLM summarization path."
+      "rationale": "Mercury-2 was never wired to LLM folding (only local compressors used). 2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404) → gemini-2.5-flash; 1M context window ideal for large-context compression, multimodal strength aligns with polyglot input. Haiku removed: chain now tests real LLM summarization path."
     },
     "chat_standard": {
       "description": "Standard chat / conversational responses. Balance cost and quality.",
-      "chain": ["deepseek-chat", "qwen-plus", "gemini-2.0-flash"],
+      "chain": ["deepseek-chat", "qwen-plus", "gemini-2.5-flash-lite"],
       "override_env": "CHAT_STANDARD_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404) → gemini-2.5-flash-lite (newest, cheapest Flash) as the Gemini fallback tier for standard chat."
     },
     "chat_premium": {
       "description": "Premium chat — highest-quality conversational output for critical user interactions.",
@@ -241,17 +253,19 @@
     },
     "multimodal": {
       "description": "Image / document / vision input. Requires multimodal-capable provider.",
-      "chain": ["gemini-2.0-flash", "gpt-4o"],
+      "chain": ["gemini-2.5-flash", "gpt-4o"],
       "override_env": "MULTIMODAL_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404) → gemini-2.5-flash for image/document/vision input."
     },
     "ner": {
       "description": "Named entity recognition over domain text.",
-      "chain": ["gemini-2.0-flash", "qwen-plus", "deepseek-chat"],
+      "chain": ["gemini-2.5-flash-lite", "qwen-plus", "deepseek-chat"],
       "override_env": "NER_MODEL",
       "disable_env": null,
-      "default_disabled": false
+      "default_disabled": false,
+      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404) → gemini-2.5-flash-lite (newest, cheapest Flash) for named-entity recognition."
     },
     "self_healing": {
       "description": "Auto-repair of broken code / failed tests / runtime errors.",
