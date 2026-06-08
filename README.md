@@ -66,6 +66,56 @@ ls schemas/cognitive/
 | `@widgetdc/contracts/agent` | AgentTier, AgentPersona, SignalType | All services |
 | `@widgetdc/contracts/graph` | NodeLabel, RelationshipType | All services |
 | `@widgetdc/contracts/orchestrator` | OrchestratorToolCall, OrchestratorToolResult, AgentMessage, AgentHandshake | Orchestrator ↔ All agents |
+| `@widgetdc/contracts/adoption` | **AgentAdoptionContract (B11)**, NotebookSpec, AnalysisArtifact, RewardEntry, RolloutEntry | Adoption ladder B11-B20 |
+
+### `AgentAdoptionContract` (B11) — canonical adoption contract
+
+`agent-adoption-contract.v1` is the single machine-readable artefact every agent on every bridge in the 7-repo platform must satisfy. It is the foundation for the adoption ladder:
+
+| Step | Purpose |
+|------|---------|
+| **B11** | This schema — canonical contract |
+| B12 | Repo MERGE nodes (Neo4j `AdoptionRepo` + `AdoptionAgent` + `ADOPTS` edge) |
+| B13 | CI parity gate — rejects PRs whose manifest hash does not validate |
+| B15 | Runtime conformance probe — `runtime_probe_fn` executes against each bridge |
+| B18 | Telemetry — EventSpine emits `telemetry_key` on every adoption tick |
+| B19 | Adoption dashboard |
+| B20 | L1 → L2 → L3 promotion rule |
+
+```typescript
+import {
+  AgentAdoptionContract,
+  computeContractHash,
+  verifyContractHash,
+} from '@widgetdc/contracts/adoption'
+import { Value } from '@sinclair/typebox/value'
+
+const base = {
+  contract_version: 'v1' as const,
+  repo: 'WidgeTDC',
+  agent: 'claude-code',
+  bridge: 'http-mcp-route',
+  required_tools: ['intent_detect', 'srag.query', 'reason_deeply'],
+  startup_chain: {
+    intent_detect: { required: true, min_confidence: 0.6 },
+    rag_query: { tool: 'srag.query' as const, required: true },
+    reason: { tool: 'reason_deeply' as const, required: true },
+  },
+  read_only_write_policy: {
+    default_risk: 'staged_write' as const,
+    write_requires: { plan: true, approval: true, signature: true },
+  },
+  telemetry_key: 'adoption.event.v1',
+  runtime_probe_fn: 'adoption.conformance.v1',
+  created_at: new Date().toISOString(),
+}
+const manifest = { ...base, hash: computeContractHash(base) }
+
+Value.Check(AgentAdoptionContract, manifest) // true
+verifyContractHash(manifest)                  // true
+```
+
+The `hash` field is sha256 over a stable-stringified copy of the manifest with `hash=""` (no self-reference). Manifest instances live in their own repos (e.g. `WidgeTDC/.adoption-manifest.yaml`).
 
 ## Wire Format
 

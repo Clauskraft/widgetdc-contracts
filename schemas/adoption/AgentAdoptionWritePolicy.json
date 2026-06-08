@@ -1,0 +1,52 @@
+{
+  "$id": "AgentAdoptionWritePolicy",
+  "description": "Governance write-policy for the agent on this bridge",
+  "type": "object",
+  "required": [
+    "default_risk",
+    "write_requires"
+  ],
+  "properties": {
+    "default_risk": {
+      "$id": "AgentAdoptionRiskTier",
+      "description": "Default risk classification for the agent on this bridge",
+      "anyOf": [
+        {
+          "const": "read_only",
+          "type": "string"
+        },
+        {
+          "const": "staged_write",
+          "type": "string"
+        },
+        {
+          "const": "production_write",
+          "type": "string"
+        }
+      ]
+    },
+    "write_requires": {
+      "description": "Gates that must be satisfied before any write executes",
+      "type": "object",
+      "required": [
+        "plan",
+        "approval",
+        "signature"
+      ],
+      "properties": {
+        "plan": {
+          "description": "A HyperAgent / orchestrator plan must exist and be retrievable",
+          "type": "boolean"
+        },
+        "approval": {
+          "description": "A store-backed approval token must be present (GOV-7)",
+          "type": "boolean"
+        },
+        "signature": {
+          "description": "The approval must carry a verifiable signature (LIN-1911)",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

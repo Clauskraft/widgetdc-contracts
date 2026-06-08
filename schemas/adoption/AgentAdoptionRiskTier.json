@@ -1,0 +1,18 @@
+{
+  "$id": "AgentAdoptionRiskTier",
+  "description": "Default risk classification for the agent on this bridge",
+  "anyOf": [
+    {
+      "const": "read_only",
+      "type": "string"
+    },
+    {
+      "const": "staged_write",
+      "type": "string"
+    },
+    {
+      "const": "production_write",
+      "type": "string"
+    }
+  ]
+}
