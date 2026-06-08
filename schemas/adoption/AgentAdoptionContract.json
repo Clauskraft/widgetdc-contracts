@@ -1,0 +1,197 @@
+{
+  "$id": "AgentAdoptionContract",
+  "description": "Canonical adoption contract (B11) — single machine-readable artefact every agent on every bridge must satisfy. Foundation for B12 (repo MERGE nodes), B13 (CI parity gate), B15 (conformance probe), B18 (telemetry), B19 (dashboard), B20 (promotion rule).",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "repo",
+    "agent",
+    "bridge",
+    "required_tools",
+    "startup_chain",
+    "read_only_write_policy",
+    "telemetry_key",
+    "runtime_probe_fn",
+    "created_at",
+    "hash"
+  ],
+  "properties": {
+    "contract_version": {
+      "description": "Contract schema version. Bump on breaking change.",
+      "const": "v1",
+      "type": "string"
+    },
+    "repo": {
+      "minLength": 1,
+      "description": "Canonical repo name, e.g. \"WidgeTDC\", \"widgetdc-orchestrator\", \"widgetdc-rlm-engine\"",
+      "type": "string"
+    },
+    "agent": {
+      "minLength": 1,
+      "description": "Canonical agent name, e.g. \"claude-code\", \"codex\", \"gemini\", \"deepseek\"",
+      "type": "string"
+    },
+    "bridge": {
+      "minLength": 1,
+      "description": "Bridge name, e.g. \"native-mcp\", \"http-mcp-route\", \"claude-in-chrome\", \"librechat-mcp\"",
+      "type": "string"
+    },
+    "required_tools": {
+      "description": "Tools every conformant agent on this bridge MUST be able to call",
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "startup_chain": {
+      "$id": "AgentAdoptionStartupChain",
+      "description": "Ordered probes the agent must execute at boot (intent_detect -> rag_query -> reason)",
+      "type": "object",
+      "required": [
+        "intent_detect",
+        "rag_query",
+        "reason"
+      ],
+      "properties": {
+        "intent_detect": {
+          "description": "Boot-time intent classification step",
+          "type": "object",
+          "required": [
+            "required"
+          ],
+          "properties": {
+            "required": {
+              "description": "Whether intent_detect must run at boot",
+              "type": "boolean"
+            },
+            "min_confidence": {
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Minimum confidence threshold for the intent classification",
+              "type": "number"
+            }
+          }
+        },
+        "rag_query": {
+          "description": "Boot-time retrieval step",
+          "type": "object",
+          "required": [
+            "tool",
+            "required"
+          ],
+          "properties": {
+            "tool": {
+              "description": "Which RAG tool the agent uses for boot-time retrieval",
+              "anyOf": [
+                {
+                  "const": "srag.query",
+                  "type": "string"
+                },
+                {
+                  "const": "kg_rag.query",
+                  "type": "string"
+                }
+              ]
+            },
+            "required": {
+              "description": "Whether rag_query must run at boot",
+              "type": "boolean"
+            }
+          }
+        },
+        "reason": {
+          "description": "Boot-time deep-reasoning step",
+          "type": "object",
+          "required": [
+            "tool",
+            "required"
+          ],
+          "properties": {
+            "tool": {
+              "description": "Always reason_deeply for the canonical chain",
+              "const": "reason_deeply",
+              "type": "string"
+            },
+            "required": {
+              "description": "Whether reason_deeply must run at boot",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "read_only_write_policy": {
+      "$id": "AgentAdoptionWritePolicy",
+      "description": "Governance write-policy for the agent on this bridge",
+      "type": "object",
+      "required": [
+        "default_risk",
+        "write_requires"
+      ],
+      "properties": {
+        "default_risk": {
+          "$id": "AgentAdoptionRiskTier",
+          "description": "Default risk classification for the agent on this bridge",
+          "anyOf": [
+            {
+              "const": "read_only",
+              "type": "string"
+            },
+            {
+              "const": "staged_write",
+              "type": "string"
+            },
+            {
+              "const": "production_write",
+              "type": "string"
+            }
+          ]
+        },
+        "write_requires": {
+          "description": "Gates that must be satisfied before any write executes",
+          "type": "object",
+          "required": [
+            "plan",
+            "approval",
+            "signature"
+          ],
+          "properties": {
+            "plan": {
+              "description": "A HyperAgent / orchestrator plan must exist and be retrievable",
+              "type": "boolean"
+            },
+            "approval": {
+              "description": "A store-backed approval token must be present (GOV-7)",
+              "type": "boolean"
+            },
+            "signature": {
+              "description": "The approval must carry a verifiable signature (LIN-1911)",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "telemetry_key": {
+      "minLength": 1,
+      "description": "EventSpine event-key the agent emits, e.g. \"adoption.event.v1\"",
+      "type": "string"
+    },
+    "runtime_probe_fn": {
+      "minLength": 1,
+      "description": "Canonical probe identifier executed by B15 conformance gate, e.g. \"adoption.conformance.v1\"",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this manifest instance was minted",
+      "type": "string"
+    },
+    "hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of the manifest with hash=\"\" — computed by computeContractHash()",
+      "type": "string"
+    }
+  }
+}

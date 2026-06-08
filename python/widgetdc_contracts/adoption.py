@@ -7,6 +7,7 @@ Do not edit manually — regenerate with: npm run python
 from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, RootModel
 from pydantic import BaseModel
 from pydantic import BaseModel, Field
 from pydantic import BaseModel, Field, RootModel
@@ -15,7 +16,173 @@ from pydantic import Field, RootModel
 from typing import Any, Literal
 from typing import Literal
 
-__all__ = ["AnalysisArtifact", "AnalysisBlock", "ArtifactSource", "ArtifactStatus", "ChartBlock", "ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "CypherBlock", "DeepLinkBlock", "DegradationTier", "DrillContext", "DrillLevel", "GraphRefs", "HistogramStats", "KpiCardBlock", "LLMTier", "MermaidBlock", "MetricsSummary", "NotebookCell", "NotebookSpec", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "TableBlock", "TextBlock", "VoteDecision", "ActionCell", "DataCell", "InsightCell", "QueryCell"]
+__all__ = ["AgentAdoptionContract", "AgentAdoptionRiskTier", "AgentAdoptionStartupChain", "AgentAdoptionWritePolicy", "AnalysisArtifact", "AnalysisBlock", "ArtifactSource", "ArtifactStatus", "ChartBlock", "ComplexityTier", "ConsensusOutcome", "ConsensusProposal", "ConsensusResult", "ConsensusVote", "CypherBlock", "DeepLinkBlock", "DegradationTier", "DrillContext", "DrillLevel", "GraphRefs", "HistogramStats", "KpiCardBlock", "LLMTier", "MermaidBlock", "MetricsSummary", "NotebookCell", "NotebookSpec", "RewardDimension", "RewardEntry", "RewardVector", "RewardWeights", "RolloutEntry", "RolloutMetrics", "RolloutState", "RolloutSummary", "TableBlock", "TextBlock", "VoteDecision", "ActionCell", "DataCell", "InsightCell", "QueryCell"]
+
+class RequiredTool(RootModel[str]):
+    root: str = Field(..., min_length=1)
+
+
+class IntentDetect(BaseModel):
+    required: bool = Field(..., description='Whether intent_detect must run at boot')
+    min_confidence: float | None = Field(
+        None,
+        description='Minimum confidence threshold for the intent classification',
+        ge=0.0,
+        le=1.0,
+    )
+
+
+class RagQuery(BaseModel):
+    tool: Literal['srag.query', 'kg_rag.query'] = Field(
+        ..., description='Which RAG tool the agent uses for boot-time retrieval'
+    )
+    required: bool = Field(..., description='Whether rag_query must run at boot')
+
+
+class Reason(BaseModel):
+    tool: Literal['reason_deeply'] = Field(
+        ..., description='Always reason_deeply for the canonical chain'
+    )
+    required: bool = Field(..., description='Whether reason_deeply must run at boot')
+
+
+class StartupChain(BaseModel):
+    intent_detect: IntentDetect = Field(
+        ..., description='Boot-time intent classification step'
+    )
+    rag_query: RagQuery = Field(..., description='Boot-time retrieval step')
+    reason: Reason = Field(..., description='Boot-time deep-reasoning step')
+
+
+class WriteRequires(BaseModel):
+    plan: bool = Field(
+        ...,
+        description='A HyperAgent / orchestrator plan must exist and be retrievable',
+    )
+    approval: bool = Field(
+        ..., description='A store-backed approval token must be present (GOV-7)'
+    )
+    signature: bool = Field(
+        ..., description='The approval must carry a verifiable signature (LIN-1911)'
+    )
+
+
+class ReadOnlyWritePolicy(BaseModel):
+    default_risk: Literal['read_only', 'staged_write', 'production_write'] = Field(
+        ..., description='Default risk classification for the agent on this bridge'
+    )
+    write_requires: WriteRequires = Field(
+        ..., description='Gates that must be satisfied before any write executes'
+    )
+
+
+class AgentAdoptionContract(BaseModel):
+    contract_version: Literal['v1'] = Field(
+        ..., description='Contract schema version. Bump on breaking change.'
+    )
+    repo: str = Field(
+        ...,
+        description='Canonical repo name, e.g. "WidgeTDC", "widgetdc-orchestrator", "widgetdc-rlm-engine"',
+        min_length=1,
+    )
+    agent: str = Field(
+        ...,
+        description='Canonical agent name, e.g. "claude-code", "codex", "gemini", "deepseek"',
+        min_length=1,
+    )
+    bridge: str = Field(
+        ...,
+        description='Bridge name, e.g. "native-mcp", "http-mcp-route", "claude-in-chrome", "librechat-mcp"',
+        min_length=1,
+    )
+    required_tools: list[RequiredTool] = Field(
+        ...,
+        description='Tools every conformant agent on this bridge MUST be able to call',
+    )
+    startup_chain: StartupChain = Field(
+        ...,
+        description='Ordered probes the agent must execute at boot (intent_detect -> rag_query -> reason)',
+    )
+    read_only_write_policy: ReadOnlyWritePolicy = Field(
+        ..., description='Governance write-policy for the agent on this bridge'
+    )
+    telemetry_key: str = Field(
+        ...,
+        description='EventSpine event-key the agent emits, e.g. "adoption.event.v1"',
+        min_length=1,
+    )
+    runtime_probe_fn: str = Field(
+        ...,
+        description='Canonical probe identifier executed by B15 conformance gate, e.g. "adoption.conformance.v1"',
+        min_length=1,
+    )
+    created_at: AwareDatetime = Field(
+        ..., description='ISO 8601 timestamp of when this manifest instance was minted'
+    )
+    hash: str = Field(
+        ...,
+        description='sha256 of the manifest with hash="" — computed by computeContractHash()',
+        pattern='^[0-9a-f]{64}$',
+    )
+
+class AgentAdoptionRiskTier(
+    RootModel[Literal['read_only', 'staged_write', 'production_write']]
+):
+    root: Literal['read_only', 'staged_write', 'production_write'] = Field(
+        ..., description='Default risk classification for the agent on this bridge'
+    )
+
+class IntentDetect(BaseModel):
+    required: bool = Field(..., description='Whether intent_detect must run at boot')
+    min_confidence: float | None = Field(
+        None,
+        description='Minimum confidence threshold for the intent classification',
+        ge=0.0,
+        le=1.0,
+    )
+
+
+class RagQuery(BaseModel):
+    tool: Literal['srag.query', 'kg_rag.query'] = Field(
+        ..., description='Which RAG tool the agent uses for boot-time retrieval'
+    )
+    required: bool = Field(..., description='Whether rag_query must run at boot')
+
+
+class Reason(BaseModel):
+    tool: Literal['reason_deeply'] = Field(
+        ..., description='Always reason_deeply for the canonical chain'
+    )
+    required: bool = Field(..., description='Whether reason_deeply must run at boot')
+
+
+class AgentAdoptionStartupChain(BaseModel):
+    intent_detect: IntentDetect = Field(
+        ..., description='Boot-time intent classification step'
+    )
+    rag_query: RagQuery = Field(..., description='Boot-time retrieval step')
+    reason: Reason = Field(..., description='Boot-time deep-reasoning step')
+
+class WriteRequires(BaseModel):
+    plan: bool = Field(
+        ...,
+        description='A HyperAgent / orchestrator plan must exist and be retrievable',
+    )
+    approval: bool = Field(
+        ..., description='A store-backed approval token must be present (GOV-7)'
+    )
+    signature: bool = Field(
+        ..., description='The approval must carry a verifiable signature (LIN-1911)'
+    )
+
+
+class AgentAdoptionWritePolicy(BaseModel):
+    default_risk: Literal['read_only', 'staged_write', 'production_write'] = Field(
+        ..., description='Default risk classification for the agent on this bridge'
+    )
+    write_requires: WriteRequires = Field(
+        ..., description='Gates that must be satisfied before any write executes'
+    )
 
 class Blocks(BaseModel):
     type: Literal['text']

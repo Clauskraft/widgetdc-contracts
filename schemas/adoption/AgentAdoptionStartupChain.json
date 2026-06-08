@@ -1,0 +1,77 @@
+{
+  "$id": "AgentAdoptionStartupChain",
+  "description": "Ordered probes the agent must execute at boot (intent_detect -> rag_query -> reason)",
+  "type": "object",
+  "required": [
+    "intent_detect",
+    "rag_query",
+    "reason"
+  ],
+  "properties": {
+    "intent_detect": {
+      "description": "Boot-time intent classification step",
+      "type": "object",
+      "required": [
+        "required"
+      ],
+      "properties": {
+        "required": {
+          "description": "Whether intent_detect must run at boot",
+          "type": "boolean"
+        },
+        "min_confidence": {
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum confidence threshold for the intent classification",
+          "type": "number"
+        }
+      }
+    },
+    "rag_query": {
+      "description": "Boot-time retrieval step",
+      "type": "object",
+      "required": [
+        "tool",
+        "required"
+      ],
+      "properties": {
+        "tool": {
+          "description": "Which RAG tool the agent uses for boot-time retrieval",
+          "anyOf": [
+            {
+              "const": "srag.query",
+              "type": "string"
+            },
+            {
+              "const": "kg_rag.query",
+              "type": "string"
+            }
+          ]
+        },
+        "required": {
+          "description": "Whether rag_query must run at boot",
+          "type": "boolean"
+        }
+      }
+    },
+    "reason": {
+      "description": "Boot-time deep-reasoning step",
+      "type": "object",
+      "required": [
+        "tool",
+        "required"
+      ],
+      "properties": {
+        "tool": {
+          "description": "Always reason_deeply for the canonical chain",
+          "const": "reason_deeply",
+          "type": "string"
+        },
+        "required": {
+          "description": "Whether reason_deeply must run at boot",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
