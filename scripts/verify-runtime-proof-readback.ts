@@ -103,6 +103,10 @@ type RuntimeEvidence = {
   note: string
 }
 
+export function resolveBlockedRuntimeExitCode(env: NodeJS.ProcessEnv = process.env): 0 | 1 {
+  return env.RUNTIME_PROOF_BLOCKED_EXIT_CODE === '0' ? 0 : 1
+}
+
 const DEFAULT_SURFACE_PATH = 'config/runtime_proof_surface.json'
 const DEFAULT_EVIDENCE_PATH = 'runtime-evidence.json'
 const DEFAULT_PROBE_TIMEOUT_MS = 30000
@@ -760,7 +764,7 @@ async function main(): Promise<void> {
   writeEvidence(evidence)
   console.log(JSON.stringify(evidence, null, 2))
 
-  process.exit(evidence.status === 'PASS' ? 0 : 1)
+  process.exit(evidence.status === 'PASS' ? 0 : resolveBlockedRuntimeExitCode())
 }
 
 const invokedAsScript = process.argv[1]

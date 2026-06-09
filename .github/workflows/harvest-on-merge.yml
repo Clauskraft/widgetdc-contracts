@@ -92,11 +92,22 @@ jobs:
 
           echo "DEBUG: BODY_FILE_size=$(wc -c < "$BODY_FILE")"
 
-          RESPONSE=$(curl --silent --show-error --fail \
+          RESPONSE=$(curl --silent --show-error --max-time 30 \
+            --write-out "\nHTTP_CODE=%{http_code}" \
             --request POST "${BACKEND_URL}/api/cron/harvest-commit" \
             --header "Authorization: Bearer ${BACKEND_API_KEY}" \
+            --header "X-API-Key: ${API_KEY:-$BACKEND_API_KEY}" \
             --header "Content-Type: application/json" \
-            --data @"$BODY_FILE" 2>&1)
-          echo "RESPONSE: $RESPONSE" | head -c 400
+            --data @"$BODY_FILE" 2>&1 || true)
+          echo "RESPONSE: $RESPONSE" | head -c 1200
           echo ""
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1 | sed 's/HTTP_CODE=//')
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Harvest endpoint returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          if ! echo "$RESPONSE" | sed '$d' | jq -e '.success == true' >/dev/null; then
+            echo "::error::Harvest endpoint returned a non-success payload"
+            exit 1
+          fi
           echo "Harvest complete for $SHORT_SHA"
