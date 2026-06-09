@@ -51,6 +51,7 @@ jobs:
       - name: Pre-flight debug + POST harvest
         env:
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
           REPO_NAME: ${{ steps.resolve.outputs.repo_name }}
           SHA: ${{ steps.resolve.outputs.sha }}
           SHORT_SHA: ${{ steps.resolve.outputs.short_sha }}
@@ -64,14 +65,17 @@ jobs:
           echo "DEBUG: BACKEND_URL_len=${#BACKEND_URL}"
           echo "DEBUG: BACKEND_URL_prefix=$(echo "$BACKEND_URL" | head -c 8)"
           echo "DEBUG: BACKEND_API_KEY_len=${#BACKEND_API_KEY}"
+          echo "DEBUG: API_KEY_len=${#API_KEY}"
           echo "DEBUG: REPO_NAME=$REPO_NAME"
           echo "DEBUG: SHORT_SHA=$SHORT_SHA"
           echo "DEBUG: CITATIONS_raw=$CITATIONS"
 
-          if [ -z "${BACKEND_API_KEY:-}" ]; then
-            echo "::warning::BACKEND_API_KEY missing — set in repo Secrets"
+          if [ -z "${BACKEND_API_KEY:-}" ] && [ -z "${API_KEY:-}" ]; then
+            echo "::warning::BACKEND_API_KEY and API_KEY missing — set repo Secrets"
             exit 0
           fi
+          AUTH_KEY="${API_KEY:-$BACKEND_API_KEY}"
+          echo "DEBUG: AUTH_KEY_len=${#AUTH_KEY}"
 
           BODY_FILE=$(mktemp)
           if [ -z "$CITATIONS" ]; then
@@ -95,8 +99,8 @@ jobs:
           RESPONSE=$(curl --silent --show-error --max-time 30 \
             --write-out "\nHTTP_CODE=%{http_code}" \
             --request POST "${BACKEND_URL}/api/cron/harvest-commit" \
-            --header "Authorization: Bearer ${BACKEND_API_KEY}" \
-            --header "X-API-Key: ${API_KEY:-$BACKEND_API_KEY}" \
+            --header "Authorization: Bearer ${BACKEND_API_KEY:-$AUTH_KEY}" \
+            --header "X-API-Key: ${AUTH_KEY}" \
             --header "Content-Type: application/json" \
             --data @"$BODY_FILE" 2>&1 || true)
           echo "RESPONSE: $RESPONSE" | head -c 1200
