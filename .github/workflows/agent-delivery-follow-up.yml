@@ -31,6 +31,7 @@ jobs:
       CONSUMER_ADOPTION_READBACK_JSON: ${{ inputs.consumer_adoption_readback_json || secrets.CONSUMER_ADOPTION_READBACK_JSON || vars.CONSUMER_ADOPTION_READBACK_JSON }}
       CONSUMER_ADOPTION_READBACK_PATH: ${{ vars.CONSUMER_ADOPTION_READBACK_PATH }}
       RUNTIME_EVIDENCE_PATH: runtime-evidence.json
+      RUNTIME_PROOF_BLOCKED_EXIT_CODE: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

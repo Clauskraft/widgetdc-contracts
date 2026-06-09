@@ -13,6 +13,7 @@ import {
   parseProbeTimeoutMs,
   probeRuntime,
   readConsumerAdoptionReadbackFromEnv,
+  resolveBlockedRuntimeExitCode,
   isProofPipelineOnlyDiff,
   shaMatches,
 } from '../scripts/verify-runtime-proof-readback.ts'
@@ -521,6 +522,16 @@ describe('runtime proof read-back', () => {
     )
 
     expect(checks.some((check) => check.status === 'BLOCKED_RUNTIME')).toBe(true)
+  })
+
+  it('requires explicit opt-in before BLOCKED_RUNTIME exits zero', () => {
+    expect(resolveBlockedRuntimeExitCode({})).toBe(1)
+    expect(resolveBlockedRuntimeExitCode({
+      RUNTIME_PROOF_BLOCKED_EXIT_CODE: '1',
+    })).toBe(1)
+    expect(resolveBlockedRuntimeExitCode({
+      RUNTIME_PROOF_BLOCKED_EXIT_CODE: '0',
+    })).toBe(0)
   })
 
   it('marks evidence as runtime_proof only when all runtime checks pass', () => {
