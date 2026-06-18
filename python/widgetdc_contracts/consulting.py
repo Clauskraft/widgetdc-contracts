@@ -6,6 +6,7 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel, Field
 from pydantic import BaseModel, Field, constr
@@ -13,7 +14,18 @@ from pydantic import Field, RootModel
 from typing import Any
 from typing import Literal
 
-__all__ = ["DomainHealthProfile", "DomainId", "GuardianProcessMapping", "LogicReconstructionPacket", "ProcessStatus", "RemediationStrategy"]
+__all__ = ["ConsultingTaskType", "DomainHealthProfile", "DomainId", "GuardianProcessMapping", "LogicReconstructionPacket", "ProcessStatus", "RemediationStrategy", "SkillTaskBinding"]
+
+class ConsultingTaskType(
+    RootModel[
+        Literal[
+            'consulting_assessment', 'consulting_storyline', 'consulting_deliverable'
+        ]
+    ]
+):
+    root: Literal[
+        'consulting_assessment', 'consulting_storyline', 'consulting_deliverable'
+    ] = Field(..., description='Consulting-domain task types for LlmMatrix routing.')
 
 class Health(BaseModel):
     score: float = Field(
@@ -175,3 +187,31 @@ class RemediationStrategy(BaseModel):
         ..., description='Generated WidgeTDC contract code to replace legacy'
     )
     sovereignty_score: float | None = Field(None, ge=0.0, le=1.0)
+
+class SkillTaskBinding(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    skill_id: str = Field(
+        ...,
+        description='Skill file name without extension, e.g. "adopt-consulting-partner".',
+    )
+    task_type: str = Field(
+        ..., description='LlmMatrix TaskType (including consulting_* extensions).'
+    )
+    output_format: str = Field(
+        ..., description="Expected OutputFormat of this skill's primary deliverable."
+    )
+    methodology: str | None = Field(
+        None, description='Named methodology, e.g. "pyramid+mece" or "swot".'
+    )
+    provider_constraints: list[str] | None = Field(
+        None,
+        description='Explicit ProviderId list if the skill REQUIRES specific capabilities (multimodal, etc.). Empty = any.',
+    )
+    harvest_to_graph: bool | None = Field(
+        True,
+        description='If true, skill output MUST be persisted as a WorkArtifact+BOMItem in the graph.',
+    )
+    version: str | None = Field(None, description='Semver of this binding definition.')
+    updated_at: AwareDatetime | None = None

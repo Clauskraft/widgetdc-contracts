@@ -1,0 +1,71 @@
+{
+  "$id": "LlmAgnosticResponse",
+  "description": "Provider-agnostic wrapper for all LLM-produced content. Enables hot-swapping of providers without frontend changes.",
+  "additionalProperties": true,
+  "type": "object",
+  "required": [
+    "content",
+    "format",
+    "provider_used",
+    "task_type"
+  ],
+  "properties": {
+    "content": {
+      "description": "Produced content. Format is declared in `format`.",
+      "type": "string"
+    },
+    "format": {
+      "$id": "OutputFormat",
+      "description": "Wire format of the produced content.",
+      "anyOf": [
+        {
+          "const": "html",
+          "type": "string"
+        },
+        {
+          "const": "markdown",
+          "type": "string"
+        },
+        {
+          "const": "json",
+          "type": "string"
+        },
+        {
+          "const": "pptx",
+          "type": "string"
+        },
+        {
+          "const": "docx",
+          "type": "string"
+        },
+        {
+          "const": "text",
+          "type": "string"
+        }
+      ]
+    },
+    "provider_used": {
+      "description": "ProviderId of the provider that succeeded.",
+      "type": "string"
+    },
+    "task_type": {
+      "description": "TaskType used for LlmMatrix routing.",
+      "type": "string"
+    },
+    "model_used": {
+      "description": "Specific model name that succeeded.",
+      "type": "string"
+    },
+    "latency_ms": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "bom_item_id": {
+      "description": "BOMItem ID if this response was persisted to the graph.",
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    }
+  }
+}

@@ -36,6 +36,10 @@ export type TaskType =
   | 'ner'
   | 'self_healing'
   | 'embedding_text'
+  // Consulting-domain tasks — routed via LlmMatrix with gemini→deepseek→qwen fallback chain
+  | 'consulting_assessment'
+  | 'consulting_storyline'
+  | 'consulting_deliverable'
 
 /** Provider configuration — how to reach a provider and which env var holds its auth. */
 export interface ProviderConfig {

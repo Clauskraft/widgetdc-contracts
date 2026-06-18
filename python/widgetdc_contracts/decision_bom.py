@@ -16,7 +16,7 @@ from pydantic import RootModel
 from typing import Any
 from typing import Literal
 
-__all__ = ["BOMDataClass", "BOMDecisionType", "BOMItem", "BOMItemType", "BOMJurisdictionPolicy", "BOMMethod", "BOMValidationStatus", "ConfigurationSnapshot", "ConfigurationSnapshotApproval", "ConfigurationSnapshotDerivedArtifact", "ConfigurationSnapshotItem", "ConfigurationSnapshotType", "PhantomBOMComposeRequest", "PhantomBOMFramework", "PhantomBOMResponse", "PhantomBOMRouteRequest", "WorkArtifact", "WorkArtifactType", "WorkArtifactVerificationStatus"]
+__all__ = ["BOMDataClass", "BOMDecisionType", "BOMItem", "BOMItemType", "BOMJurisdictionPolicy", "BOMMethod", "BOMValidationStatus", "ConfigurationSnapshot", "ConfigurationSnapshotApproval", "ConfigurationSnapshotDerivedArtifact", "ConfigurationSnapshotItem", "ConfigurationSnapshotType", "LlmAgnosticResponse", "OutputFormat", "PhantomBOMComposeRequest", "PhantomBOMFramework", "PhantomBOMResponse", "PhantomBOMRouteRequest", "WorkArtifact", "WorkArtifactType", "WorkArtifactVerificationStatus"]
 
 class BOMDataClass(RootModel[Literal['pii', 'confidential', 'public', 'legal']]):
     root: Literal['pii', 'confidential', 'public', 'legal']
@@ -302,6 +302,36 @@ class ConfigurationSnapshotType(
     RootModel[Literal['session', 'release', 'tenant', 'demo']]
 ):
     root: Literal['session', 'release', 'tenant', 'demo']
+
+class LlmAgnosticResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    content: str = Field(
+        ..., description='Produced content. Format is declared in `format`.'
+    )
+    format: Literal['html', 'markdown', 'json', 'pptx', 'docx', 'text'] = Field(
+        ..., description='Wire format of the produced content.'
+    )
+    provider_used: str = Field(
+        ..., description='ProviderId of the provider that succeeded.'
+    )
+    task_type: str = Field(..., description='TaskType used for LlmMatrix routing.')
+    model_used: str | None = Field(
+        None, description='Specific model name that succeeded.'
+    )
+    latency_ms: int | None = Field(None, ge=0)
+    bom_item_id: str | None = Field(
+        None, description='BOMItem ID if this response was persisted to the graph.'
+    )
+    correlation_id: str | None = None
+
+class OutputFormat(
+    RootModel[Literal['html', 'markdown', 'json', 'pptx', 'docx', 'text']]
+):
+    root: Literal['html', 'markdown', 'json', 'pptx', 'docx', 'text'] = Field(
+        ..., description='Wire format of the produced content.'
+    )
 
 class PhantomBOMComposeRequest(BaseModel):
     model_config = ConfigDict(
