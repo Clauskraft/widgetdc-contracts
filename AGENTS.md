@@ -4,6 +4,17 @@ This repository inherits the cross-repo baseline defined in `GLOBAL_AGENT_GOVERN
 
 Repo-specific instructions may extend this file, but they must not weaken global rules for operational truth, runtime enforcement, verification, or completion.
 
+## Branch Lifecycle — naming + TTL + no-orphan [R25 — adopted 2026-06-18]
+
+- All branches **must** follow the naming convention `<type>/<scope>` where `type` ∈ `{feat, fix, chore, docs, refactor, ci, hotfix, release, rescue, codex, copilot}`.
+- Every branch **must** be linked to a Linear issue in its name or PR body (`LIN-NNNN`).
+- No branch may exist >14 days without an open PR — stale branches are marked and deleted by `.github/workflows/cleanup-stale.yml` (daily 03:00 UTC).
+- Merged branches are deleted automatically (`delete_branch_on_merge: true` + `delete-squash-merged` workflow job).
+- Local worktrees are pruned via `git worktree prune` in the post-session hook.
+- `rescue/` branches are permanently exempt from the 14-day TTL.
+- Anti-pattern: **never** create a branch without knowing which Linear issue it resolves and when it will merge.
+- Scope: all 9 repos in WidgeTDC-scope (WidgeTDC, widgetdc-orchestrator, widgetdc-rlm-engine, widgetdc-contracts, widgetdc-canvas, widgetdc-nexus, widgetdc-openclaw, widgetdc-librechat, Obsidian).
+
 ## Runtime Proof Evidence Boundary [adopted 2026-05-13]
 
 - Local shell commands, local scripts, notebooks, `npm`/`pytest` runs, and local wrappers that call production endpoints are diagnostic evidence only. They can reproduce, debug, or prepare a PR, but they cannot be cited as runtime proof or claim proof.
