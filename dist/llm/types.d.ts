@@ -11,7 +11,7 @@
 /** Provider identifier — keys into the `providers` block of the matrix. */
 export type ProviderId = 'qwen' | 'deepseek' | 'gemini' | 'openai' | 'anthropic' | 'inception' | 'groq' | 'local';
 /** Canonical task taxonomy. Every LLM call maps to exactly one task type. */
-export type TaskType = 'attestation' | 'extraction_short' | 'extraction_long' | 'classification' | 'fold_context' | 'chat_standard' | 'chat_premium' | 'code_generation' | 'planning' | 'reasoning_deep' | 'multimodal' | 'ner' | 'self_healing' | 'embedding_text';
+export type TaskType = 'attestation' | 'extraction_short' | 'extraction_long' | 'classification' | 'fold_context' | 'chat_standard' | 'chat_premium' | 'code_generation' | 'planning' | 'reasoning_deep' | 'multimodal' | 'ner' | 'self_healing' | 'embedding_text' | 'consulting_assessment' | 'consulting_storyline' | 'consulting_deliverable';
 /** Provider configuration — how to reach a provider and which env var holds its auth. */
 export interface ProviderConfig {
     base_url: string;

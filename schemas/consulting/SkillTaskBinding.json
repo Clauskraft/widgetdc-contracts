@@ -1,0 +1,49 @@
+{
+  "$id": "SkillTaskBinding",
+  "description": "Binds a consulting skill to its LlmMatrix task_type + output_format contract. Decouples skill methodology from provider identity.",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "skill_id",
+    "task_type",
+    "output_format"
+  ],
+  "properties": {
+    "skill_id": {
+      "description": "Skill file name without extension, e.g. \"adopt-consulting-partner\".",
+      "type": "string"
+    },
+    "task_type": {
+      "description": "LlmMatrix TaskType (including consulting_* extensions).",
+      "type": "string"
+    },
+    "output_format": {
+      "description": "Expected OutputFormat of this skill's primary deliverable.",
+      "type": "string"
+    },
+    "methodology": {
+      "description": "Named methodology, e.g. \"pyramid+mece\" or \"swot\".",
+      "type": "string"
+    },
+    "provider_constraints": {
+      "description": "Explicit ProviderId list if the skill REQUIRES specific capabilities (multimodal, etc.). Empty = any.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "harvest_to_graph": {
+      "default": true,
+      "description": "If true, skill output MUST be persisted as a WorkArtifact+BOMItem in the graph.",
+      "type": "boolean"
+    },
+    "version": {
+      "description": "Semver of this binding definition.",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

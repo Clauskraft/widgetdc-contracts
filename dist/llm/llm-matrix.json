@@ -282,6 +282,30 @@
       "disable_env": null,
       "default_disabled": false,
       "rationale": "Embedding dims MUST match consumer index. NEXUS graph = 384D (all-MiniLM-L6-v2), Non-NEXUS = 1536D (text-embedding-3-small). NEVER mix dimensions within one index."
+    },
+    "consulting_assessment": {
+      "description": "Generate McKinsey-grade strategic assessments using Pyramid Principle + MECE. Output: self-contained HTML widget.",
+      "chain": ["gemini-2.5-flash", "deepseek-chat", "qwen-plus"],
+      "override_env": "CONSULTING_ASSESSMENT_MODEL",
+      "disable_env": null,
+      "default_disabled": false,
+      "rationale": "2026-06-18: gemini-2.5-flash first (multimodal + HTML generation quality). deepseek-chat as cost-effective fallback. qwen-plus as final fallback. Chain ensures provider-agnostic consulting output."
+    },
+    "consulting_storyline": {
+      "description": "Generate MECE storyline outlines for consulting presentations. Output: structured JSON (slides array).",
+      "chain": ["gemini-2.5-flash", "deepseek-chat", "qwen-plus"],
+      "override_env": "CONSULTING_STORYLINE_MODEL",
+      "disable_env": null,
+      "default_disabled": false,
+      "rationale": "2026-06-18: same chain as consulting_assessment — storyline requires same reasoning depth. Output is JSON not HTML so any provider can generate valid structure."
+    },
+    "consulting_deliverable": {
+      "description": "Generate formal consulting deliverables: executive summaries, roadmaps, DOCX/PPT content. Output: markdown or JSON.",
+      "chain": ["deepseek-chat", "gemini-2.5-flash", "qwen-plus"],
+      "override_env": "CONSULTING_DELIVERABLE_MODEL",
+      "disable_env": null,
+      "default_disabled": false,
+      "rationale": "2026-06-18: deepseek-chat first for structured long-form text (cost-efficient). gemini-2.5-flash as fallback for complex multi-format output. qwen-plus as final fallback."
     }
   }
 }
