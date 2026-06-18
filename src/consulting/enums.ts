@@ -25,6 +25,7 @@ export const ProcessStatus = Type.Union([
   Type.Literal('live'),
   Type.Literal('shell'),
   Type.Literal('new'),
+  Type.Literal('archived'),
 ], { $id: 'ProcessStatus', description: 'L1/L2 process maturity status' })
 
 export type ProcessStatus = Static<typeof ProcessStatus>

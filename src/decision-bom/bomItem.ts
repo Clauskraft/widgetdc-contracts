@@ -30,6 +30,9 @@ export const BOMItemType = Type.Union([
   Type.Literal('synthesis'),
   Type.Literal('verification'),
   Type.Literal('skill_selection'),
+  Type.Literal('tool_definition'),
+  Type.Literal('excel_row'),
+  Type.Literal('slide_element'),
 ], { $id: 'BOMItemType' })
 
 export type BOMItemType = Static<typeof BOMItemType>
@@ -52,6 +55,8 @@ export const BOMMethod = Type.Union([
   Type.Literal('Folding'),
   Type.Literal('LLM'),
   Type.Literal('MCP'),
+  Type.Literal('Hybrid'),
+  Type.Literal('Local'),
 ], { $id: 'BOMMethod' })
 
 export type BOMMethod = Static<typeof BOMMethod>

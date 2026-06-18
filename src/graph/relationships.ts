@@ -130,6 +130,17 @@ export const RelationshipType = Type.Union([
   Type.Literal('RECURSIVELY_REFINES'),
   Type.Literal('COMPOUNDS_INTO'),
   Type.Literal('HOSTS_WIDGET'),
+  // Phantom Composition Spine (Pattern #8) — 7 typed BOMItem edges + graph domain edges
+  Type.Literal('REQUIRES'),
+  Type.Literal('HAS_ITEM'),
+  Type.Literal('RESOLVED_BY'),
+  Type.Literal('GROUNDED_BY'),
+  Type.Literal('COMPRESSED_BY'),
+  Type.Literal('ROUTED_BY'),
+  Type.Literal('EXECUTED_WITH'),
+  Type.Literal('PRODUCED'),
+  Type.Literal('BELONGS_TO'),
+  Type.Literal('DERIVED_FROM'),
 ], { $id: 'RelationshipType', description: 'Canonical Neo4j relationship types' })
 
 export type RelationshipType = Static<typeof RelationshipType>

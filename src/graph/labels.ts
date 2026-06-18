@@ -109,6 +109,18 @@ export const NodeLabel = Type.Union([
   Type.Literal('LLMModelStats'),       // per-(model, domain); written by ensemble_logger
   Type.Literal('StrategyStats'),       // per-(strategy, complexity); written by thinking_tools
   Type.Literal('CandidateScoreStats'), // per-strategy; written by thinking_tools
+  // Phantom Composition Spine (Pattern #8) — Modular Vision sprint LIN-2003
+  Type.Literal('ConsultingProcess'),
+  Type.Literal('AssemblyBlock'),
+  Type.Literal('PhantomBOMRun'),
+  Type.Literal('BOMItem'),
+  Type.Literal('RoutingDecision'),
+  Type.Literal('RLMDecision'),
+  Type.Literal('FoldDecision'),
+  Type.Literal('WorkArtifact'),
+  Type.Literal('VectorDocument'),
+  Type.Literal('SpineEvent'),
+  Type.Literal('Archived'),
 ], { $id: 'NodeLabel', description: 'Canonical Neo4j node labels' })
 
 export type NodeLabel = Static<typeof NodeLabel>
