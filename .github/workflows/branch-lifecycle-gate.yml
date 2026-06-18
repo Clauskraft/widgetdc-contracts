@@ -1,0 +1,63 @@
+name: "Branch Lifecycle Gate"
+# R25: Enforces naming convention on branch create; warns on copilot branches
+on:
+  create:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch name to validate"
+        required: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  naming-gate:
+    name: "Validate branch naming convention"
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'branch' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Check branch name
+        id: check
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.branch }}" ]; then
+            BRANCH="${{ inputs.branch }}"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+          # Exempt branches
+          if echo "$BRANCH" | grep -qE '^(main|develop|HEAD)$'; then
+            echo "Exempt branch: $BRANCH"
+            exit 0
+          fi
+
+          # Validate naming convention
+          if echo "$BRANCH" | grep -qE '^(feat|fix|chore|docs|refactor|ci|hotfix|release|rescue|codex|copilot)/.+'; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+            TYPE=$(echo "$BRANCH" | cut -d/ -f1)
+            echo "type=$TYPE" >> $GITHUB_OUTPUT
+            echo "Branch name valid: $BRANCH (type: $TYPE)"
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "::error::Branch name '$BRANCH' violates R25 naming convention."
+            echo "::error::Required: <type>/<scope> where type in {feat,fix,chore,docs,refactor,ci,hotfix,release,rescue,codex,copilot}"
+            exit 1
+          fi
+
+      - name: Warn on copilot branch accumulation
+        if: steps.check.outputs.type == 'copilot'
+        run: |
+          echo "::warning::Copilot branch detected: ${{ steps.check.outputs.branch }}"
+          echo "::warning::Copilot branches accumulate without Linear tracking. Ensure a PR is opened within 7 days."
+
+      - name: Report TTL policy
+        if: steps.check.outputs.valid == 'true'
+        run: |
+          echo "## Branch Created: ${{ steps.check.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**TTL Policy (R25):**" >> $GITHUB_STEP_SUMMARY
+          echo "- Open a PR within **14 days** or the branch will be marked stale" >> $GITHUB_STEP_SUMMARY
+          echo "- Merged branches are auto-deleted (squash-merge-aware)" >> $GITHUB_STEP_SUMMARY
+          echo "- Rescue branches (\`rescue/\`) are permanently exempt" >> $GITHUB_STEP_SUMMARY

@@ -359,6 +359,10 @@ POST https://backend-production-d3da.up.railway.app/api/mcp/route
 - Do not use local bearer fallback, local env, local Neo4j, mocks, or CI-only output as production proof.
 - Preferred pattern: local wrapper -> deployed verification tool -> EventSpine event/replay -> report cites deployed SHA and `correlation_id`.
 
+## Branch Lifecycle (R25)
+
+22. **Branch lifecycle — naming + TTL + no-orphan** [R25 — adopted 2026-06-18] — Alle branches SKAL følge navnekonventionen `<type>/<scope>` hvor type ∈ {feat, fix, chore, docs, refactor, ci, hotfix, release, rescue, codex, copilot}. Branches SKAL have tilknyttet Linear-issue i navn eller PR-body (`LIN-NNNN`). Ingen branch må leve >14 dage uden åben PR — branches uden PR efter 14 dage markeres stale og lukkes af `.github/workflows/cleanup-stale.yml` (dagligt kl. 03:00 UTC). Merged branches slettes automatisk (`delete_branch_on_merge: true` + squash-merge-aware cleanup). Lokale worktrees ryddes via `git worktree prune`. Rescue-branches (`rescue/`) er permanent exempt. Anti-pattern: opret ALDRIG en branch uden at vide hvilken Linear-issue den løser og hvornår den merges.
+
 ## Wonder Gateway Invocation
 
 If the user prompt starts with `/wonder`, `@wonder`, or asks to activate Wonder Agent, follow `AGENTS.md` -> `Wonder Gateway Activation Contract` and `config/wonder_gateway.json` before answering. Act as your specialist provider only for the bounded evidence gap Wonder assigns; do not replace Wonder with a generic health/status fallback.
