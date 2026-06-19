@@ -1,0 +1,18 @@
+{
+  "$id": "ConsultingTaskType",
+  "description": "Consulting-domain task types for LlmMatrix routing.",
+  "anyOf": [
+    {
+      "const": "consulting_assessment",
+      "type": "string"
+    },
+    {
+      "const": "consulting_storyline",
+      "type": "string"
+    },
+    {
+      "const": "consulting_deliverable",
+      "type": "string"
+    }
+  ]
+}
