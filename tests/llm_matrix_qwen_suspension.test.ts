@@ -24,10 +24,11 @@ describe('llm matrix provider suspension', () => {
     },
   )
 
-  it('routes deep reasoning through R1 then V3.2 before paid fallback', () => {
+  it('routes deep reasoning through R1 then V3.2, then frontier Claude before paid GPT fallback', () => {
     expect(LlmMatrix.getTaskConfig('reasoning_deep').chain).toEqual([
       'deepseek-reasoner',
       'deepseek-chat',
+      'claude-sonnet-4-6',
       'gpt-4o',
     ])
   })
