@@ -1,8 +1,8 @@
 {
   "$id": "https://widgetdc.com/schemas/llm-matrix/v1",
   "$schema": "https://widgetdc.com/schemas/llm-matrix.schema.json",
-  "version": "1.2.0",
-  "updated_at": "2026-06-06",
+  "version": "1.3.0",
+  "updated_at": "2026-06-19",
   "description": "Canonical LLM task-to-model routing matrix. Single source of truth for which model handles which task across all services. Every hardcoded model reference in backend/orchestrator/rlm-engine must route through this matrix. Hardcoded literals outside this file are a governance violation.",
 
   "providers": {
@@ -140,6 +140,16 @@
       "strengths": ["chat", "classification", "fold"],
       "weaknesses": []
     },
+    "claude-sonnet-4-6": {
+      "provider": "anthropic",
+      "context_window": 1000000,
+      "max_output_tokens": 64000,
+      "cost_per_1k_input_usd": 0.003,
+      "cost_per_1k_output_usd": 0.015,
+      "avg_latency_ms": 1500,
+      "strengths": ["reasoning", "planning", "code", "large_context"],
+      "weaknesses": []
+    },
     "mercury-2": {
       "provider": "inception",
       "context_window": 128000,
@@ -182,11 +192,11 @@
     },
     "extraction_short": {
       "description": "Short-prompt entity/field extraction (prompt < 500 tokens). Speed matters, quality is acceptable with short outputs.",
-      "chain": ["mercury-2", "qwen-plus", "deepseek-chat"],
+      "chain": ["qwen-plus", "deepseek-chat", "gemini-2.5-flash-lite"],
       "override_env": "EXTRACTION_SHORT_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "Mercury excels at short prompts where the reasoning budget isn't exhausted. Documented in feedback_llm_routing.md — keep prompts SHORT and direct for Mercury."
+      "rationale": "2026-06-19: mercury-2 (provider inception) removed — provider is runtime-unavailable, so it was a dead primary that fell through to fallback on every call (LIN matrix drift). qwen-plus now primary for short prompts; mercury can be re-added as a tail fallback if Inception returns."
     },
     "extraction_long": {
       "description": "Long-prompt entity extraction with detailed rules or many fields. Mercury unsafe here.",
@@ -197,11 +207,11 @@
     },
     "classification": {
       "description": "Short-label classification (sentiment, intent, category).",
-      "chain": ["mercury-2", "gemini-2.5-flash-lite", "qwen-plus"],
+      "chain": ["gemini-2.5-flash-lite", "qwen-plus", "deepseek-chat"],
       "override_env": "CLASSIFICATION_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404). Replaced with gemini-2.5-flash-lite (newest, cheapest Flash) for short-label classification."
+      "rationale": "2026-06-06: gemini-2.0-flash retired (EOL, /v1beta 404) → gemini-2.5-flash-lite (newest, cheapest Flash). 2026-06-19: mercury-2 removed as primary — provider inception runtime-unavailable, so it dead-fell-through every call; gemini-2.5-flash-lite promoted to primary."
     },
     "fold_context": {
       "description": "Context folding / compression — reduce large context to fit downstream token budget.",
@@ -237,19 +247,19 @@
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
-      "chain": ["deepseek-reasoner", "deepseek-chat", "gpt-4o"],
+      "chain": ["deepseek-reasoner", "deepseek-chat", "claude-sonnet-4-6", "gpt-4o"],
       "override_env": "PLANNING_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-04-29: qwen3-235b-a22b removed from planning chain. Phase Δ plan-critique benchmark surfaced memorized phantom role-play. DeepSeek R1 (reasoner) is best-in-class for multi-step planning per user direction; V3.2 standby for high-throughput plan iterations."
+      "rationale": "2026-04-29: qwen3-235b-a22b removed from planning chain. Phase Δ plan-critique benchmark surfaced memorized phantom role-play. DeepSeek R1 (reasoner) is best-in-class for multi-step planning per user direction; V3.2 standby for high-throughput plan iterations. 2026-06-19: claude-sonnet-4-6 added as a frontier-tier fallback (1M context, adaptive thinking) ahead of gpt-4o — raises the Anthropic reasoning ceiling above haiku at controlled cost."
     },
     "reasoning_deep": {
       "description": "Deep reasoning over complex problems. Latency acceptable.",
-      "chain": ["deepseek-reasoner", "deepseek-chat", "gpt-4o"],
+      "chain": ["deepseek-reasoner", "deepseek-chat", "claude-sonnet-4-6", "gpt-4o"],
       "override_env": "REASONING_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-04-29: qwen3-235b-a22b suspended from deep-reasoning chain. R1 = primary (logic-heavy CoT, transparent thinking), V3.2 = standby (high-throughput RAG). Note: R1 emits <think>...</think> blocks — consumers MUST strip these before JSON parse via _parse_reasoning_payload's tolerant first-{-to-last-} extraction."
+      "rationale": "2026-04-29: qwen3-235b-a22b suspended from deep-reasoning chain. R1 = primary (logic-heavy CoT, transparent thinking), V3.2 = standby (high-throughput RAG). Note: R1 emits <think>...</think> blocks — consumers MUST strip these before JSON parse via _parse_reasoning_payload's tolerant first-{-to-last-} extraction. 2026-06-19: claude-sonnet-4-6 added as a frontier-tier fallback (1M context, adaptive thinking) ahead of gpt-4o — explicit decision to lift the Anthropic reasoning ceiling above the prior haiku-only cap."
     },
     "multimodal": {
       "description": "Image / document / vision input. Requires multimodal-capable provider.",
