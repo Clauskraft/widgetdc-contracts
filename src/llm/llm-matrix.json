@@ -316,6 +316,14 @@
       "disable_env": null,
       "default_disabled": false,
       "rationale": "2026-06-18: deepseek-chat first for structured long-form text (cost-efficient). gemini-2.5-flash as fallback for complex multi-format output. qwen-plus as final fallback."
+    },
+    "infra_fallback": {
+      "description": "Backend-infrastructure fallback: used when the backend unified ingress returns 5xx (deploy window / restart). Bypasses the ingress and calls providers directly. Chain is tried in order until one succeeds.",
+      "chain": ["gemini-2.5-flash", "deepseek-chat", "qwen-plus"],
+      "override_env": "INFRA_FALLBACK_MODEL",
+      "disable_env": "INFRA_FALLBACK_DISABLED",
+      "default_disabled": false,
+      "rationale": "Gemini leads because it has a native direct-call path (callGemini). DeepSeek and Qwen follow as openai-compat providers with direct key access. All three have API keys on the orchestrator Railway service."
     }
   }
 }
