@@ -14,3 +14,4 @@ arch/*.json
 # Regenerate: npm run build
 # schemas/ and python/ are also committed — generated artifacts consumed by other repos
 # Do NOT add dist/, schemas/, or python/ here
+.qwen/
