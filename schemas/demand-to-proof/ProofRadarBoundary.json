@@ -1,0 +1,74 @@
+{
+  "$id": "ProofRadarBoundary",
+  "description": "ProofRadarBoundary contract for governed Demand-to-Proof candidate processing.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "schema_version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_version": {
+      "type": "string",
+      "default": "v1"
+    },
+    "demand_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque source reference; never a raw local path."
+    },
+    "source_fit_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "extraction_contract_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_competences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provided_competences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proof_boundary": {
+      "type": "string",
+      "enum": [
+        "candidate_only_not_runtime_proof",
+        "runtime_evidence_required",
+        "claim_promotion_forbidden"
+      ]
+    },
+    "graph_write_allowed": {
+      "type": "boolean",
+      "default": false
+    },
+    "claim_promotion_allowed": {
+      "type": "boolean",
+      "default": false
+    },
+    "evidence_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{16,64}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
