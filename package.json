@@ -62,6 +62,10 @@
       "types": "./dist/decision-bom/index.d.ts",
       "import": "./dist/decision-bom/index.js"
     },
+    "./demand-to-proof": {
+      "types": "./dist/demand-to-proof/index.d.ts",
+      "import": "./dist/demand-to-proof/index.js"
+    },
     "./parl": {
       "types": "./dist/parl/index.d.ts",
       "import": "./dist/parl/index.js"
