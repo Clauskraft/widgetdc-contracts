@@ -1,0 +1,37 @@
+{
+  "$id": "ChatToolRequest",
+  "additionalProperties": false,
+  "description": "Provider-proposed tool request. It is not an execution authorization.",
+  "type": "object",
+  "required": [
+    "tool",
+    "requested_risk_level"
+  ],
+  "properties": {
+    "tool": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "payload_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "requested_risk_level": {
+      "$id": "GovernanceRiskLevel",
+      "anyOf": [
+        {
+          "const": "read_only",
+          "type": "string"
+        },
+        {
+          "const": "staged_write",
+          "type": "string"
+        },
+        {
+          "const": "production_write",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

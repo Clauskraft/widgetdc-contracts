@@ -1,0 +1,187 @@
+{
+  "$id": "WdcChatTurnRequest",
+  "additionalProperties": false,
+  "description": "Normalized untrusted client ingress for one WDC chat turn. Governance context is intentionally excluded and must be created server-side.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "session_id",
+    "source_surface",
+    "message",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.chat_turn_request.v1",
+      "type": "string"
+    },
+    "turn_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "session_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "source_surface": {
+      "$id": "ChatSourceSurface",
+      "anyOf": [
+        {
+          "const": "chat_ui",
+          "type": "string"
+        },
+        {
+          "const": "wdc_cli",
+          "type": "string"
+        },
+        {
+          "const": "mcp_app",
+          "type": "string"
+        },
+        {
+          "const": "desktop_connector",
+          "type": "string"
+        },
+        {
+          "const": "api",
+          "type": "string"
+        }
+      ]
+    },
+    "message": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "locale": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "attachment_refs": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "context_refs": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "request_features": {
+      "$id": "RequestFeatures",
+      "description": "Normalised feature vector consumed by the 12-step intelligence interceptor.",
+      "type": "object",
+      "required": [
+        "task_type"
+      ],
+      "properties": {
+        "task_type": {
+          "$id": "RequestTaskType",
+          "description": "Canonical request-level task-type dimension (distinct from llm.TaskType model-routing taxonomy).",
+          "anyOf": [
+            {
+              "const": "summarize",
+              "type": "string"
+            },
+            {
+              "const": "draft",
+              "type": "string"
+            },
+            {
+              "const": "review",
+              "type": "string"
+            },
+            {
+              "const": "classify",
+              "type": "string"
+            },
+            {
+              "const": "translate",
+              "type": "string"
+            },
+            {
+              "const": "code",
+              "type": "string"
+            },
+            {
+              "const": "reason",
+              "type": "string"
+            },
+            {
+              "const": "retrieve",
+              "type": "string"
+            },
+            {
+              "const": "compose",
+              "type": "string"
+            },
+            {
+              "const": "other",
+              "type": "string"
+            }
+          ]
+        },
+        "language": {
+          "description": "BCP-47 code (e.g. \"en\", \"da\", \"de\"). Defaults to \"en\".",
+          "type": "string"
+        },
+        "pii_present": {
+          "description": "Caller-asserted; PIIClassifier overrides.",
+          "type": "boolean"
+        },
+        "max_latency_ms": {
+          "minimum": 100,
+          "maximum": 120000,
+          "description": "Soft SLA ceiling; used by ResourceMarketAuctioneer.",
+          "type": "integer"
+        },
+        "max_cost_usd": {
+          "minimum": 0,
+          "description": "Soft budget ceiling per request in USD.",
+          "type": "number"
+        },
+        "compliance_tier": {
+          "$id": "ComplianceTier",
+          "description": "Data-handling compliance tier — drives crypto-shred + PII routing.",
+          "anyOf": [
+            {
+              "const": "public",
+              "type": "string"
+            },
+            {
+              "const": "internal",
+              "type": "string"
+            },
+            {
+              "const": "legal",
+              "type": "string"
+            },
+            {
+              "const": "health",
+              "type": "string"
+            }
+          ]
+        },
+        "reasoning_depth": {
+          "minimum": 1,
+          "maximum": 5,
+          "default": 3,
+          "description": "1 (shallow) .. 5 (deep chain-of-thought).",
+          "type": "integer"
+        },
+        "domain": {
+          "description": "Consulting domain ID (see @widgetdc/contracts/consulting).",
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

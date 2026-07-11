@@ -1,0 +1,50 @@
+{
+  "$id": "ChatEvidenceItem",
+  "additionalProperties": false,
+  "description": "One WDC-owned evidence record that may be cited only when citation_eligible is true.",
+  "type": "object",
+  "required": [
+    "evidence_id",
+    "source_ref",
+    "citation_eligible",
+    "claim_support"
+  ],
+  "properties": {
+    "evidence_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "source_ref": {
+      "minLength": 1,
+      "description": "Opaque WDC-owned evidence reference; never a provider-supplied citation.",
+      "type": "string"
+    },
+    "citation_eligible": {
+      "type": "boolean"
+    },
+    "claim_support": {
+      "anyOf": [
+        {
+          "const": "direct",
+          "type": "string"
+        },
+        {
+          "const": "partial",
+          "type": "string"
+        },
+        {
+          "const": "contradicted",
+          "type": "string"
+        },
+        {
+          "const": "none",
+          "type": "string"
+        }
+      ]
+    },
+    "content_hash": {
+      "pattern": "^sha256:[a-f0-9]{16,64}$",
+      "type": "string"
+    }
+  }
+}

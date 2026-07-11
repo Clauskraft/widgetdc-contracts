@@ -25,6 +25,7 @@ import * as adoption from '../src/adoption/index.js'
 import * as mrp from '../src/mrp/index.js'
 import * as security from '../src/security/index.js'
 import * as decisionBom from '../src/decision-bom/index.js'
+import * as chatContractRuntime from '../src/chat-contract-runtime/index.js'
 import * as parl from '../src/parl/index.js'
 
 const modules: Record<string, Record<string, unknown>> = {
@@ -41,6 +42,7 @@ const modules: Record<string, Record<string, unknown>> = {
   mrp,
   security,
   'decision-bom': decisionBom,
+  'chat-contract-runtime': chatContractRuntime,
   parl,
 }
 

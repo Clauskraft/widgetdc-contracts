@@ -1,0 +1,39 @@
+{
+  "$id": "ChatClaimDraft",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "text",
+    "evidence_ids",
+    "support_status"
+  ],
+  "properties": {
+    "text": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "support_status": {
+      "anyOf": [
+        {
+          "const": "supported",
+          "type": "string"
+        },
+        {
+          "const": "uncertain",
+          "type": "string"
+        },
+        {
+          "const": "unsupported",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

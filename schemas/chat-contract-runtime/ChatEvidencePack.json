@@ -1,0 +1,121 @@
+{
+  "$id": "ChatEvidencePack",
+  "additionalProperties": false,
+  "description": "WDC-owned evidence pack for a chat turn. Providers consume evidence references but do not invent citation identities.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "evidence_pack_id",
+    "turn_id",
+    "route_id",
+    "evidence_status",
+    "items",
+    "missing_evidence",
+    "contradiction_refs",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.chat_evidence_pack.v1",
+      "type": "string"
+    },
+    "evidence_pack_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "turn_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "route_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "evidence_status": {
+      "$id": "ChatEvidenceStatus",
+      "anyOf": [
+        {
+          "const": "available",
+          "type": "string"
+        },
+        {
+          "const": "partial",
+          "type": "string"
+        },
+        {
+          "const": "unavailable",
+          "type": "string"
+        }
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$id": "ChatEvidenceItem",
+        "additionalProperties": false,
+        "description": "One WDC-owned evidence record that may be cited only when citation_eligible is true.",
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "source_ref",
+          "citation_eligible",
+          "claim_support"
+        ],
+        "properties": {
+          "evidence_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "source_ref": {
+            "minLength": 1,
+            "description": "Opaque WDC-owned evidence reference; never a provider-supplied citation.",
+            "type": "string"
+          },
+          "citation_eligible": {
+            "type": "boolean"
+          },
+          "claim_support": {
+            "anyOf": [
+              {
+                "const": "direct",
+                "type": "string"
+              },
+              {
+                "const": "partial",
+                "type": "string"
+              },
+              {
+                "const": "contradicted",
+                "type": "string"
+              },
+              {
+                "const": "none",
+                "type": "string"
+              }
+            ]
+          },
+          "content_hash": {
+            "pattern": "^sha256:[a-f0-9]{16,64}$",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contradiction_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

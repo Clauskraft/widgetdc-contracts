@@ -19,6 +19,7 @@
  *   import { BOMItem, ConfigurationSnapshot, WorkArtifact } from '@widgetdc/contracts/decision-bom'
  *   import { DemandObject, ExtractionContract } from '@widgetdc/contracts/demand-to-proof'
  *   import { PARLReasonRequest, PARLReasonResponse } from '@widgetdc/contracts/parl'
+ *   import { WdcChatTurnRequest, WdcChatTurnResult } from '@widgetdc/contracts/chat-contract-runtime'
  */
 
 export * from './cognitive/index.js'
@@ -38,3 +39,4 @@ export * from './llm/index.js'
 export * from './decision-bom/index.js'
 export * from './demand-to-proof/index.js'
 export * from './parl/index.js'
+export * from './chat-contract-runtime/index.js'

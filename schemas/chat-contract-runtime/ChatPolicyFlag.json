@@ -1,0 +1,31 @@
+{
+  "$id": "ChatPolicyFlag",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "code",
+    "severity"
+  ],
+  "properties": {
+    "code": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "severity": {
+      "anyOf": [
+        {
+          "const": "info",
+          "type": "string"
+        },
+        {
+          "const": "warning",
+          "type": "string"
+        },
+        {
+          "const": "blocking",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

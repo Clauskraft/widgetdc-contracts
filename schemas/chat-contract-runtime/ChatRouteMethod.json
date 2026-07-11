@@ -1,0 +1,29 @@
+{
+  "$id": "ChatRouteMethod",
+  "anyOf": [
+    {
+      "const": "RAG",
+      "type": "string"
+    },
+    {
+      "const": "Folding",
+      "type": "string"
+    },
+    {
+      "const": "RLM",
+      "type": "string"
+    },
+    {
+      "const": "MCP",
+      "type": "string"
+    },
+    {
+      "const": "LLM",
+      "type": "string"
+    },
+    {
+      "const": "HumanReview",
+      "type": "string"
+    }
+  ]
+}

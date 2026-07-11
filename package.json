@@ -74,6 +74,10 @@
       "types": "./dist/llm/index.d.ts",
       "import": "./dist/llm/index.js"
     },
+    "./chat-contract-runtime": {
+      "types": "./dist/chat-contract-runtime/index.d.ts",
+      "import": "./dist/chat-contract-runtime/index.js"
+    },
     "./llm/llm-matrix.json": "./dist/llm/llm-matrix.json",
     "./llm/llm_matrix.py": "./src/llm/llm_matrix.py",
     "./schemas/*": "./schemas/*"
