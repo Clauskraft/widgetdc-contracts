@@ -8,6 +8,7 @@ from . import agent
 from . import cognitive
 from . import consulting
 from . import decision_bom
+from . import demand_to_proof
 from . import graph
 from . import health
 from . import http_ as http
