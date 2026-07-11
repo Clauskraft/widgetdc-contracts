@@ -1,0 +1,17 @@
+{
+  "$id": "ChatEvidenceStatus",
+  "anyOf": [
+    {
+      "const": "available",
+      "type": "string"
+    },
+    {
+      "const": "partial",
+      "type": "string"
+    },
+    {
+      "const": "unavailable",
+      "type": "string"
+    }
+  ]
+}

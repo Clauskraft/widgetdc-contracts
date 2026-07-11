@@ -1,0 +1,35 @@
+{
+  "$id": "ChatContractRuntimeBoundary",
+  "additionalProperties": false,
+  "description": "CCR-1 boundary: contract-only candidate surface. Runtime execution, graph writes, claim promotion, and actual EventSpine emission are forbidden.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "runtime_execution_allowed",
+    "graph_write_allowed",
+    "claim_promotion_allowed",
+    "eventspine_emit_mode"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.chat_contract_runtime_boundary.v1",
+      "type": "string"
+    },
+    "runtime_execution_allowed": {
+      "const": false,
+      "type": "boolean"
+    },
+    "graph_write_allowed": {
+      "const": false,
+      "type": "boolean"
+    },
+    "claim_promotion_allowed": {
+      "const": false,
+      "type": "boolean"
+    },
+    "eventspine_emit_mode": {
+      "const": "dry_run_only",
+      "type": "string"
+    }
+  }
+}

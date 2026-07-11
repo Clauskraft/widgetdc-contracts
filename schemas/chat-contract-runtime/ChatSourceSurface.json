@@ -1,0 +1,25 @@
+{
+  "$id": "ChatSourceSurface",
+  "anyOf": [
+    {
+      "const": "chat_ui",
+      "type": "string"
+    },
+    {
+      "const": "wdc_cli",
+      "type": "string"
+    },
+    {
+      "const": "mcp_app",
+      "type": "string"
+    },
+    {
+      "const": "desktop_connector",
+      "type": "string"
+    },
+    {
+      "const": "api",
+      "type": "string"
+    }
+  ]
+}

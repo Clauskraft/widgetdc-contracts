@@ -1,0 +1,279 @@
+{
+  "$id": "WdcChatDraft",
+  "additionalProperties": false,
+  "description": "Provider-neutral structured draft. Citation ids are evidence-pack references and tool requests remain subject to governance.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "draft_id",
+    "turn_id",
+    "route_id",
+    "provider_id",
+    "answer",
+    "claims",
+    "citation_ids",
+    "citation_integrity",
+    "uncertainty",
+    "tool_requests",
+    "policy_flags",
+    "render_hints",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.chat_draft.v1",
+      "type": "string"
+    },
+    "draft_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "turn_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "route_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "provider_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "model_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "answer": {
+      "type": "string"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$id": "ChatClaimDraft",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text",
+          "evidence_ids",
+          "support_status"
+        ],
+        "properties": {
+          "text": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "support_status": {
+            "anyOf": [
+              {
+                "const": "supported",
+                "type": "string"
+              },
+              {
+                "const": "uncertain",
+                "type": "string"
+              },
+              {
+                "const": "unsupported",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "citation_ids": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "citation_integrity": {
+      "$id": "ChatCitationIntegrity",
+      "anyOf": [
+        {
+          "const": "verified",
+          "type": "string"
+        },
+        {
+          "const": "partial",
+          "type": "string"
+        },
+        {
+          "const": "missing",
+          "type": "string"
+        },
+        {
+          "const": "hallucinated",
+          "type": "string"
+        }
+      ]
+    },
+    "uncertainty": {
+      "anyOf": [
+        {
+          "const": "none",
+          "type": "string"
+        },
+        {
+          "const": "low",
+          "type": "string"
+        },
+        {
+          "const": "medium",
+          "type": "string"
+        },
+        {
+          "const": "high",
+          "type": "string"
+        }
+      ]
+    },
+    "tool_requests": {
+      "type": "array",
+      "items": {
+        "$id": "ChatToolRequest",
+        "additionalProperties": false,
+        "description": "Provider-proposed tool request. It is not an execution authorization.",
+        "type": "object",
+        "required": [
+          "tool",
+          "requested_risk_level"
+        ],
+        "properties": {
+          "tool": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "payload_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "requested_risk_level": {
+            "$id": "GovernanceRiskLevel",
+            "anyOf": [
+              {
+                "const": "read_only",
+                "type": "string"
+              },
+              {
+                "const": "staged_write",
+                "type": "string"
+              },
+              {
+                "const": "production_write",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "policy_flags": {
+      "type": "array",
+      "items": {
+        "$id": "ChatPolicyFlag",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "severity"
+        ],
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "const": "info",
+                "type": "string"
+              },
+              {
+                "const": "warning",
+                "type": "string"
+              },
+              {
+                "const": "blocking",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "render_hints": {
+      "$id": "ChatRenderHints",
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "format"
+      ],
+      "properties": {
+        "format": {
+          "$id": "OutputFormat",
+          "description": "Wire format of the produced content.",
+          "anyOf": [
+            {
+              "const": "html",
+              "type": "string"
+            },
+            {
+              "const": "markdown",
+              "type": "string"
+            },
+            {
+              "const": "json",
+              "type": "string"
+            },
+            {
+              "const": "pptx",
+              "type": "string"
+            },
+            {
+              "const": "docx",
+              "type": "string"
+            },
+            {
+              "const": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "response_length": {
+          "anyOf": [
+            {
+              "const": "short",
+              "type": "string"
+            },
+            {
+              "const": "standard",
+              "type": "string"
+            },
+            {
+              "const": "detailed",
+              "type": "string"
+            }
+          ]
+        },
+        "locale": {
+          "minLength": 1,
+          "type": "string"
+        }
+      }
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

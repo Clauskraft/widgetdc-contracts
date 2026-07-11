@@ -1,0 +1,21 @@
+{
+  "$id": "ChatCitationIntegrity",
+  "anyOf": [
+    {
+      "const": "verified",
+      "type": "string"
+    },
+    {
+      "const": "partial",
+      "type": "string"
+    },
+    {
+      "const": "missing",
+      "type": "string"
+    },
+    {
+      "const": "hallucinated",
+      "type": "string"
+    }
+  ]
+}

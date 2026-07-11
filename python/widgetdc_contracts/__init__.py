@@ -5,6 +5,7 @@ Do not edit manually — regenerate with: npm run python
 """
 from . import adoption
 from . import agent
+from . import chat_contract_runtime
 from . import cognitive
 from . import consulting
 from . import decision_bom

@@ -1,0 +1,60 @@
+{
+  "$id": "ChatRenderHints",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "format"
+  ],
+  "properties": {
+    "format": {
+      "$id": "OutputFormat",
+      "description": "Wire format of the produced content.",
+      "anyOf": [
+        {
+          "const": "html",
+          "type": "string"
+        },
+        {
+          "const": "markdown",
+          "type": "string"
+        },
+        {
+          "const": "json",
+          "type": "string"
+        },
+        {
+          "const": "pptx",
+          "type": "string"
+        },
+        {
+          "const": "docx",
+          "type": "string"
+        },
+        {
+          "const": "text",
+          "type": "string"
+        }
+      ]
+    },
+    "response_length": {
+      "anyOf": [
+        {
+          "const": "short",
+          "type": "string"
+        },
+        {
+          "const": "standard",
+          "type": "string"
+        },
+        {
+          "const": "detailed",
+          "type": "string"
+        }
+      ]
+    },
+    "locale": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}
