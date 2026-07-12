@@ -466,7 +466,7 @@ describe('orchestrator launcher contracts/', () => {
       confidence: 0.82,
       routing: {
         provider: 'gemini',
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.5-flash',
         latency_ms: 1234,
       },
       telemetry: {
