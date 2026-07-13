@@ -1,0 +1,68 @@
+{
+  "$id": "ExecutedSafeAction",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "action_id",
+    "description",
+    "action_type",
+    "authority_ref",
+    "status",
+    "executable",
+    "executed_at"
+  ],
+  "properties": {
+    "action_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "description": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "action_type": {
+      "anyOf": [
+        {
+          "const": "rehydrate",
+          "type": "string"
+        },
+        {
+          "const": "replan",
+          "type": "string"
+        },
+        {
+          "const": "inspect",
+          "type": "string"
+        },
+        {
+          "const": "verify",
+          "type": "string"
+        },
+        {
+          "const": "resume",
+          "type": "string"
+        },
+        {
+          "const": "closeout",
+          "type": "string"
+        }
+      ]
+    },
+    "authority_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "const": "executed",
+      "type": "string"
+    },
+    "executable": {
+      "const": false,
+      "type": "boolean"
+    },
+    "executed_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

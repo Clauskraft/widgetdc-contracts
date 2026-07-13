@@ -1,0 +1,77 @@
+{
+  "$id": "HumanOnlyGate",
+  "additionalProperties": false,
+  "description": "A narrowly typed gate for an action that cannot be completed safely by the execution agent.",
+  "type": "object",
+  "required": [
+    "gate_id",
+    "gate_type",
+    "status",
+    "required_actor",
+    "prompt",
+    "resume_action_id",
+    "created_at"
+  ],
+  "properties": {
+    "gate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "gate_type": {
+      "anyOf": [
+        {
+          "const": "oauth_consent",
+          "type": "string"
+        },
+        {
+          "const": "identity_verification",
+          "type": "string"
+        },
+        {
+          "const": "owner_secret_action",
+          "type": "string"
+        },
+        {
+          "const": "destructive_action_approval",
+          "type": "string"
+        }
+      ]
+    },
+    "status": {
+      "anyOf": [
+        {
+          "const": "waiting",
+          "type": "string"
+        },
+        {
+          "const": "satisfied",
+          "type": "string"
+        },
+        {
+          "const": "expired",
+          "type": "string"
+        }
+      ]
+    },
+    "required_actor": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "prompt": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "resume_action_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "satisfied_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

@@ -8,6 +8,7 @@ from . import agent
 from . import chat_contract_runtime
 from . import cognitive
 from . import consulting
+from . import continuation
 from . import decision_bom
 from . import demand_to_proof
 from . import graph

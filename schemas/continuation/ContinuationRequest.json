@@ -1,0 +1,29 @@
+{
+  "$id": "ContinuationRequest",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "schema_version",
+    "continuation_id",
+    "authority_ref",
+    "requested_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.continuation_request.v1",
+      "type": "string"
+    },
+    "continuation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "authority_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "requested_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
