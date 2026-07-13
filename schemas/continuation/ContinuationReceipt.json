@@ -1,0 +1,555 @@
+{
+  "$id": "ContinuationReceipt",
+  "additionalProperties": false,
+  "description": "Continuation outcome. Discovered safe actions must execute or be tied to an explicit blocker or waiting human gate.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "continuation_id",
+    "current_authority_ref",
+    "continuation_status",
+    "safe_actions_discovered",
+    "safe_actions_executed",
+    "unexecuted_safe_actions",
+    "human_only_gates",
+    "blockers",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.continuation_receipt.v1",
+      "type": "string"
+    },
+    "receipt_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "continuation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "current_authority_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "continuation_status": {
+      "anyOf": [
+        {
+          "const": "continued",
+          "type": "string"
+        },
+        {
+          "const": "waiting_for_human",
+          "type": "string"
+        },
+        {
+          "const": "blocked",
+          "type": "string"
+        },
+        {
+          "const": "complete",
+          "type": "string"
+        }
+      ]
+    },
+    "safe_actions_discovered": {
+      "type": "array",
+      "items": {
+        "$id": "NextSafeAction",
+        "anyOf": [
+          {
+            "$id": "PendingSafeAction",
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "action_id",
+              "description",
+              "action_type",
+              "authority_ref",
+              "status",
+              "executable"
+            ],
+            "properties": {
+              "action_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "description": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "action_type": {
+                "anyOf": [
+                  {
+                    "const": "rehydrate",
+                    "type": "string"
+                  },
+                  {
+                    "const": "replan",
+                    "type": "string"
+                  },
+                  {
+                    "const": "inspect",
+                    "type": "string"
+                  },
+                  {
+                    "const": "verify",
+                    "type": "string"
+                  },
+                  {
+                    "const": "resume",
+                    "type": "string"
+                  },
+                  {
+                    "const": "closeout",
+                    "type": "string"
+                  }
+                ]
+              },
+              "authority_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "status": {
+                "const": "pending",
+                "type": "string"
+              },
+              "executable": {
+                "const": true,
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "$id": "ExecutedSafeAction",
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "action_id",
+              "description",
+              "action_type",
+              "authority_ref",
+              "status",
+              "executable",
+              "executed_at"
+            ],
+            "properties": {
+              "action_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "description": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "action_type": {
+                "anyOf": [
+                  {
+                    "const": "rehydrate",
+                    "type": "string"
+                  },
+                  {
+                    "const": "replan",
+                    "type": "string"
+                  },
+                  {
+                    "const": "inspect",
+                    "type": "string"
+                  },
+                  {
+                    "const": "verify",
+                    "type": "string"
+                  },
+                  {
+                    "const": "resume",
+                    "type": "string"
+                  },
+                  {
+                    "const": "closeout",
+                    "type": "string"
+                  }
+                ]
+              },
+              "authority_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "status": {
+                "const": "executed",
+                "type": "string"
+              },
+              "executable": {
+                "const": false,
+                "type": "boolean"
+              },
+              "executed_at": {
+                "format": "date-time",
+                "type": "string"
+              }
+            }
+          },
+          {
+            "$id": "StaleSafeAction",
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+              "action_id",
+              "description",
+              "action_type",
+              "authority_ref",
+              "status",
+              "executable",
+              "stale_reason"
+            ],
+            "properties": {
+              "action_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "description": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "action_type": {
+                "anyOf": [
+                  {
+                    "const": "rehydrate",
+                    "type": "string"
+                  },
+                  {
+                    "const": "replan",
+                    "type": "string"
+                  },
+                  {
+                    "const": "inspect",
+                    "type": "string"
+                  },
+                  {
+                    "const": "verify",
+                    "type": "string"
+                  },
+                  {
+                    "const": "resume",
+                    "type": "string"
+                  },
+                  {
+                    "const": "closeout",
+                    "type": "string"
+                  }
+                ]
+              },
+              "authority_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "status": {
+                "const": "stale",
+                "type": "string"
+              },
+              "executable": {
+                "const": false,
+                "type": "boolean"
+              },
+              "stale_reason": {
+                "minLength": 1,
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "safe_actions_executed": {
+      "type": "array",
+      "items": {
+        "$id": "ExecutedSafeAction",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action_id",
+          "description",
+          "action_type",
+          "authority_ref",
+          "status",
+          "executable",
+          "executed_at"
+        ],
+        "properties": {
+          "action_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "action_type": {
+            "anyOf": [
+              {
+                "const": "rehydrate",
+                "type": "string"
+              },
+              {
+                "const": "replan",
+                "type": "string"
+              },
+              {
+                "const": "inspect",
+                "type": "string"
+              },
+              {
+                "const": "verify",
+                "type": "string"
+              },
+              {
+                "const": "resume",
+                "type": "string"
+              },
+              {
+                "const": "closeout",
+                "type": "string"
+              }
+            ]
+          },
+          "authority_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "const": "executed",
+            "type": "string"
+          },
+          "executable": {
+            "const": false,
+            "type": "boolean"
+          },
+          "executed_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unexecuted_safe_actions": {
+      "type": "array",
+      "items": {
+        "$id": "PendingSafeAction",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action_id",
+          "description",
+          "action_type",
+          "authority_ref",
+          "status",
+          "executable"
+        ],
+        "properties": {
+          "action_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "action_type": {
+            "anyOf": [
+              {
+                "const": "rehydrate",
+                "type": "string"
+              },
+              {
+                "const": "replan",
+                "type": "string"
+              },
+              {
+                "const": "inspect",
+                "type": "string"
+              },
+              {
+                "const": "verify",
+                "type": "string"
+              },
+              {
+                "const": "resume",
+                "type": "string"
+              },
+              {
+                "const": "closeout",
+                "type": "string"
+              }
+            ]
+          },
+          "authority_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "const": "pending",
+            "type": "string"
+          },
+          "executable": {
+            "const": true,
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "human_only_gates": {
+      "type": "array",
+      "items": {
+        "$id": "HumanOnlyGate",
+        "additionalProperties": false,
+        "description": "A narrowly typed gate for an action that cannot be completed safely by the execution agent.",
+        "type": "object",
+        "required": [
+          "gate_id",
+          "gate_type",
+          "status",
+          "required_actor",
+          "prompt",
+          "resume_action_id",
+          "created_at"
+        ],
+        "properties": {
+          "gate_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "gate_type": {
+            "anyOf": [
+              {
+                "const": "oauth_consent",
+                "type": "string"
+              },
+              {
+                "const": "identity_verification",
+                "type": "string"
+              },
+              {
+                "const": "owner_secret_action",
+                "type": "string"
+              },
+              {
+                "const": "destructive_action_approval",
+                "type": "string"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "const": "waiting",
+                "type": "string"
+              },
+              {
+                "const": "satisfied",
+                "type": "string"
+              },
+              {
+                "const": "expired",
+                "type": "string"
+              }
+            ]
+          },
+          "required_actor": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "prompt": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "resume_action_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "satisfied_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$id": "ContinuationBlocker",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "blocker_id",
+          "classification",
+          "description",
+          "blocks_action_ids",
+          "evidence_ref"
+        ],
+        "properties": {
+          "blocker_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "classification": {
+            "$id": "BlockerClassification",
+            "anyOf": [
+              {
+                "const": "AUTO_RESOLVABLE",
+                "type": "string"
+              },
+              {
+                "const": "SAFE_CONTINUE",
+                "type": "string"
+              },
+              {
+                "const": "HUMAN_IDENTITY_REQUIRED",
+                "type": "string"
+              },
+              {
+                "const": "EXACT_APPROVAL_REQUIRED",
+                "type": "string"
+              },
+              {
+                "const": "OWNER_SECRET_ACTION",
+                "type": "string"
+              },
+              {
+                "const": "DESTRUCTIVE_ACTION_APPROVAL",
+                "type": "string"
+              },
+              {
+                "const": "UNRESOLVABLE_CONFLICT",
+                "type": "string"
+              }
+            ]
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "blocks_action_ids": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "evidence_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

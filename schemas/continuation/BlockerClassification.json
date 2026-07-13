@@ -1,0 +1,33 @@
+{
+  "$id": "BlockerClassification",
+  "anyOf": [
+    {
+      "const": "AUTO_RESOLVABLE",
+      "type": "string"
+    },
+    {
+      "const": "SAFE_CONTINUE",
+      "type": "string"
+    },
+    {
+      "const": "HUMAN_IDENTITY_REQUIRED",
+      "type": "string"
+    },
+    {
+      "const": "EXACT_APPROVAL_REQUIRED",
+      "type": "string"
+    },
+    {
+      "const": "OWNER_SECRET_ACTION",
+      "type": "string"
+    },
+    {
+      "const": "DESTRUCTIVE_ACTION_APPROVAL",
+      "type": "string"
+    },
+    {
+      "const": "UNRESOLVABLE_CONFLICT",
+      "type": "string"
+    }
+  ]
+}

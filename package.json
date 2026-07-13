@@ -78,6 +78,10 @@
       "types": "./dist/chat-contract-runtime/index.d.ts",
       "import": "./dist/chat-contract-runtime/index.js"
     },
+    "./continuation": {
+      "types": "./dist/continuation/index.d.ts",
+      "import": "./dist/continuation/index.js"
+    },
     "./formats": {
       "types": "./dist/formats.d.ts",
       "import": "./dist/formats.js"

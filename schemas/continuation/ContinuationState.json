@@ -1,0 +1,84 @@
+{
+  "$id": "ContinuationState",
+  "additionalProperties": false,
+  "description": "Authority-bound continuation lifecycle state. Authority changes require rehydration and are never terminal.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "continuation_id",
+    "phase",
+    "current_authority_ref",
+    "next_safe_action_ids",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.continuation_state.v1",
+      "type": "string"
+    },
+    "continuation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "phase": {
+      "$id": "ContinuationPhase",
+      "anyOf": [
+        {
+          "const": "active",
+          "type": "string"
+        },
+        {
+          "const": "authority_changed",
+          "type": "string"
+        },
+        {
+          "const": "rehydration_required",
+          "type": "string"
+        },
+        {
+          "const": "replanning",
+          "type": "string"
+        },
+        {
+          "const": "executing_safe_actions",
+          "type": "string"
+        },
+        {
+          "const": "waiting_for_human",
+          "type": "string"
+        },
+        {
+          "const": "blocked",
+          "type": "string"
+        },
+        {
+          "const": "complete",
+          "type": "string"
+        }
+      ]
+    },
+    "current_authority_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "previous_authority_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "next_safe_action_ids": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "active_human_gate_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

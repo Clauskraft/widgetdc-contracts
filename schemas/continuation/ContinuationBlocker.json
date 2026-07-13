@@ -1,0 +1,67 @@
+{
+  "$id": "ContinuationBlocker",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "blocker_id",
+    "classification",
+    "description",
+    "blocks_action_ids",
+    "evidence_ref"
+  ],
+  "properties": {
+    "blocker_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "classification": {
+      "$id": "BlockerClassification",
+      "anyOf": [
+        {
+          "const": "AUTO_RESOLVABLE",
+          "type": "string"
+        },
+        {
+          "const": "SAFE_CONTINUE",
+          "type": "string"
+        },
+        {
+          "const": "HUMAN_IDENTITY_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "EXACT_APPROVAL_REQUIRED",
+          "type": "string"
+        },
+        {
+          "const": "OWNER_SECRET_ACTION",
+          "type": "string"
+        },
+        {
+          "const": "DESTRUCTIVE_ACTION_APPROVAL",
+          "type": "string"
+        },
+        {
+          "const": "UNRESOLVABLE_CONFLICT",
+          "type": "string"
+        }
+      ]
+    },
+    "description": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "blocks_action_ids": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "evidence_ref": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}

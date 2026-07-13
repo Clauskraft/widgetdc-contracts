@@ -1,0 +1,37 @@
+{
+  "$id": "ContinuationPhase",
+  "anyOf": [
+    {
+      "const": "active",
+      "type": "string"
+    },
+    {
+      "const": "authority_changed",
+      "type": "string"
+    },
+    {
+      "const": "rehydration_required",
+      "type": "string"
+    },
+    {
+      "const": "replanning",
+      "type": "string"
+    },
+    {
+      "const": "executing_safe_actions",
+      "type": "string"
+    },
+    {
+      "const": "waiting_for_human",
+      "type": "string"
+    },
+    {
+      "const": "blocked",
+      "type": "string"
+    },
+    {
+      "const": "complete",
+      "type": "string"
+    }
+  ]
+}
