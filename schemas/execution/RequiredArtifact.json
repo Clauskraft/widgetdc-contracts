@@ -1,0 +1,28 @@
+{
+  "$id": "RequiredArtifact",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "schema_id",
+    "minimum_count",
+    "required_for_completion"
+  ],
+  "properties": {
+    "artifact_type": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_id": {
+      "format": "uri",
+      "type": "string"
+    },
+    "minimum_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "required_for_completion": {
+      "type": "boolean"
+    }
+  }
+}

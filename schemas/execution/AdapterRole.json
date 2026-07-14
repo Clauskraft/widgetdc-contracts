@@ -1,0 +1,17 @@
+{
+  "$id": "AdapterRole",
+  "anyOf": [
+    {
+      "const": "candidate_writer",
+      "type": "string"
+    },
+    {
+      "const": "specialist",
+      "type": "string"
+    },
+    {
+      "const": "verifier",
+      "type": "string"
+    }
+  ]
+}

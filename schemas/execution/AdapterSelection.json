@@ -1,0 +1,46 @@
+{
+  "$id": "AdapterSelection",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "adapter_id",
+    "adapter_version",
+    "role",
+    "required",
+    "certification_ref"
+  ],
+  "properties": {
+    "adapter_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "adapter_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "role": {
+      "$id": "AdapterRole",
+      "anyOf": [
+        {
+          "const": "candidate_writer",
+          "type": "string"
+        },
+        {
+          "const": "specialist",
+          "type": "string"
+        },
+        {
+          "const": "verifier",
+          "type": "string"
+        }
+      ]
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "certification_ref": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}

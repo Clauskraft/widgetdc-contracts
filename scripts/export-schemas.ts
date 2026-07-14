@@ -4,7 +4,7 @@
  * Run via: npm run schemas
  */
 import { writeFileSync, mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Kind } from '@sinclair/typebox'
 
@@ -28,6 +28,7 @@ import * as decisionBom from '../src/decision-bom/index.js'
 import * as chatContractRuntime from '../src/chat-contract-runtime/index.js'
 import * as continuation from '../src/continuation/index.js'
 import * as parl from '../src/parl/index.js'
+import * as execution from '../src/execution/index.js'
 
 const modules: Record<string, Record<string, unknown>> = {
   cognitive,
@@ -46,6 +47,7 @@ const modules: Record<string, Record<string, unknown>> = {
   'chat-contract-runtime': chatContractRuntime,
   continuation,
   parl,
+  execution,
 }
 
 let exportedCount = 0
@@ -65,7 +67,8 @@ for (const [moduleName, exports] of Object.entries(modules)) {
     const s = schema as Record<string, unknown>
     const id = typeof s.$id === 'string' ? s.$id : exportName
     const outSchema = { ...s, $id: id }
-    const outPath = join(SCHEMAS_DIR, moduleName, `${id}.json`)
+    const filename = id.includes('://') ? basename(new URL(id).pathname) : `${id}.json`
+    const outPath = join(SCHEMAS_DIR, moduleName, filename)
     mkdirSync(dirname(outPath), { recursive: true })
     writeFileSync(outPath, JSON.stringify(outSchema, null, 2) + '\n')
     exportedCount++

@@ -1,0 +1,158 @@
+{
+  "$id": "https://contracts.widgetdc.dev/execution/synthesis-receipt.schema.json",
+  "title": "WDC Synthesis Receipt",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "$id",
+    "receipt_id",
+    "envelope_id",
+    "correlation_id",
+    "outcome",
+    "artifact_checks",
+    "candidate_bundle_refs",
+    "missing_perspectives",
+    "next_step",
+    "claim_level",
+    "created_at"
+  ],
+  "properties": {
+    "$id": {
+      "const": "https://contracts.widgetdc.dev/execution/synthesis-receipt.schema.json",
+      "type": "string"
+    },
+    "receipt_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "envelope_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "correlation_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "outcome": {
+      "$id": "HonestOutcome",
+      "anyOf": [
+        {
+          "const": "completed_noop",
+          "type": "string"
+        },
+        {
+          "const": "completed_unverified",
+          "type": "string"
+        },
+        {
+          "const": "completed",
+          "type": "string"
+        },
+        {
+          "const": "expected_stop",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        }
+      ]
+    },
+    "artifact_checks": {
+      "type": "array",
+      "items": {
+        "$id": "ArtifactCheck",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_type",
+          "required_count",
+          "observed_count",
+          "schema_valid",
+          "content_readable"
+        ],
+        "properties": {
+          "artifact_type": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "required_count": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "observed_count": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "schema_valid": {
+            "type": "boolean"
+          },
+          "content_readable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "candidate_bundle_refs": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "independent_verifier_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "missing_perspectives": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "next_step": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "claim_level": {
+      "$id": "EvidenceLevel",
+      "anyOf": [
+        {
+          "const": "L0",
+          "type": "string"
+        },
+        {
+          "const": "L1",
+          "type": "string"
+        },
+        {
+          "const": "L2",
+          "type": "string"
+        },
+        {
+          "const": "L3",
+          "type": "string"
+        },
+        {
+          "const": "L4",
+          "type": "string"
+        },
+        {
+          "const": "L5",
+          "type": "string"
+        }
+      ]
+    },
+    "event_spine_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

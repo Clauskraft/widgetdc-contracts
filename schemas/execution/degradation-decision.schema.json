@@ -1,0 +1,128 @@
+{
+  "$id": "https://contracts.widgetdc.dev/execution/degradation-decision.schema.json",
+  "title": "WDC Degradation Decision",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "$id",
+    "decision_id",
+    "envelope_id",
+    "risk_class",
+    "trigger",
+    "decision",
+    "coverage_loss_disclosed",
+    "next_step",
+    "claim_ceiling",
+    "created_at"
+  ],
+  "properties": {
+    "$id": {
+      "const": "https://contracts.widgetdc.dev/execution/degradation-decision.schema.json",
+      "type": "string"
+    },
+    "decision_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "envelope_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "risk_class": {
+      "anyOf": [
+        {
+          "const": "read_only",
+          "type": "string"
+        },
+        {
+          "const": "source_mutation",
+          "type": "string"
+        },
+        {
+          "const": "governed_mutation",
+          "type": "string"
+        }
+      ]
+    },
+    "trigger": {
+      "anyOf": [
+        {
+          "const": "missing_optional_specialist",
+          "type": "string"
+        },
+        {
+          "const": "missing_required_verifier",
+          "type": "string"
+        },
+        {
+          "const": "corrupt_adapter_state",
+          "type": "string"
+        }
+      ]
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "const": "continue_with_disclosed_coverage_loss",
+          "type": "string"
+        },
+        {
+          "const": "assign_human_verifier",
+          "type": "string"
+        },
+        {
+          "const": "isolate_adapter_and_use_native_state",
+          "type": "string"
+        },
+        {
+          "const": "expected_stop",
+          "type": "string"
+        }
+      ]
+    },
+    "coverage_loss_disclosed": {
+      "type": "boolean"
+    },
+    "alternative_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "next_step": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "claim_ceiling": {
+      "$id": "EvidenceLevel",
+      "anyOf": [
+        {
+          "const": "L0",
+          "type": "string"
+        },
+        {
+          "const": "L1",
+          "type": "string"
+        },
+        {
+          "const": "L2",
+          "type": "string"
+        },
+        {
+          "const": "L3",
+          "type": "string"
+        },
+        {
+          "const": "L4",
+          "type": "string"
+        },
+        {
+          "const": "L5",
+          "type": "string"
+        }
+      ]
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

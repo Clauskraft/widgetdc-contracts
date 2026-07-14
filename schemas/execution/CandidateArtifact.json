@@ -1,0 +1,34 @@
+{
+  "$id": "CandidateArtifact",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "schema_id",
+    "content_ref",
+    "content_hash"
+  ],
+  "properties": {
+    "artifact_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "artifact_type": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_id": {
+      "format": "uri",
+      "type": "string"
+    },
+    "content_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "content_hash": {
+      "minLength": 1,
+      "type": "string"
+    }
+  }
+}

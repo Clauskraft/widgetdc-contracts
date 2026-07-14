@@ -1,0 +1,25 @@
+{
+  "$id": "HonestOutcome",
+  "anyOf": [
+    {
+      "const": "completed_noop",
+      "type": "string"
+    },
+    {
+      "const": "completed_unverified",
+      "type": "string"
+    },
+    {
+      "const": "completed",
+      "type": "string"
+    },
+    {
+      "const": "expected_stop",
+      "type": "string"
+    },
+    {
+      "const": "failed",
+      "type": "string"
+    }
+  ]
+}
