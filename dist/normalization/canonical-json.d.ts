@@ -1,5 +1,11 @@
 export declare const CANONICALIZATION_VERSION: "jcs-rfc8785-v1";
 export declare const CONTENT_HASH_ALGORITHM: "sha256";
+export declare const CanonicalJsonContract: Readonly<{
+    $id: "https://widgetdc.com/contracts/normalization/canonical-json.v1";
+    canonicalization_version: "jcs-rfc8785-v1";
+    hash_algorithm: "sha256";
+    identity_envelope_fields: readonly ["object_type", "payload", "schema_version"];
+}>;
 export type JsonPrimitive = null | boolean | number | string;
 export type JsonObject = {
     [key: string]: JsonValue;

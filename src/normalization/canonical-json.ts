@@ -3,6 +3,13 @@ import { createHash } from 'node:crypto'
 export const CANONICALIZATION_VERSION = 'jcs-rfc8785-v1' as const
 export const CONTENT_HASH_ALGORITHM = 'sha256' as const
 
+export const CanonicalJsonContract = Object.freeze({
+  $id: 'https://widgetdc.com/contracts/normalization/canonical-json.v1',
+  canonicalization_version: CANONICALIZATION_VERSION,
+  hash_algorithm: CONTENT_HASH_ALGORITHM,
+  identity_envelope_fields: ['object_type', 'payload', 'schema_version'] as const,
+})
+
 export type JsonPrimitive = null | boolean | number | string
 export type JsonObject = { [key: string]: JsonValue }
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[]

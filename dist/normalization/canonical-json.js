@@ -1,6 +1,12 @@
 import { createHash } from 'node:crypto';
 export const CANONICALIZATION_VERSION = 'jcs-rfc8785-v1';
 export const CONTENT_HASH_ALGORITHM = 'sha256';
+export const CanonicalJsonContract = Object.freeze({
+    $id: 'https://widgetdc.com/contracts/normalization/canonical-json.v1',
+    canonicalization_version: CANONICALIZATION_VERSION,
+    hash_algorithm: CONTENT_HASH_ALGORITHM,
+    identity_envelope_fields: ['object_type', 'payload', 'schema_version'],
+});
 export class CanonicalJsonError extends TypeError {
     code;
     path;

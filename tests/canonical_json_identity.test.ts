@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   CanonicalJsonError,
+  CanonicalJsonContract,
   canonicalizeJson,
   contentAddressedIdentity,
   type CanonicalJsonErrorCode,
@@ -21,6 +22,15 @@ function expectCanonicalError(
 }
 
 describe('canonicalizeJson', () => {
+  it('publishes a machine-readable contract descriptor', () => {
+    expect(CanonicalJsonContract).toEqual({
+      $id: 'https://widgetdc.com/contracts/normalization/canonical-json.v1',
+      canonicalization_version: 'jcs-rfc8785-v1',
+      hash_algorithm: 'sha256',
+      identity_envelope_fields: ['object_type', 'payload', 'schema_version'],
+    })
+  })
+
   it('matches the RFC 8785 serialization example', () => {
     const input = {
       numbers: [333333333.33333329, 1e30, 4.5, 2e-3, 1e-27],

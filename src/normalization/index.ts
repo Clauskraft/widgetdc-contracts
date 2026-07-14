@@ -18,6 +18,7 @@ export type {
 export {
   CANONICALIZATION_VERSION,
   CONTENT_HASH_ALGORITHM,
+  CanonicalJsonContract,
   CanonicalJsonError,
   canonicalizeJson,
   contentAddressedIdentity,
