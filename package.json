@@ -86,6 +86,10 @@
       "types": "./dist/continuation/index.d.ts",
       "import": "./dist/continuation/index.js"
     },
+    "./execution": {
+      "types": "./dist/execution/index.d.ts",
+      "import": "./dist/execution/index.js"
+    },
     "./formats": {
       "types": "./dist/formats.d.ts",
       "import": "./dist/formats.js"

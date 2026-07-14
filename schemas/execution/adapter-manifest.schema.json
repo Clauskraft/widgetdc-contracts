@@ -1,0 +1,142 @@
+{
+  "$id": "https://contracts.widgetdc.dev/execution/adapter-manifest.schema.json",
+  "title": "WDC Adapter Manifest",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "$id",
+    "adapter_id",
+    "adapter_version",
+    "protocol_version",
+    "supported_workflows",
+    "supported_roles",
+    "input_schema_ids",
+    "output_schema_ids",
+    "required_env_names",
+    "timeout_ms",
+    "cancellation_supported",
+    "idempotency_supported",
+    "state_scope",
+    "health_check_command"
+  ],
+  "properties": {
+    "$id": {
+      "const": "https://contracts.widgetdc.dev/execution/adapter-manifest.schema.json",
+      "type": "string"
+    },
+    "adapter_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "adapter_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "protocol_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "supported_workflows": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "const": "discover",
+            "type": "string"
+          },
+          {
+            "const": "define",
+            "type": "string"
+          },
+          {
+            "const": "develop",
+            "type": "string"
+          },
+          {
+            "const": "deliver",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "supported_roles": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "$id": "AdapterRole",
+        "anyOf": [
+          {
+            "const": "candidate_writer",
+            "type": "string"
+          },
+          {
+            "const": "specialist",
+            "type": "string"
+          },
+          {
+            "const": "verifier",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "input_schema_ids": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "format": "uri",
+        "type": "string"
+      }
+    },
+    "output_schema_ids": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "format": "uri",
+        "type": "string"
+      }
+    },
+    "required_env_names": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "pattern": "^[A-Z][A-Z0-9_]*$",
+        "type": "string"
+      }
+    },
+    "timeout_ms": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "cancellation_supported": {
+      "type": "boolean"
+    },
+    "idempotency_supported": {
+      "type": "boolean"
+    },
+    "state_scope": {
+      "anyOf": [
+        {
+          "const": "isolated_run",
+          "type": "string"
+        },
+        {
+          "const": "adapter_local",
+          "type": "string"
+        }
+      ]
+    },
+    "health_check_command": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    }
+  }
+}

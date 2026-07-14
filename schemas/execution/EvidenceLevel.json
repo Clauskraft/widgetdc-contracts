@@ -1,0 +1,29 @@
+{
+  "$id": "EvidenceLevel",
+  "anyOf": [
+    {
+      "const": "L0",
+      "type": "string"
+    },
+    {
+      "const": "L1",
+      "type": "string"
+    },
+    {
+      "const": "L2",
+      "type": "string"
+    },
+    {
+      "const": "L3",
+      "type": "string"
+    },
+    {
+      "const": "L4",
+      "type": "string"
+    },
+    {
+      "const": "L5",
+      "type": "string"
+    }
+  ]
+}

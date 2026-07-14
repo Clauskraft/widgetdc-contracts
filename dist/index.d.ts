@@ -21,6 +21,7 @@
  *   import { PARLReasonRequest, PARLReasonResponse } from '@widgetdc/contracts/parl'
  *   import { WdcChatTurnRequest, WdcChatTurnResult } from '@widgetdc/contracts/chat-contract-runtime'
  *   import { ContinuationReceipt, ContinuationState } from '@widgetdc/contracts/continuation'
+ *   import { ExecutionEnvelope, SynthesisReceipt } from '@widgetdc/contracts/execution'
  */
 export * from './cognitive/index.js';
 export * from './health/index.js';
@@ -41,4 +42,5 @@ export * from './demand-to-proof/index.js';
 export * from './parl/index.js';
 export * from './chat-contract-runtime/index.js';
 export * from './continuation/index.js';
+export * from './execution/index.js';
 //# sourceMappingURL=index.d.ts.map

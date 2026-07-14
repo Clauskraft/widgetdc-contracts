@@ -1,0 +1,241 @@
+{
+  "$id": "https://contracts.widgetdc.dev/execution/execution-envelope.schema.json",
+  "title": "WDC Execution Envelope",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "$id",
+    "envelope_id",
+    "schema_version",
+    "task_bom_id",
+    "route_envelope_ref",
+    "actor_id",
+    "target_repo",
+    "target_head",
+    "controller",
+    "workflow",
+    "risk_class",
+    "selected_pattern_ids",
+    "adapters",
+    "required_artifacts",
+    "degradation_policy_id",
+    "stop_condition_ids",
+    "claim_ceiling",
+    "idempotency_key",
+    "created_at"
+  ],
+  "properties": {
+    "$id": {
+      "const": "https://contracts.widgetdc.dev/execution/execution-envelope.schema.json",
+      "type": "string"
+    },
+    "envelope_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "task_bom_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "route_envelope_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "actor_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "target_repo": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "target_head": {
+      "minLength": 7,
+      "type": "string"
+    },
+    "controller": {
+      "const": "wdc_native",
+      "type": "string"
+    },
+    "workflow": {
+      "anyOf": [
+        {
+          "const": "discover",
+          "type": "string"
+        },
+        {
+          "const": "define",
+          "type": "string"
+        },
+        {
+          "const": "develop",
+          "type": "string"
+        },
+        {
+          "const": "deliver",
+          "type": "string"
+        }
+      ]
+    },
+    "risk_class": {
+      "anyOf": [
+        {
+          "const": "read_only",
+          "type": "string"
+        },
+        {
+          "const": "source_mutation",
+          "type": "string"
+        },
+        {
+          "const": "governed_mutation",
+          "type": "string"
+        }
+      ]
+    },
+    "selected_pattern_ids": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "adapters": {
+      "type": "array",
+      "items": {
+        "$id": "AdapterSelection",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "adapter_id",
+          "adapter_version",
+          "role",
+          "required",
+          "certification_ref"
+        ],
+        "properties": {
+          "adapter_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "adapter_version": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "role": {
+            "$id": "AdapterRole",
+            "anyOf": [
+              {
+                "const": "candidate_writer",
+                "type": "string"
+              },
+              {
+                "const": "specialist",
+                "type": "string"
+              },
+              {
+                "const": "verifier",
+                "type": "string"
+              }
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "certification_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required_artifacts": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$id": "RequiredArtifact",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_type",
+          "schema_id",
+          "minimum_count",
+          "required_for_completion"
+        ],
+        "properties": {
+          "artifact_type": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_id": {
+            "format": "uri",
+            "type": "string"
+          },
+          "minimum_count": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "required_for_completion": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "degradation_policy_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "stop_condition_ids": {
+      "minItems": 1,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "claim_ceiling": {
+      "$id": "EvidenceLevel",
+      "anyOf": [
+        {
+          "const": "L0",
+          "type": "string"
+        },
+        {
+          "const": "L1",
+          "type": "string"
+        },
+        {
+          "const": "L2",
+          "type": "string"
+        },
+        {
+          "const": "L3",
+          "type": "string"
+        },
+        {
+          "const": "L4",
+          "type": "string"
+        },
+        {
+          "const": "L5",
+          "type": "string"
+        }
+      ]
+    },
+    "idempotency_key": {
+      "minLength": 16,
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}

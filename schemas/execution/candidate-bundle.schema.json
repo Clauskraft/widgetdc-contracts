@@ -1,0 +1,144 @@
+{
+  "$id": "https://contracts.widgetdc.dev/execution/candidate-bundle.schema.json",
+  "title": "WDC Candidate Bundle",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "$id",
+    "bundle_id",
+    "envelope_id",
+    "adapter_id",
+    "adapter_version",
+    "role",
+    "outcome",
+    "artifacts",
+    "warnings",
+    "evidence_refs",
+    "started_at",
+    "completed_at"
+  ],
+  "properties": {
+    "$id": {
+      "const": "https://contracts.widgetdc.dev/execution/candidate-bundle.schema.json",
+      "type": "string"
+    },
+    "bundle_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "envelope_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "adapter_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "adapter_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "role": {
+      "$id": "AdapterRole",
+      "anyOf": [
+        {
+          "const": "candidate_writer",
+          "type": "string"
+        },
+        {
+          "const": "specialist",
+          "type": "string"
+        },
+        {
+          "const": "verifier",
+          "type": "string"
+        }
+      ]
+    },
+    "outcome": {
+      "$id": "HonestOutcome",
+      "anyOf": [
+        {
+          "const": "completed_noop",
+          "type": "string"
+        },
+        {
+          "const": "completed_unverified",
+          "type": "string"
+        },
+        {
+          "const": "completed",
+          "type": "string"
+        },
+        {
+          "const": "expected_stop",
+          "type": "string"
+        },
+        {
+          "const": "failed",
+          "type": "string"
+        }
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$id": "CandidateArtifact",
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_id",
+          "artifact_type",
+          "schema_id",
+          "content_ref",
+          "content_hash"
+        ],
+        "properties": {
+          "artifact_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "artifact_type": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "schema_id": {
+            "format": "uri",
+            "type": "string"
+          },
+          "content_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "content_hash": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "completed_at": {
+      "format": "date-time",
+      "type": "string"
+    }
+  }
+}
