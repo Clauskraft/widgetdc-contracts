@@ -50,6 +50,10 @@
       "types": "./dist/adoption/index.d.ts",
       "import": "./dist/adoption/index.js"
     },
+    "./normalization": {
+      "types": "./dist/normalization/index.d.ts",
+      "import": "./dist/normalization/index.js"
+    },
     "./mrp": {
       "types": "./dist/mrp/index.d.ts",
       "import": "./dist/mrp/index.js"
