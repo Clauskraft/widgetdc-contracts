@@ -14,3 +14,20 @@ export type {
   NormalizationOutput as NormalizationOutputType,
   NormalizationError as NormalizationErrorType,
 } from './normalization_pipeline.js'
+
+export {
+  CANONICALIZATION_VERSION,
+  CONTENT_HASH_ALGORITHM,
+  CanonicalJsonContract,
+  CanonicalJsonError,
+  canonicalizeJson,
+  contentAddressedIdentity,
+} from './canonical-json.js'
+export type {
+  CanonicalJsonErrorCode,
+  ContentAddressedIdentity,
+  JsonObject,
+  JsonPrimitive,
+  JsonValue,
+  SemanticIdentityInput,
+} from './canonical-json.js'

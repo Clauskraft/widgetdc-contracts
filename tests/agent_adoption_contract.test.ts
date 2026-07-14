@@ -205,6 +205,12 @@ describe('AgentAdoptionContract — hash semantics', () => {
   it('hash matches the documented sha256 format (64 hex chars)', () => {
     expect(computeContractHash(fixtureBase())).toMatch(/^[0-9a-f]{64}$/)
   })
+
+  it('preserves the pre-CGF-1B canonical fixture digest', () => {
+    expect(computeContractHash(fixtureBase())).toBe(
+      '9cfe6bdd5740a60104d434035776f5059d786c1b42ddba1f83be0220dacf6542',
+    )
+  })
 })
 
 // ── Pydantic parity ─────────────────────────────────────────

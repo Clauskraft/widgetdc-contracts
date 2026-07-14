@@ -76,6 +76,25 @@ All consumers of `@widgetdc/contracts` MUST pin the same git tag version.
 
 **Current canonical version**: see `package.json` at the root of this repo.
 
+## Canonical JSON and semantic identity
+
+`@widgetdc/contracts/normalization` owns the candidate contract for deterministic
+JSON canonicalization and content-addressed semantic identity:
+
+- `canonicalizeJson(value)` implements the RFC 8785 JSON Canonicalization Scheme
+  for strict in-memory JSON values and rejects values that JSON would silently
+  omit, coerce, or replace.
+- `contentAddressedIdentity(input)` hashes one exact envelope containing only
+  `object_type`, `schema_version`, and `payload`.
+- The returned `id` is `sha256:<64 lowercase hex>` and declares
+  `canonicalization_version: "jcs-rfc8785-v1"`.
+- Root-level timestamps, actors, correlation IDs, and other volatile metadata are
+  rejected. Keep them beside the identity rather than inside its hash input.
+
+This contract is code-proven only until a separately versioned consumer pins and
+reuses it. Local tests, package builds, or a merged PR do not constitute runtime
+proof, package release, graph promotion, or claim promotion.
+
 **Verify alignment**: `bash scripts/check-alignment.sh`
 
 ---

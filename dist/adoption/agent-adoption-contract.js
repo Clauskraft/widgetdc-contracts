@@ -1,5 +1,6 @@
 import { Type } from '@sinclair/typebox';
 import { createHash } from 'node:crypto';
+import { canonicalizeJson } from '../normalization/canonical-json.js';
 /**
  * AgentAdoptionContract v1 — canonical adoption contract for the 7-repo platform.
  *
@@ -142,23 +143,6 @@ export const AgentAdoptionContract = Type.Object({
 });
 // ── Hash helpers ─────────────────────────────────────────────
 /**
- * Stable JSON stringify — keys in lexicographic order, no whitespace.
- * Required so the same logical contract always hashes to the same digest,
- * regardless of how the JSON was authored.
- */
-function stableStringify(value) {
-    if (value === null || typeof value !== 'object') {
-        return JSON.stringify(value);
-    }
-    if (Array.isArray(value)) {
-        return '[' + value.map(stableStringify).join(',') + ']';
-    }
-    const keys = Object.keys(value).sort();
-    return '{' + keys
-        .map((k) => JSON.stringify(k) + ':' + stableStringify(value[k]))
-        .join(',') + '}';
-}
-/**
  * Compute the canonical sha256 hash of an AgentAdoptionContract.
  *
  * The hash is computed over a copy of the manifest with `hash` forced to the
@@ -171,7 +155,7 @@ function stableStringify(value) {
  */
 export function computeContractHash(contract) {
     const normalized = { ...contract, hash: '' };
-    return createHash('sha256').update(stableStringify(normalized)).digest('hex');
+    return createHash('sha256').update(canonicalizeJson(normalized)).digest('hex');
 }
 /**
  * Verify that a contract's `hash` field matches its recomputed canonical hash.
