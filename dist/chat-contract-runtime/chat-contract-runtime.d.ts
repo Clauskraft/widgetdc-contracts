@@ -29,6 +29,64 @@ export declare const ChatContractRuntimeBoundary: import("@sinclair/typebox").TO
 }>;
 export type ChatContractRuntimeBoundary = Static<typeof ChatContractRuntimeBoundary>;
 /**
+ * Public lifecycle state only. Authorization and ownership are deliberately
+ * absent: callers must not infer authority from session metadata.
+ */
+export declare const WdcChatSessionStatus: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"active">, import("@sinclair/typebox").TLiteral<"archived">]>;
+export type WdcChatSessionStatus = Static<typeof WdcChatSessionStatus>;
+export declare const WdcChatSession: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session.v1">;
+    session_id: import("@sinclair/typebox").TString;
+    title: import("@sinclair/typebox").TString;
+    status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"active">, import("@sinclair/typebox").TLiteral<"archived">]>;
+    version: import("@sinclair/typebox").TInteger;
+    created_at: import("@sinclair/typebox").TString;
+    updated_at: import("@sinclair/typebox").TString;
+}>;
+export type WdcChatSession = Static<typeof WdcChatSession>;
+/**
+ * The backend assigns session_id and all authority-bearing context.
+ */
+export declare const WdcChatSessionCreateRequest: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session_create_request.v1">;
+    title: import("@sinclair/typebox").TString;
+}>;
+export type WdcChatSessionCreateRequest = Static<typeof WdcChatSessionCreateRequest>;
+/**
+ * Closed variants preserve the same required-field semantics in TypeScript,
+ * JSON Schema, and generated Pydantic models. Archival is one-way at this
+ * contract layer; reactivation requires a future explicit lifecycle contract.
+ */
+export declare const WdcChatSessionPatchRequest: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session_patch_request.v1">;
+    expected_version: import("@sinclair/typebox").TInteger;
+    title: import("@sinclair/typebox").TString;
+}>, import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session_patch_request.v1">;
+    expected_version: import("@sinclair/typebox").TInteger;
+    status: import("@sinclair/typebox").TLiteral<"archived">;
+}>, import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session_patch_request.v1">;
+    expected_version: import("@sinclair/typebox").TInteger;
+    title: import("@sinclair/typebox").TString;
+    status: import("@sinclair/typebox").TLiteral<"archived">;
+}>]>;
+export type WdcChatSessionPatchRequest = Static<typeof WdcChatSessionPatchRequest>;
+export declare const WdcChatSessionPage: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session_page.v1">;
+    items: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TObject<{
+        schema_version: import("@sinclair/typebox").TLiteral<"wdc.chat_session.v1">;
+        session_id: import("@sinclair/typebox").TString;
+        title: import("@sinclair/typebox").TString;
+        status: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"active">, import("@sinclair/typebox").TLiteral<"archived">]>;
+        version: import("@sinclair/typebox").TInteger;
+        created_at: import("@sinclair/typebox").TString;
+        updated_at: import("@sinclair/typebox").TString;
+    }>>;
+    next_cursor: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TString, import("@sinclair/typebox").TNull]>;
+}>;
+export type WdcChatSessionPage = Static<typeof WdcChatSessionPage>;
+/**
  * Client ingress. Deliberately excludes GovernanceContext: the runtime gate
  * constructs server-trusted governance after authentication.
  */

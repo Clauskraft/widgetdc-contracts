@@ -73,6 +73,118 @@ export const ChatContractRuntimeBoundary = Type.Object({
 
 export type ChatContractRuntimeBoundary = Static<typeof ChatContractRuntimeBoundary>
 
+const ChatSessionId = Type.String({
+  minLength: 1,
+  maxLength: 200,
+  description: 'Opaque backend-assigned session identifier.',
+})
+
+const ChatSessionTitle = Type.String({
+  minLength: 1,
+  maxLength: 200,
+})
+
+/**
+ * Public lifecycle state only. Authorization and ownership are deliberately
+ * absent: callers must not infer authority from session metadata.
+ */
+export const WdcChatSessionStatus = Type.Union([
+  Type.Literal('active'),
+  Type.Literal('archived'),
+], {
+  $id: 'WdcChatSessionStatus',
+  description: 'Public lifecycle state for a backend-owned WDC Chat session.',
+})
+
+export type WdcChatSessionStatus = Static<typeof WdcChatSessionStatus>
+
+export const WdcChatSession = Type.Object({
+  schema_version: Type.Literal('wdc.chat_session.v1'),
+  session_id: ChatSessionId,
+  title: ChatSessionTitle,
+  status: WdcChatSessionStatus,
+  version: Type.Integer({ minimum: 1, maximum: Number.MAX_SAFE_INTEGER }),
+  created_at: Type.String({ format: 'date-time' }),
+  updated_at: Type.String({ format: 'date-time' }),
+}, {
+  $id: 'WdcChatSession',
+  additionalProperties: false,
+  description:
+    'Public metadata for a backend-owned WDC Chat session. Tenant, owner, authentication, governance, transcript, and action data are intentionally excluded.',
+})
+
+export type WdcChatSession = Static<typeof WdcChatSession>
+
+/**
+ * The backend assigns session_id and all authority-bearing context.
+ */
+export const WdcChatSessionCreateRequest = Type.Object({
+  schema_version: Type.Literal('wdc.chat_session_create_request.v1'),
+  title: ChatSessionTitle,
+}, {
+  $id: 'WdcChatSessionCreateRequest',
+  additionalProperties: false,
+  description:
+    'Untrusted create input. Session identity, lifecycle state, version, timestamps, ownership, and authority are assigned server-side.',
+})
+
+export type WdcChatSessionCreateRequest = Static<typeof WdcChatSessionCreateRequest>
+
+/**
+ * Closed variants preserve the same required-field semantics in TypeScript,
+ * JSON Schema, and generated Pydantic models. Archival is one-way at this
+ * contract layer; reactivation requires a future explicit lifecycle contract.
+ */
+export const WdcChatSessionPatchRequest = Type.Union([
+  Type.Object({
+    schema_version: Type.Literal('wdc.chat_session_patch_request.v1'),
+    expected_version: Type.Integer({
+      minimum: 1,
+      maximum: Number.MAX_SAFE_INTEGER,
+    }),
+    title: ChatSessionTitle,
+  }, { additionalProperties: false }),
+  Type.Object({
+    schema_version: Type.Literal('wdc.chat_session_patch_request.v1'),
+    expected_version: Type.Integer({
+      minimum: 1,
+      maximum: Number.MAX_SAFE_INTEGER,
+    }),
+    status: Type.Literal('archived'),
+  }, { additionalProperties: false }),
+  Type.Object({
+    schema_version: Type.Literal('wdc.chat_session_patch_request.v1'),
+    expected_version: Type.Integer({
+      minimum: 1,
+      maximum: Number.MAX_SAFE_INTEGER,
+    }),
+    title: ChatSessionTitle,
+    status: Type.Literal('archived'),
+  }, { additionalProperties: false }),
+], {
+  $id: 'WdcChatSessionPatchRequest',
+  description:
+    'Optimistic-concurrency patch for rename and/or one-way archival. At least one mutable field is required.',
+})
+
+export type WdcChatSessionPatchRequest = Static<typeof WdcChatSessionPatchRequest>
+
+export const WdcChatSessionPage = Type.Object({
+  schema_version: Type.Literal('wdc.chat_session_page.v1'),
+  items: Type.Array(WdcChatSession, { maxItems: 100 }),
+  next_cursor: Type.Union([
+    Type.String({ minLength: 1, maxLength: 2048 }),
+    Type.Null(),
+  ]),
+}, {
+  $id: 'WdcChatSessionPage',
+  additionalProperties: false,
+  description:
+    'Bounded cursor page of public WDC Chat session metadata. A required null next_cursor marks the final page.',
+})
+
+export type WdcChatSessionPage = Static<typeof WdcChatSessionPage>
+
 /**
  * Client ingress. Deliberately excludes GovernanceContext: the runtime gate
  * constructs server-trusted governance after authentication.

@@ -18,6 +18,22 @@ const rootDir = dirname(scriptDir)
 const schemasDir = join(rootDir, 'schemas')
 const pythonDir = join(rootDir, 'python', 'widgetdc_contracts')
 const tempDir = mkdtempSync(join(tmpdir(), 'widgetdc-python-'))
+const strictIntegerSchemas = new Set([
+  'WdcChatSession',
+  'WdcChatSessionPage',
+  'WdcChatSessionPatchRequest',
+])
+const JSON_INTEGER_PARITY_HELPER = `def _normalize_json_integer(value: object) -> object:
+    if isinstance(value, bool) or isinstance(value, str):
+        raise ValueError('Input should be a JSON integer')
+    if isinstance(value, float):
+        if not math.isfinite(value) or not value.is_integer():
+            raise ValueError('Input should be a finite JSON integer')
+        return int(value)
+    return value
+
+
+JsonInteger = Annotated[StrictInt, BeforeValidator(_normalize_json_integer)]`
 
 const BASE_MODEL = `"""Base model for all WidgeTDC contracts. Wire format is snake_case."""
 from pydantic import BaseModel, ConfigDict
@@ -126,21 +142,27 @@ function generateModuleFiles(moduleName: string, datamodelCodegen: string): {
   mkdirSync(moduleTempDir, { recursive: true })
 
   for (const [index, schemaName] of schemaNames.entries()) {
+    const args = [
+      '--input', join(moduleDir, `${schemaName}.json`),
+      '--input-file-type', 'jsonschema',
+      '--output', join(moduleTempDir, `${schemaName}.py`),
+      '--output-model-type', 'pydantic_v2.BaseModel',
+      '--target-python-version', '3.12',
+      '--use-standard-collections',
+      '--use-union-operator',
+      '--field-constraints',
+      '--enum-field-as-literal', 'all',
+      '--collapse-root-models',
+      '--class-name', classNames[index],
+    ]
+
+    if (moduleName === 'chat-contract-runtime' && strictIntegerSchemas.has(schemaName)) {
+      args.push('--strict-types', 'int')
+    }
+
     const result = spawnSync(
       datamodelCodegen,
-      [
-        '--input', join(moduleDir, `${schemaName}.json`),
-        '--input-file-type', 'jsonschema',
-        '--output', join(moduleTempDir, `${schemaName}.py`),
-        '--output-model-type', 'pydantic_v2.BaseModel',
-        '--target-python-version', '3.12',
-        '--use-standard-collections',
-        '--use-union-operator',
-        '--field-constraints',
-        '--enum-field-as-literal', 'all',
-        '--collapse-root-models',
-        '--class-name', classNames[index],
-      ],
+      args,
       { encoding: 'utf-8' },
     )
 
@@ -170,6 +192,16 @@ function extractBody(filePath: string): string {
 
 type TypeAlias = { from: string; to: string }
 
+const scopedTypeAliases: Record<string, Record<string, string>> = {
+  'WdcChatSessionPage': {
+    'Item': 'WdcChatSession',
+  },
+}
+
+function getScopedTypeAlias(filePath: string, privateClass: string): string | null {
+  return scopedTypeAliases[basename(filePath, '.py')]?.[privateClass] ?? null
+}
+
 function detectDuplicateTypes(classNames: string[], generatedFiles: string[]): TypeAlias[] {
   const aliases: TypeAlias[] = []
   const publicTypes = new Set(classNames)
@@ -180,6 +212,10 @@ function detectDuplicateTypes(classNames: string[], generatedFiles: string[]): T
     for (const match of classMatches) {
       const className = match[1]
       if (!publicTypes.has(className)) {
+        if (getScopedTypeAlias(filePath, className)) {
+          continue
+        }
+
         const publicEquivalent = findPublicEquivalent(className, publicTypes, filePath)
         if (publicEquivalent) {
           aliases.push({ from: className, to: publicEquivalent })
@@ -228,6 +264,42 @@ function findPublicEquivalent(privateClass: string, publicTypes: Set<string>, fi
   return null
 }
 
+function replaceClassDefinition(content: string, className: string): string {
+  const lines = content.split('\n')
+  const start = lines.findIndex((line) => line.startsWith(`class ${className}(`))
+  if (start === -1) {
+    return content
+  }
+
+  let end = start + 1
+  while (end < lines.length && !lines[end].startsWith('class ')) {
+    end++
+  }
+
+  lines.splice(start, end - start)
+  return lines.join('\n')
+}
+
+function applyScopedTypeAliases(filePath: string, content: string): string {
+  let result = content
+  const aliases = scopedTypeAliases[basename(filePath, '.py')] ?? {}
+
+  for (const [from, to] of Object.entries(aliases)) {
+    result = replaceClassDefinition(result, from)
+    result = result.replace(new RegExp(`\\b${from}\\b`, 'g'), to)
+  }
+
+  return result
+}
+
+function applyJsonIntegerParity(filePath: string, content: string): string {
+  if (!strictIntegerSchemas.has(basename(filePath, '.py'))) {
+    return content
+  }
+
+  return content.replace(/\bStrictInt\b/g, 'JsonInteger')
+}
+
 function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   let result = content
 
@@ -250,6 +322,12 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
     }
   }
 
+  if (moduleName === 'chat-contract-runtime') {
+    imports.add('import math')
+    imports.add('from pydantic import BeforeValidator')
+    imports.add('from typing import Annotated')
+  }
+
   const aliases = detectDuplicateTypes(classNames, generatedFiles)
 
   const parts: string[] = [
@@ -265,10 +343,12 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
     '',
     `__all__ = [${classNames.map((name) => `"${name}"`).join(', ')}]`,
     '',
+    ...(moduleName === 'chat-contract-runtime' ? [JSON_INTEGER_PARITY_HELPER, ''] : []),
   ]
 
   for (const filePath of generatedFiles) {
-    parts.push(extractBody(filePath), '')
+    const body = applyScopedTypeAliases(filePath, extractBody(filePath))
+    parts.push(applyJsonIntegerParity(filePath, body), '')
   }
 
   let content = `${parts.join('\n').trimEnd()}\n`
