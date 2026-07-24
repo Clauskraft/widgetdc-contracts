@@ -53,6 +53,8 @@ const CANONICAL_CAPABILITY_TOKEN_PATTERN =
 const CANONICAL_MAJOR_PATTERN = '^[1-9][0-9]*$'
 const CANONICAL_DOCUMENT_HASH_PATTERN = '^sha256:[0-9a-f]{64}$'
 const LEGACY_ALIAS_PATTERN = '^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$'
+const RFC3339_UTC_OFFSET_DATE_TIME_PATTERN =
+  '^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$'
 
 const CanonicalCapabilityId = Type.String({
   pattern: CANONICAL_CAPABILITY_URN_PATTERN,
@@ -72,6 +74,22 @@ const CanonicalMetadataV1 = {
 }
 
 const OpaqueReference = Type.String({ minLength: 1, maxLength: 512 })
+const OperationReference = Type.String({
+  pattern: '^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$',
+  maxLength: 512,
+})
+const RiskReference = Type.String({
+  pattern: '^risk:[A-Za-z0-9][A-Za-z0-9._/-]*$',
+  maxLength: 512,
+})
+const ProofRequirementReference = Type.String({
+  pattern: '^proof:[A-Za-z0-9][A-Za-z0-9._/-]*$',
+  maxLength: 512,
+})
+const ContextReference = Type.String({
+  pattern: '^context:[A-Za-z0-9][A-Za-z0-9._/-]*$',
+  maxLength: 512,
+})
 const LegacyAlias = Type.String({
   pattern: LEGACY_ALIAS_PATTERN,
   description:
@@ -103,17 +121,17 @@ export const CapabilityDefinitionV1 = Type.Object(
       Type.Literal('deprecated'),
       Type.Literal('archived'),
     ]),
-    operation_refs: Type.Array(OpaqueReference, {
+    operation_refs: Type.Array(OperationReference, {
       minItems: 1,
       maxItems: 64,
       uniqueItems: true,
     }),
-    risk_refs: Type.Array(OpaqueReference, {
+    risk_refs: Type.Array(RiskReference, {
       minItems: 1,
       maxItems: 64,
       uniqueItems: true,
     }),
-    proof_requirement_refs: Type.Array(OpaqueReference, {
+    proof_requirement_refs: Type.Array(ProofRequirementReference, {
       minItems: 1,
       maxItems: 64,
       uniqueItems: true,
@@ -140,8 +158,8 @@ export type CapabilityDefinitionV1 = Static<typeof CapabilityDefinitionV1>
 const CapabilityRequirementCommonV1 = {
   schema_version: Type.Literal('wdc.capability_requirement.v1'),
   ...CanonicalMetadataV1,
-  operation_ref: OpaqueReference,
-  context_ref: OpaqueReference,
+  operation_ref: OperationReference,
+  context_ref: ContextReference,
   workbom_id: Type.Optional(
     Type.String({
       pattern: '^workbom:[A-Za-z0-9][A-Za-z0-9._:-]*$',
@@ -201,7 +219,11 @@ export const AuthorityGrantRefV1 = Type.Object(
     issuer: OpaqueReference,
     grant_id: OpaqueReference,
     scope_ref: OpaqueReference,
-    expires_at: Type.String({ format: 'date-time' }),
+    expires_at: Type.String({
+      pattern: RFC3339_UTC_OFFSET_DATE_TIME_PATTERN,
+      description:
+        'RFC 3339-shaped wire string with T separator and an explicit Z or numeric UTC offset. Calendar and expiry-policy evaluation are outside this inert-reference contract.',
+    }),
     reference_version: Type.String({
       pattern: '^[1-9][0-9]*(?:\\.[0-9]+){0,2}$',
       maxLength: 64,
@@ -322,12 +344,12 @@ function projectCanonicalCapabilityDocumentV1(
     throw new TypeError('capability contract document cannot contain symbol properties')
   }
 
-  const expectedSchemaVersion = CAPABILITY_SCHEMA_VERSIONS[schemaId]
-  if (!expectedSchemaVersion) {
+  if (!Object.hasOwn(CAPABILITY_SCHEMA_VERSIONS, schemaId)) {
     throw new TypeError(`unsupported capability contract schema id: ${schemaId}`)
   }
+  const expectedSchemaVersion = CAPABILITY_SCHEMA_VERSIONS[schemaId]
 
-  const payload: JsonObject = {}
+  const payload = Object.create(null) as JsonObject
   let schemaVersion: string | undefined
   for (const key of Object.getOwnPropertyNames(document)) {
     const descriptor = Object.getOwnPropertyDescriptor(document, key)
@@ -380,18 +402,30 @@ export function canonicalCapabilityDocumentHashV1(
  */
 export function hasValidCanonicalCapabilityDocumentHashV1(
   schemaId: CapabilityContractSchemaIdV1,
-  document: CanonicalCapabilityDocumentHashInputV1,
+  document: unknown,
 ): boolean {
-  const claimedHash = document.canonical_document_hash
-  if (
-    typeof claimedHash !== 'string' ||
-    !/^sha256:[0-9a-f]{64}$/.test(claimedHash)
-  ) {
-    return false
-  }
-
   try {
-    return canonicalCapabilityDocumentHashV1(schemaId, document) === claimedHash
+    const candidate = document as CanonicalCapabilityDocumentHashInputV1
+    const hashDescriptor = Object.getOwnPropertyDescriptor(
+      candidate,
+      'canonical_document_hash',
+    )
+    if (
+      !hashDescriptor ||
+      !hashDescriptor.enumerable ||
+      !('value' in hashDescriptor)
+    ) {
+      return false
+    }
+    const claimedHash = hashDescriptor.value
+    if (
+      typeof claimedHash !== 'string' ||
+      !/^sha256:[0-9a-f]{64}$/.test(claimedHash)
+    ) {
+      return false
+    }
+
+    return canonicalCapabilityDocumentHashV1(schemaId, candidate) === claimedHash
   } catch {
     return false
   }

@@ -161,6 +161,29 @@
       }
     },
     {
+      "name": "active capability definition omits legacy aliases",
+      "schema": "CapabilityDefinitionV1",
+      "valid": true,
+      "value": {
+        "schema_version": "wdc.capability_definition.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "capability_id": "urn:wdc:capability:contracts:inspect-schema:v1",
+        "lifecycle": "active",
+        "operation_refs": [
+          "operation:contracts.inspect-schema"
+        ],
+        "risk_refs": [
+          "risk:contract-drift"
+        ],
+        "proof_requirement_refs": [
+          "proof:source-tests"
+        ]
+      }
+    },
+    {
       "name": "archived capability definition remains representable",
       "schema": "CapabilityDefinitionV1",
       "valid": true,
@@ -237,6 +260,76 @@
       }
     },
     {
+      "name": "definition rejects provider smuggled as operation reference",
+      "schema": "CapabilityDefinitionV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_definition.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "lifecycle": "active",
+        "operation_refs": [
+          "provider:qwen"
+        ],
+        "risk_refs": [
+          "risk:contract-drift"
+        ],
+        "proof_requirement_refs": [
+          "proof:source-tests"
+        ]
+      }
+    },
+    {
+      "name": "definition rejects nested provider selector in operation reference",
+      "schema": "CapabilityDefinitionV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_definition.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "lifecycle": "active",
+        "operation_refs": [
+          "operation:provider:qwen"
+        ],
+        "risk_refs": [
+          "risk:contract-drift"
+        ],
+        "proof_requirement_refs": [
+          "proof:source-tests"
+        ]
+      }
+    },
+    {
+      "name": "definition rejects explicit null for omitted legacy aliases",
+      "schema": "CapabilityDefinitionV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_definition.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "lifecycle": "active",
+        "operation_refs": [
+          "operation:contracts.validate-schema"
+        ],
+        "risk_refs": [
+          "risk:contract-drift"
+        ],
+        "proof_requirement_refs": [
+          "proof:source-tests"
+        ],
+        "legacy_aliases": null
+      }
+    },
+    {
       "name": "canonical URN cannot be a legacy alias",
       "schema": "CapabilityDefinitionV1",
       "valid": false,
@@ -300,6 +393,40 @@
       }
     },
     {
+      "name": "requirement rejects explicit null workbom id",
+      "schema": "CapabilityRequirementV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_requirement.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "selector_kind": "exact",
+        "requested_capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "operation_ref": "operation:contracts.validate-schema",
+        "context_ref": "context:lin-2267",
+        "workbom_id": null
+      }
+    },
+    {
+      "name": "requirement rejects explicit null correlation id",
+      "schema": "CapabilityRequirementV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_requirement.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "selector_kind": "exact",
+        "requested_capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "operation_ref": "operation:contracts.validate-schema",
+        "context_ref": "context:lin-2267",
+        "correlation_id": null
+      }
+    },
+    {
       "name": "requirement cannot select a provider",
       "schema": "CapabilityRequirementV1",
       "valid": false,
@@ -314,6 +441,54 @@
         "operation_ref": "operation:contracts.validate-schema",
         "context_ref": "context:lin-2267",
         "provider": "example-provider"
+      }
+    },
+    {
+      "name": "requirement rejects provider smuggled as operation reference",
+      "schema": "CapabilityRequirementV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_requirement.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "selector_kind": "exact",
+        "requested_capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "operation_ref": "provider:qwen",
+        "context_ref": "context:lin-2267"
+      }
+    },
+    {
+      "name": "requirement rejects tool smuggled as context reference",
+      "schema": "CapabilityRequirementV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_requirement.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "selector_kind": "exact",
+        "requested_capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "operation_ref": "operation:contracts.validate-schema",
+        "context_ref": "tool:shell"
+      }
+    },
+    {
+      "name": "requirement rejects nested tool selector in context reference",
+      "schema": "CapabilityRequirementV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_requirement.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "selector_kind": "exact",
+        "requested_capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+        "operation_ref": "operation:contracts.validate-schema",
+        "context_ref": "context:tool:shell"
       }
     },
     {
@@ -389,6 +564,78 @@
         "expires_at": "2026-08-01T00:00:00Z",
         "reference_version": "1",
         "reference_only": true
+      }
+    },
+    {
+      "name": "authority reference rejects date-only expiry",
+      "schema": "AuthorityGrantRefV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.authority_grant_ref.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "issuer": "authority-service",
+        "grant_id": "grant:opaque-123",
+        "scope_ref": "scope:contracts-read",
+        "expires_at": "2026-08-01",
+        "reference_version": "1",
+        "reference_only": true
+      }
+    },
+    {
+      "name": "authority reference rejects expiry without timezone",
+      "schema": "AuthorityGrantRefV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.authority_grant_ref.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "issuer": "authority-service",
+        "grant_id": "grant:opaque-123",
+        "scope_ref": "scope:contracts-read",
+        "expires_at": "2026-08-01T00:00:00",
+        "reference_version": "1",
+        "reference_only": true
+      }
+    },
+    {
+      "name": "authority reference rejects numeric epoch expiry",
+      "schema": "AuthorityGrantRefV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.authority_grant_ref.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "issuer": "authority-service",
+        "grant_id": "grant:opaque-123",
+        "scope_ref": "scope:contracts-read",
+        "expires_at": 0,
+        "reference_version": "1",
+        "reference_only": true
+      }
+    },
+    {
+      "name": "authority reference rejects numeric truth literal",
+      "schema": "AuthorityGrantRefV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.authority_grant_ref.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "issuer": "authority-service",
+        "grant_id": "grant:opaque-123",
+        "scope_ref": "scope:contracts-read",
+        "expires_at": "2026-08-01T00:00:00Z",
+        "reference_version": "1",
+        "reference_only": 1
       }
     },
     {

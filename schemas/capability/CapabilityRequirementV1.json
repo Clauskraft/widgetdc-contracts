@@ -40,12 +40,12 @@
           "type": "string"
         },
         "operation_ref": {
-          "minLength": 1,
+          "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
           "maxLength": 512,
           "type": "string"
         },
         "context_ref": {
-          "minLength": 1,
+          "pattern": "^context:[A-Za-z0-9][A-Za-z0-9._/-]*$",
           "maxLength": 512,
           "type": "string"
         },
@@ -111,12 +111,12 @@
           "type": "string"
         },
         "operation_ref": {
-          "minLength": 1,
+          "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
           "maxLength": 512,
           "type": "string"
         },
         "context_ref": {
-          "minLength": 1,
+          "pattern": "^context:[A-Za-z0-9][A-Za-z0-9._/-]*$",
           "maxLength": 512,
           "type": "string"
         },

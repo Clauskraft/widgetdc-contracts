@@ -139,5 +139,5 @@ export declare function canonicalCapabilityDocumentHashV1(schemaId: CapabilityCo
  * Verify only the canonical document hash. Callers must also validate the
  * document against its matching TypeBox/JSON Schema/Pydantic contract.
  */
-export declare function hasValidCanonicalCapabilityDocumentHashV1(schemaId: CapabilityContractSchemaIdV1, document: CanonicalCapabilityDocumentHashInputV1): boolean;
+export declare function hasValidCanonicalCapabilityDocumentHashV1(schemaId: CapabilityContractSchemaIdV1, document: unknown): boolean;
 //# sourceMappingURL=contract-core.d.ts.map

@@ -64,7 +64,7 @@
       "uniqueItems": true,
       "type": "array",
       "items": {
-        "minLength": 1,
+        "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
         "maxLength": 512,
         "type": "string"
       }
@@ -75,7 +75,7 @@
       "uniqueItems": true,
       "type": "array",
       "items": {
-        "minLength": 1,
+        "pattern": "^risk:[A-Za-z0-9][A-Za-z0-9._/-]*$",
         "maxLength": 512,
         "type": "string"
       }
@@ -86,7 +86,7 @@
       "uniqueItems": true,
       "type": "array",
       "items": {
-        "minLength": 1,
+        "pattern": "^proof:[A-Za-z0-9][A-Za-z0-9._/-]*$",
         "maxLength": 512,
         "type": "string"
       }

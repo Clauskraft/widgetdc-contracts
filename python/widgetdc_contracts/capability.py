@@ -6,7 +6,7 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 from pydantic import BeforeValidator
@@ -23,6 +23,25 @@ def _reject_duplicate_items(value: object) -> object:
                 raise ValueError('Input should contain unique items')
             seen.append(item)
     return value
+
+def _reject_explicit_none(value: object) -> object:
+    if value is None:
+        raise ValueError('Explicit null is not allowed; omit the field instead')
+    return value
+
+def _require_json_boolean(value: object) -> object:
+    if type(value) is not bool:
+        raise ValueError('Input should be a JSON boolean')
+    return value
+
+class _CapabilityContractDumpMixin:
+    def model_dump(self, *args: object, **kwargs: object):
+        kwargs['exclude_none'] = True
+        return super().model_dump(*args, **kwargs)
+
+    def model_dump_json(self, *args: object, **kwargs: object):
+        kwargs['exclude_none'] = True
+        return super().model_dump_json(*args, **kwargs)
 
 class AliasResolutionResultV11(BaseModel):
     model_config = ConfigDict(
@@ -128,12 +147,13 @@ class AliasResolutionResultV14(BaseModel):
         pattern='^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$',
     )
     status: Literal['ambiguous']
-    candidate_capability_ids: Annotated[list[CandidateCapabilityId], BeforeValidator(_reject_duplicate_items)] = Field(
+    candidate_capability_ids: Annotated[list[CandidateCapabilityId], AfterValidator(_reject_duplicate_items)] = Field(
         ..., max_length=64, min_length=2
     )
 
 
 class AliasResolutionResultV1(
+    _CapabilityContractDumpMixin,
     RootModel[
         AliasResolutionResultV11
         | AliasResolutionResultV12
@@ -151,7 +171,7 @@ class AliasResolutionResultV1(
         description='Exactly one terminal alias result: resolved, unresolved, or ambiguous. This is a result contract, not a resolver.',
     )
 
-class AuthorityGrantRefV1(BaseModel):
+class AuthorityGrantRefV1(_CapabilityContractDumpMixin, BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -167,22 +187,30 @@ class AuthorityGrantRefV1(BaseModel):
     issuer: str = Field(..., max_length=512, min_length=1)
     grant_id: str = Field(..., max_length=512, min_length=1)
     scope_ref: str = Field(..., max_length=512, min_length=1)
-    expires_at: AwareDatetime
+    expires_at: str = Field(
+        ...,
+        description='RFC 3339-shaped wire string with T separator and an explicit Z or numeric UTC offset. Calendar and expiry-policy evaluation are outside this inert-reference contract.',
+        pattern='^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])$',
+    )
     reference_version: str = Field(
         ..., max_length=64, pattern='^[1-9][0-9]*(?:\\.[0-9]+){0,2}$'
     )
-    reference_only: Literal[True]
+    reference_only: Annotated[Literal[True], BeforeValidator(_require_json_boolean)]
 
 class OperationRef(RootModel[str]):
-    root: str = Field(..., max_length=512, min_length=1)
+    root: str = Field(
+        ..., max_length=512, pattern='^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
 
 
 class RiskRef(RootModel[str]):
-    root: str = Field(..., max_length=512, min_length=1)
+    root: str = Field(..., max_length=512, pattern='^risk:[A-Za-z0-9][A-Za-z0-9._/-]*$')
 
 
 class ProofRequirementRef(RootModel[str]):
-    root: str = Field(..., max_length=512, min_length=1)
+    root: str = Field(
+        ..., max_length=512, pattern='^proof:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
 
 
 class LegacyAliase(RootModel[str]):
@@ -193,7 +221,7 @@ class LegacyAliase(RootModel[str]):
     )
 
 
-class CapabilityDefinitionV1(BaseModel):
+class CapabilityDefinitionV1(_CapabilityContractDumpMixin, BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -212,19 +240,19 @@ class CapabilityDefinitionV1(BaseModel):
         pattern='^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$',
     )
     lifecycle: Literal['active', 'deprecated', 'archived']
-    operation_refs: Annotated[list[OperationRef], BeforeValidator(_reject_duplicate_items)] = Field(..., max_length=64, min_length=1)
-    risk_refs: Annotated[list[RiskRef], BeforeValidator(_reject_duplicate_items)] = Field(..., max_length=64, min_length=1)
-    proof_requirement_refs: Annotated[list[ProofRequirementRef], BeforeValidator(_reject_duplicate_items)] = Field(
+    operation_refs: Annotated[list[OperationRef], AfterValidator(_reject_duplicate_items)] = Field(..., max_length=64, min_length=1)
+    risk_refs: Annotated[list[RiskRef], AfterValidator(_reject_duplicate_items)] = Field(..., max_length=64, min_length=1)
+    proof_requirement_refs: Annotated[list[ProofRequirementRef], AfterValidator(_reject_duplicate_items)] = Field(
         ..., max_length=64, min_length=1
     )
-    legacy_aliases: Annotated[list[LegacyAliase] | None, BeforeValidator(_reject_duplicate_items)] = Field(
+    legacy_aliases: Annotated[Annotated[list[LegacyAliase] | None, AfterValidator(_reject_duplicate_items)], BeforeValidator(_reject_explicit_none)] = Field(
         None,
         description='Read-only compatibility metadata. It is neither canonical identity nor authority.',
         max_length=64,
         min_length=1,
     )
 
-class CapabilityIdentifierV1(BaseModel):
+class CapabilityIdentifierV1(_CapabilityContractDumpMixin, BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -256,12 +284,16 @@ class CapabilityRequirementV11(BaseModel):
         description='SHA-256 identity over the canonical contract projection, excluding this field itself.',
         pattern='^sha256:[0-9a-f]{64}$',
     )
-    operation_ref: str = Field(..., max_length=512, min_length=1)
-    context_ref: str = Field(..., max_length=512, min_length=1)
-    workbom_id: str | None = Field(
+    operation_ref: str = Field(
+        ..., max_length=512, pattern='^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
+    context_ref: str = Field(
+        ..., max_length=512, pattern='^context:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
+    workbom_id: Annotated[str | None, BeforeValidator(_reject_explicit_none)] = Field(
         None, max_length=512, pattern='^workbom:[A-Za-z0-9][A-Za-z0-9._:-]*$'
     )
-    correlation_id: str | None = Field(None, max_length=512, min_length=1)
+    correlation_id: Annotated[str | None, BeforeValidator(_reject_explicit_none)] = Field(None, max_length=512, min_length=1)
     selector_kind: Literal['exact']
     requested_capability_id: str = Field(
         ...,
@@ -283,12 +315,16 @@ class CapabilityRequirementV12(BaseModel):
         description='SHA-256 identity over the canonical contract projection, excluding this field itself.',
         pattern='^sha256:[0-9a-f]{64}$',
     )
-    operation_ref: str = Field(..., max_length=512, min_length=1)
-    context_ref: str = Field(..., max_length=512, min_length=1)
-    workbom_id: str | None = Field(
+    operation_ref: str = Field(
+        ..., max_length=512, pattern='^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
+    context_ref: str = Field(
+        ..., max_length=512, pattern='^context:[A-Za-z0-9][A-Za-z0-9._/-]*$'
+    )
+    workbom_id: Annotated[str | None, BeforeValidator(_reject_explicit_none)] = Field(
         None, max_length=512, pattern='^workbom:[A-Za-z0-9][A-Za-z0-9._:-]*$'
     )
-    correlation_id: str | None = Field(None, max_length=512, min_length=1)
+    correlation_id: Annotated[str | None, BeforeValidator(_reject_explicit_none)] = Field(None, max_length=512, min_length=1)
     selector_kind: Literal['major_range']
     capability_domain: str = Field(..., pattern='^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$')
     capability_action: str = Field(..., pattern='^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$')
@@ -297,6 +333,7 @@ class CapabilityRequirementV12(BaseModel):
 
 
 class CapabilityRequirementV1(
+    _CapabilityContractDumpMixin,
     RootModel[CapabilityRequirementV11 | CapabilityRequirementV12]
 ):
     root: CapabilityRequirementV11 | CapabilityRequirementV12 = Field(
