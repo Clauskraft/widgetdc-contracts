@@ -29,6 +29,7 @@ import * as chatContractRuntime from '../src/chat-contract-runtime/index.js'
 import * as continuation from '../src/continuation/index.js'
 import * as parl from '../src/parl/index.js'
 import * as execution from '../src/execution/index.js'
+import * as capability from '../src/capability/index.js'
 
 const modules: Record<string, Record<string, unknown>> = {
   cognitive,
@@ -48,6 +49,7 @@ const modules: Record<string, Record<string, unknown>> = {
   continuation,
   parl,
   execution,
+  capability,
 }
 
 let exportedCount = 0

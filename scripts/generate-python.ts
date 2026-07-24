@@ -34,6 +34,21 @@ const JSON_INTEGER_PARITY_HELPER = `def _normalize_json_integer(value: object) -
 
 
 JsonInteger = Annotated[StrictInt, BeforeValidator(_normalize_json_integer)]`
+const CAPABILITY_UNIQUE_ITEMS_FIELDS = [
+  'operation_refs',
+  'risk_refs',
+  'proof_requirement_refs',
+  'legacy_aliases',
+  'candidate_capability_ids',
+] as const
+const CAPABILITY_UNIQUE_ITEMS_HELPER = `def _reject_duplicate_items(value: object) -> object:
+    if isinstance(value, list):
+        seen: list[object] = []
+        for item in value:
+            if item in seen:
+                raise ValueError('Input should contain unique items')
+            seen.append(item)
+    return value`
 
 const BASE_MODEL = `"""Base model for all WidgeTDC contracts. Wire format is snake_case."""
 from pydantic import BaseModel, ConfigDict
@@ -311,6 +326,27 @@ function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   return result
 }
 
+function applyCapabilityUniqueItemsParity(content: string): string {
+  let result = content
+  let replacements = 0
+
+  for (const field of CAPABILITY_UNIQUE_ITEMS_FIELDS) {
+    const fieldPattern = new RegExp(`^(\\s*${field}: )(.+?)( = Field\\()`, 'm')
+    result = result.replace(fieldPattern, (_match, prefix: string, annotation: string, suffix: string) => {
+      replacements += 1
+      return `${prefix}Annotated[${annotation}, BeforeValidator(_reject_duplicate_items)]${suffix}`
+    })
+  }
+
+  if (replacements !== CAPABILITY_UNIQUE_ITEMS_FIELDS.length) {
+    throw new Error(
+      `[generate-python] Expected ${CAPABILITY_UNIQUE_ITEMS_FIELDS.length} capability uniqueItems fields, replaced ${replacements}.`,
+    )
+  }
+
+  return result
+}
+
 function mergeModule(moduleName: string, outputName: string, classNames: string[], generatedFiles: string[]): void {
   const imports = new Set<string>()
 
@@ -324,6 +360,10 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
 
   if (moduleName === 'chat-contract-runtime') {
     imports.add('import math')
+    imports.add('from pydantic import BeforeValidator')
+    imports.add('from typing import Annotated')
+  }
+  if (moduleName === 'capability') {
     imports.add('from pydantic import BeforeValidator')
     imports.add('from typing import Annotated')
   }
@@ -344,6 +384,7 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
     `__all__ = [${classNames.map((name) => `"${name}"`).join(', ')}]`,
     '',
     ...(moduleName === 'chat-contract-runtime' ? [JSON_INTEGER_PARITY_HELPER, ''] : []),
+    ...(moduleName === 'capability' ? [CAPABILITY_UNIQUE_ITEMS_HELPER, ''] : []),
   ]
 
   for (const filePath of generatedFiles) {
@@ -353,6 +394,9 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
 
   let content = `${parts.join('\n').trimEnd()}\n`
   content = applyTypeAliases(content, aliases)
+  if (moduleName === 'capability') {
+    content = applyCapabilityUniqueItemsParity(content)
+  }
 
   writeFileSync(join(pythonDir, `${outputName}.py`), content, 'utf-8')
 }

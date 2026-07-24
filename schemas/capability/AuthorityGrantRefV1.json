@@ -1,0 +1,70 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/AuthorityGrantRefV1.json",
+  "additionalProperties": false,
+  "description": "Inert reference to possible separately issued authority. It contains no grant, policy decision, permission, or signature.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_document_hash",
+    "issuer",
+    "grant_id",
+    "scope_ref",
+    "expires_at",
+    "reference_version",
+    "reference_only"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.authority_grant_ref.v1",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+      "type": "string"
+    },
+    "issuer": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "grant_id": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "scope_ref": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "reference_version": {
+      "pattern": "^[1-9][0-9]*(?:\\.[0-9]+){0,2}$",
+      "maxLength": 64,
+      "type": "string"
+    },
+    "reference_only": {
+      "const": true,
+      "type": "boolean"
+    }
+  }
+}

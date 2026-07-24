@@ -67,6 +67,7 @@ ls schemas/cognitive/
 | `@widgetdc/contracts/graph` | NodeLabel, RelationshipType | All services |
 | `@widgetdc/contracts/orchestrator` | OrchestratorToolCall, OrchestratorToolResult, AgentMessage, AgentHandshake | Orchestrator ↔ All agents |
 | `@widgetdc/contracts/adoption` | **AgentAdoptionContract (B11)**, NotebookSpec, AnalysisArtifact, RewardEntry, RolloutEntry | Adoption ladder B11-B20 |
+| `@widgetdc/contracts/capability` | CapabilityIdentifierV1, CapabilityDefinitionV1, CapabilityRequirementV1, AuthorityGrantRefV1, AliasResolutionResultV1 | Canonical capability contract consumers |
 
 ### `AgentAdoptionContract` (B11) — canonical adoption contract
 

@@ -8,6 +8,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Unreleased]
 
 ### Added
+- `capability`: add Capability Contract Core v1 with canonical RFC-8785/SHA-256
+  document identities, closed requirements, inert authority references, and
+  fail-closed exact alias result variants (`LIN-2267`). Registry resolution,
+  execution binding, grant issuance, graph writes, and runtime enforcement
+  remain outside this contract-only slice.
 - `chat-contract-runtime`: add the public `wdc.chat_session.v1` lifecycle
   contracts for backend-owned identity, optimistic concurrency, one-way
   archival, bounded cursor pagination, and strict TypeBox/Pydantic parity
