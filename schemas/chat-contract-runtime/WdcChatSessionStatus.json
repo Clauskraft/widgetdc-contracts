@@ -1,0 +1,14 @@
+{
+  "$id": "WdcChatSessionStatus",
+  "description": "Public lifecycle state for a backend-owned WDC Chat session.",
+  "anyOf": [
+    {
+      "const": "active",
+      "type": "string"
+    },
+    {
+      "const": "archived",
+      "type": "string"
+    }
+  ]
+}

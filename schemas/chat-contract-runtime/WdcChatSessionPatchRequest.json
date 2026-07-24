@@ -1,0 +1,85 @@
+{
+  "$id": "WdcChatSessionPatchRequest",
+  "description": "Optimistic-concurrency patch for rename and/or one-way archival. At least one mutable field is required.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "expected_version",
+        "title"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.chat_session_patch_request.v1",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "expected_version",
+        "status"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.chat_session_patch_request.v1",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "status": {
+          "const": "archived",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "expected_version",
+        "title",
+        "status"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.chat_session_patch_request.v1",
+          "type": "string"
+        },
+        "expected_version": {
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "maxLength": 200,
+          "type": "string"
+        },
+        "status": {
+          "const": "archived",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

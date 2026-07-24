@@ -5,6 +5,14 @@ All notable changes to `@widgetdc/contracts` will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `chat-contract-runtime`: add the public `wdc.chat_session.v1` lifecycle
+  contracts for backend-owned identity, optimistic concurrency, one-way
+  archival, bounded cursor pagination, and strict TypeBox/Pydantic parity
+  (LIN-2265).
+
 ## [0.4.4] - 2026-04-18
 
 ### Fixed

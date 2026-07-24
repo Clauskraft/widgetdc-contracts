@@ -1,0 +1,21 @@
+{
+  "$id": "WdcChatSessionCreateRequest",
+  "additionalProperties": false,
+  "description": "Untrusted create input. Session identity, lifecycle state, version, timestamps, ownership, and authority are assigned server-side.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "title"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.chat_session_create_request.v1",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "maxLength": 200,
+      "type": "string"
+    }
+  }
+}

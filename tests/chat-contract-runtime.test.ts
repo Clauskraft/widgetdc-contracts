@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Value } from '@sinclair/typebox/value'
+import { readFileSync } from 'node:fs'
 import '../src/formats.js'
 
 import {
@@ -7,6 +8,11 @@ import {
   ChatEvidencePack,
   ChatRoutePlan,
   WdcChatDraft,
+  WdcChatSession,
+  WdcChatSessionCreateRequest,
+  WdcChatSessionPage,
+  WdcChatSessionPatchRequest,
+  WdcChatSessionStatus,
   WdcChatTurnRequest,
   WdcChatTurnResult,
 } from '../src/chat-contract-runtime/index.js'
@@ -24,7 +30,172 @@ const governanceContext = {
   server_trusted: true,
 }
 
+const chatSession = {
+  schema_version: 'wdc.chat_session.v1',
+  session_id: 'session:opaque-chat-session-test',
+  title: 'Contract lifecycle test',
+  status: 'active',
+  version: 1,
+  created_at: '2026-07-23T08:00:00.000Z',
+  updated_at: '2026-07-23T08:00:00.000Z',
+}
+
 describe('WDC Chat Contract Runtime schemas', () => {
+  it('accepts bounded backend-owned chat session metadata', () => {
+    expect(Value.Check(WdcChatSessionStatus, 'active')).toBe(true)
+    expect(Value.Check(WdcChatSessionStatus, 'archived')).toBe(true)
+    expect(Value.Check(WdcChatSessionStatus, 'deleted')).toBe(false)
+    expect(Value.Check(WdcChatSession, chatSession)).toBe(true)
+    expect(Value.Check(WdcChatSession, {
+      ...chatSession,
+      status: 'archived',
+      version: 2,
+      updated_at: '2026-07-23T08:05:00.000Z',
+    })).toBe(true)
+  })
+
+  it('rejects invalid or unbounded chat session metadata', () => {
+    const invalidSessions = [
+      { ...chatSession, title: '' },
+      { ...chatSession, title: 'x'.repeat(201) },
+      { ...chatSession, session_id: '' },
+      { ...chatSession, session_id: 'x'.repeat(201) },
+      { ...chatSession, version: 0 },
+      { ...chatSession, version: 1.5 },
+      { ...chatSession, version: Number.MAX_SAFE_INTEGER + 1 },
+      { ...chatSession, created_at: 'not-a-timestamp' },
+      { ...chatSession, updated_at: 'not-a-timestamp' },
+      { ...chatSession, tenant_id: 'tenant:client-controlled' },
+    ]
+
+    for (const invalidSession of invalidSessions) {
+      expect(Value.Check(WdcChatSession, invalidSession)).toBe(false)
+    }
+  })
+
+  it('accepts create input without client-controlled session identity or authority', () => {
+    const createRequest = {
+      schema_version: 'wdc.chat_session_create_request.v1',
+      title: 'A new session',
+    }
+
+    expect(Value.Check(WdcChatSessionCreateRequest, createRequest)).toBe(true)
+
+    const forbiddenFields = {
+      session_id: 'session:client-controlled',
+      tenant_id: 'tenant:client-controlled',
+      owner_id: 'owner:client-controlled',
+      auth_subject: 'subject:client-controlled',
+      governance_context: governanceContext,
+      transcript: [],
+      actions: [],
+      status: 'active',
+      version: 1,
+      created_at: '2026-07-23T08:00:00.000Z',
+    }
+
+    expect(Value.Check(WdcChatSessionCreateRequest, {
+      ...createRequest,
+      title: '',
+    })).toBe(false)
+    expect(Value.Check(WdcChatSessionCreateRequest, {
+      ...createRequest,
+      title: 'x'.repeat(201),
+    })).toBe(false)
+
+    for (const [field, value] of Object.entries(forbiddenFields)) {
+      expect(Value.Check(WdcChatSessionCreateRequest, {
+        ...createRequest,
+        [field]: value,
+      })).toBe(false)
+    }
+  })
+
+  it('requires optimistic concurrency and a rename or archive change', () => {
+    const renameRequest = {
+      schema_version: 'wdc.chat_session_patch_request.v1',
+      expected_version: 1,
+      title: 'Renamed session',
+    }
+    const archiveRequest = {
+      schema_version: 'wdc.chat_session_patch_request.v1',
+      expected_version: 1,
+      status: 'archived',
+    }
+
+    expect(Value.Check(WdcChatSessionPatchRequest, renameRequest)).toBe(true)
+    expect(Value.Check(WdcChatSessionPatchRequest, archiveRequest)).toBe(true)
+    expect(Value.Check(WdcChatSessionPatchRequest, {
+      ...renameRequest,
+      status: 'archived',
+    })).toBe(true)
+
+    const invalidPatchRequests = [
+      { schema_version: 'wdc.chat_session_patch_request.v1', title: 'No version' },
+      { schema_version: 'wdc.chat_session_patch_request.v1', expected_version: 1 },
+      { ...renameRequest, expected_version: 0 },
+      { ...renameRequest, expected_version: 1.5 },
+      { ...renameRequest, expected_version: Number.MAX_SAFE_INTEGER + 1 },
+      { ...renameRequest, title: '' },
+      { ...renameRequest, title: 'x'.repeat(201) },
+      { ...archiveRequest, status: 'active' },
+      { ...renameRequest, tenant_id: 'tenant:client-controlled' },
+      { ...renameRequest, session_id: 'session:client-controlled' },
+    ]
+
+    for (const invalidPatchRequest of invalidPatchRequests) {
+      expect(Value.Check(WdcChatSessionPatchRequest, invalidPatchRequest)).toBe(false)
+    }
+  })
+
+  it('uses a required nullable opaque cursor for bounded session pages', () => {
+    const firstPage = {
+      schema_version: 'wdc.chat_session_page.v1',
+      items: [chatSession],
+      next_cursor: 'cursor:opaque-next-page',
+    }
+
+    expect(Value.Check(WdcChatSessionPage, firstPage)).toBe(true)
+    expect(Value.Check(WdcChatSessionPage, {
+      ...firstPage,
+      next_cursor: null,
+    })).toBe(true)
+    expect(Value.Check(WdcChatSessionPage, {
+      schema_version: 'wdc.chat_session_page.v1',
+      items: [chatSession],
+    })).toBe(false)
+    expect(Value.Check(WdcChatSessionPage, {
+      ...firstPage,
+      next_cursor: '',
+    })).toBe(false)
+    expect(Value.Check(WdcChatSessionPage, {
+      ...firstPage,
+      next_cursor: 'x'.repeat(2049),
+    })).toBe(false)
+    expect(Value.Check(WdcChatSessionPage, {
+      ...firstPage,
+      items: Array.from({ length: 101 }, () => chatSession),
+    })).toBe(false)
+  })
+
+  it('keeps generated JSON Schemas equivalent to the TypeBox exports', () => {
+    const schemas = {
+      WdcChatSessionStatus,
+      WdcChatSession,
+      WdcChatSessionCreateRequest,
+      WdcChatSessionPatchRequest,
+      WdcChatSessionPage,
+    }
+
+    for (const [schemaName, schema] of Object.entries(schemas)) {
+      const generated = JSON.parse(readFileSync(
+        `./schemas/chat-contract-runtime/${schemaName}.json`,
+        'utf8',
+      ))
+      expect(generated).toEqual(JSON.parse(JSON.stringify(schema)))
+    }
+  })
+
   it('makes CCR-1 contract-only boundaries machine-readable', () => {
     expect(Value.Check(ChatContractRuntimeBoundary, {
       schema_version: 'wdc.chat_contract_runtime_boundary.v1',

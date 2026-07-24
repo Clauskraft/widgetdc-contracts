@@ -12,10 +12,20 @@ const canonicalChatTurn = {
 
 describe('package format export', () => {
   it('exports TypeBox format registration for runtime schema consumers', async () => {
-    const { WdcChatTurnRequest } = await import('@widgetdc/contracts/chat-contract-runtime')
+    const {
+      WdcChatSession,
+      WdcChatSessionCreateRequest,
+      WdcChatSessionPage,
+      WdcChatSessionPatchRequest,
+      WdcChatTurnRequest,
+    } = await import('@widgetdc/contracts/chat-contract-runtime')
 
     await import('@widgetdc/contracts/formats')
 
     expect(Value.Check(WdcChatTurnRequest, canonicalChatTurn)).toBe(true)
+    expect(WdcChatSession.$id).toBe('WdcChatSession')
+    expect(WdcChatSessionCreateRequest.$id).toBe('WdcChatSessionCreateRequest')
+    expect(WdcChatSessionPatchRequest.$id).toBe('WdcChatSessionPatchRequest')
+    expect(WdcChatSessionPage.$id).toBe('WdcChatSessionPage')
   })
 })

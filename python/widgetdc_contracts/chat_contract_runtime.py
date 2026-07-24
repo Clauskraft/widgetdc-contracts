@@ -8,13 +8,32 @@ from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel, StrictInt
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StrictInt
 from pydantic import BaseModel, ConfigDict
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, StrictInt
+from pydantic import BeforeValidator
+from pydantic import Field, RootModel
 from pydantic import RootModel
+from typing import Annotated
 from typing import Literal
+import math
 
-__all__ = ["ChatCitationIntegrity", "ChatClaimDraft", "ChatContractRuntimeBoundary", "ChatEvidenceItem", "ChatEvidencePack", "ChatEvidenceStatus", "ChatPolicyFlag", "ChatRenderHints", "ChatRouteMethod", "ChatRoutePlan", "ChatSourceSurface", "ChatToolRequest", "ChatVerificationReport", "WdcChatDraft", "WdcChatTurnRequest", "WdcChatTurnResult"]
+__all__ = ["ChatCitationIntegrity", "ChatClaimDraft", "ChatContractRuntimeBoundary", "ChatEvidenceItem", "ChatEvidencePack", "ChatEvidenceStatus", "ChatPolicyFlag", "ChatRenderHints", "ChatRouteMethod", "ChatRoutePlan", "ChatSourceSurface", "ChatToolRequest", "ChatVerificationReport", "WdcChatDraft", "WdcChatSession", "WdcChatSessionCreateRequest", "WdcChatSessionPage", "WdcChatSessionPatchRequest", "WdcChatSessionStatus", "WdcChatTurnRequest", "WdcChatTurnResult"]
+
+def _normalize_json_integer(value: object) -> object:
+    if isinstance(value, bool) or isinstance(value, str):
+        raise ValueError('Input should be a JSON integer')
+    if isinstance(value, float):
+        if not math.isfinite(value) or not value.is_integer():
+            raise ValueError('Input should be a finite JSON integer')
+        return int(value)
+    return value
+
+
+JsonInteger = Annotated[StrictInt, BeforeValidator(_normalize_json_integer)]
 
 class ChatCitationIntegrity(
     RootModel[Literal['verified', 'partial', 'missing', 'hallucinated']]
@@ -448,6 +467,93 @@ class WdcChatDraft(BaseModel):
     policy_flags: list[PolicyFlag]
     render_hints: RenderHints
     created_at: AwareDatetime
+
+class WdcChatSession(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session.v1']
+    session_id: str = Field(
+        ...,
+        description='Opaque backend-assigned session identifier.',
+        max_length=200,
+        min_length=1,
+    )
+    title: str = Field(..., max_length=200, min_length=1)
+    status: Literal['active', 'archived'] = Field(
+        ..., description='Public lifecycle state for a backend-owned WDC Chat session.'
+    )
+    version: JsonInteger = Field(..., ge=1, le=9007199254740991)
+    created_at: AwareDatetime
+    updated_at: AwareDatetime
+
+class WdcChatSessionCreateRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session_create_request.v1']
+    title: str = Field(..., max_length=200, min_length=1)
+
+class NextCursor(RootModel[str]):
+    root: str = Field(..., max_length=2048, min_length=1)
+
+
+class WdcChatSessionPage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session_page.v1']
+    items: list[WdcChatSession] = Field(..., max_length=100)
+    next_cursor: NextCursor | None
+
+class WdcChatSessionPatchRequest1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session_patch_request.v1']
+    expected_version: JsonInteger = Field(..., ge=1, le=9007199254740991)
+    title: str = Field(..., max_length=200, min_length=1)
+
+
+class WdcChatSessionPatchRequest2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session_patch_request.v1']
+    expected_version: JsonInteger = Field(..., ge=1, le=9007199254740991)
+    status: Literal['archived']
+
+
+class WdcChatSessionPatchRequest3(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.chat_session_patch_request.v1']
+    expected_version: JsonInteger = Field(..., ge=1, le=9007199254740991)
+    title: str = Field(..., max_length=200, min_length=1)
+    status: Literal['archived']
+
+
+class WdcChatSessionPatchRequest(
+    RootModel[
+        WdcChatSessionPatchRequest1
+        | WdcChatSessionPatchRequest2
+        | WdcChatSessionPatchRequest3
+    ]
+):
+    root: (
+        WdcChatSessionPatchRequest1
+        | WdcChatSessionPatchRequest2
+        | WdcChatSessionPatchRequest3
+    ) = Field(
+        ...,
+        description='Optimistic-concurrency patch for rename and/or one-way archival. At least one mutable field is required.',
+    )
+
+class WdcChatSessionStatus(RootModel[Literal['active', 'archived']]):
+    root: Literal['active', 'archived'] = Field(
+        ..., description='Public lifecycle state for a backend-owned WDC Chat session.'
+    )
 
 class AttachmentRef(RootModel[str]):
     root: str = Field(..., min_length=1)
