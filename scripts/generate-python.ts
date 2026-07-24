@@ -5,11 +5,10 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  unlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join } from 'node:path'
+import { basename, dirname, join, relative } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
@@ -18,9 +17,11 @@ const rootDir = dirname(scriptDir)
 const schemasDir = join(rootDir, 'schemas')
 const pythonDir = join(rootDir, 'python', 'widgetdc_contracts')
 const tempDir = mkdtempSync(join(tmpdir(), 'widgetdc-python-'))
+const stagedPythonDir = join(tempDir, 'widgetdc_contracts')
+const stagedPyTyped = join(tempDir, 'py.typed')
+const datamodelCodegenTimeoutMs = Number(process.env.WIDGETDC_PYTHON_CODEGEN_TIMEOUT_MS ?? 60_000)
 const strictIntegerSchemas = new Set([
   'WdcChatSession',
-  'WdcChatSessionPage',
   'WdcChatSessionPatchRequest',
 ])
 const JSON_INTEGER_PARITY_HELPER = `def _normalize_json_integer(value: object) -> object:
@@ -75,19 +76,96 @@ function resolveCommand(command: string): string {
   return firstMatch
 }
 
-function ensureBaseModel(): void {
-  mkdirSync(pythonDir, { recursive: true })
+function ensureBaseModel(outputDir: string): void {
+  mkdirSync(outputDir, { recursive: true })
+  writeFileSync(join(outputDir, '_base.py'), BASE_MODEL, 'utf-8')
+}
 
-  for (const entry of readdirSync(pythonDir, { withFileTypes: true })) {
-    if (entry.isFile() && entry.name.endsWith('.py') && entry.name !== '_base.py') {
-      unlinkSync(join(pythonDir, entry.name))
+function listFilesRecursively(dir: string): string[] {
+  const files: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      files.push(...listFilesRecursively(entryPath))
+    } else if (entry.isFile()) {
+      files.push(entryPath)
+    }
+  }
+  return files.sort()
+}
+
+function collectImportNames(value: string): string[] {
+  return value
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+}
+
+function addImports(imports: Map<string, Set<string>>, key: string, names: string[]): void {
+  let values = imports.get(key)
+  if (!values) {
+    values = new Set<string>()
+    imports.set(key, values)
+  }
+  for (const name of names) {
+    values.add(name)
+  }
+}
+
+function collectImportLine(line: string, imports: Map<string, Set<string>>): boolean {
+  const fromMatch = /^from ([\w.]+) import (.+)$/.exec(line)
+  if (fromMatch) {
+    addImports(imports, `from ${fromMatch[1]} import`, collectImportNames(fromMatch[2]))
+    return true
+  }
+
+  const importMatch = /^import (.+)$/.exec(line)
+  if (importMatch) {
+    addImports(imports, 'import', collectImportNames(importMatch[1]))
+    return true
+  }
+
+  return false
+}
+
+function normalizeGeneratedPython(content: string): string {
+  const imports = new Map<string, Set<string>>()
+  const body: string[] = []
+
+  for (const line of content.replace(/\r\n/g, '\n').split('\n')) {
+    if (!collectImportLine(line, imports)) {
+      body.push(line)
     }
   }
 
-  const baseModelPath = join(pythonDir, '_base.py')
-  if (!existsSync(baseModelPath)) {
-    writeFileSync(baseModelPath, BASE_MODEL, 'utf-8')
+  const normalizedImports = Array.from(imports.entries())
+    .map(([key, names]) => `${key} ${Array.from(names).sort().join(', ')}`)
+    .sort()
+
+  return [
+    ...normalizedImports,
+    '---BODY---',
+    body.join('\n').trimEnd(),
+  ].join('\n')
+}
+
+function writeTextIfChanged(outPath: string, nextContent: string, materialCompare = false): boolean {
+  if (existsSync(outPath)) {
+    const currentContent = readFileSync(outPath, 'utf-8')
+    if (currentContent === nextContent) {
+      return false
+    }
+    if (
+      materialCompare &&
+      normalizeGeneratedPython(currentContent) === normalizeGeneratedPython(nextContent)
+    ) {
+      return false
+    }
   }
+
+  mkdirSync(dirname(outPath), { recursive: true })
+  writeFileSync(outPath, nextContent, 'utf-8')
+  return true
 }
 
 function listSchemaModules(): string[] {
@@ -160,11 +238,15 @@ function generateModuleFiles(moduleName: string, datamodelCodegen: string): {
       args.push('--strict-types', 'int')
     }
 
-    const result = spawnSync(
-      datamodelCodegen,
-      args,
-      { encoding: 'utf-8' },
-    )
+    const result = spawnSync(datamodelCodegen, args, {
+      encoding: 'utf-8',
+      timeout: datamodelCodegenTimeoutMs,
+      killSignal: 'SIGTERM',
+    })
+
+    if (result.error) {
+      fail(`datamodel-codegen failed for ${moduleName}/${schemaName}: ${result.error.message}`)
+    }
 
     if (result.status !== 0) {
       fail(`datamodel-codegen failed for ${moduleName}/${schemaName}: ${result.stderr || result.stdout}`)
@@ -311,7 +393,13 @@ function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   return result
 }
 
-function mergeModule(moduleName: string, outputName: string, classNames: string[], generatedFiles: string[]): void {
+function mergeModule(
+  moduleName: string,
+  outputName: string,
+  classNames: string[],
+  generatedFiles: string[],
+  outputDir: string,
+): void {
   const imports = new Set<string>()
 
   for (const filePath of generatedFiles) {
@@ -354,10 +442,10 @@ function mergeModule(moduleName: string, outputName: string, classNames: string[
   let content = `${parts.join('\n').trimEnd()}\n`
   content = applyTypeAliases(content, aliases)
 
-  writeFileSync(join(pythonDir, `${outputName}.py`), content, 'utf-8')
+  writeFileSync(join(outputDir, `${outputName}.py`), content, 'utf-8')
 }
 
-function writeInit(modules: string[]): void {
+function writeInit(modules: string[], outputDir: string): void {
   const lines = [
     '"""',
     'widgetdc-contracts — Auto-generated Pydantic v2 models.',
@@ -377,21 +465,30 @@ function writeInit(modules: string[]): void {
     }
   }
 
-  writeFileSync(join(pythonDir, '__init__.py'), `${lines.join('\n')}\n`, 'utf-8')
-  writeFileSync(join(rootDir, 'python', 'py.typed'), '', 'utf-8')
+  writeFileSync(join(outputDir, '__init__.py'), `${lines.join('\n')}\n`, 'utf-8')
+  writeFileSync(stagedPyTyped, '', 'utf-8')
+}
+
+function commitPythonOutput(): void {
+  for (const stagedPath of listFilesRecursively(stagedPythonDir)) {
+    const outPath = join(pythonDir, relative(stagedPythonDir, stagedPath))
+    writeTextIfChanged(outPath, readFileSync(stagedPath, 'utf-8'), true)
+  }
+  writeTextIfChanged(join(rootDir, 'python', 'py.typed'), readFileSync(stagedPyTyped, 'utf-8'))
 }
 
 function main(): void {
   const datamodelCodegen = resolveCommand('datamodel-codegen')
-  ensureBaseModel()
+  ensureBaseModel(stagedPythonDir)
 
   const modules = listSchemaModules()
   for (const moduleName of modules) {
     const { outputName, classNames, generatedFiles } = generateModuleFiles(moduleName, datamodelCodegen)
-    mergeModule(moduleName, outputName, classNames, generatedFiles)
+    mergeModule(moduleName, outputName, classNames, generatedFiles, stagedPythonDir)
   }
 
-  writeInit(modules)
+  writeInit(modules, stagedPythonDir)
+  commitPythonOutput()
   cleanupTemp()
   console.log(`Python models generated in ${pythonDir}`)
 }
