@@ -2,3 +2,11 @@
 *.md text eol=lf
 
 * text=auto
+
+# Generated package artifacts are committed and must remain build-deterministic
+# in a standard Windows checkout with global core.autocrlf enabled.
+dist/** text eol=lf
+schemas/** text eol=lf
+python/**/*.py text eol=lf
+src/llm/llm-matrix.json text eol=lf
+src/llm/llm_matrix.py text eol=lf
