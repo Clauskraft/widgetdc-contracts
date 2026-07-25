@@ -1,0 +1,302 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/AliasResolutionResultV1.json",
+  "description": "Exactly one terminal alias result: resolved, unresolved, or ambiguous. This is a result contract, not a resolver.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "An exact alias match to one active capability. Deprecated and archived capabilities cannot use this variant.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "alias",
+        "status",
+        "match_kind",
+        "capability_id",
+        "capability_lifecycle"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.alias_resolution_result.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "alias": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+          "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+          "type": "string"
+        },
+        "status": {
+          "const": "resolved",
+          "type": "string"
+        },
+        "match_kind": {
+          "const": "exact",
+          "type": "string"
+        },
+        "capability_id": {
+          "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+          "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+          "type": "string"
+        },
+        "capability_lifecycle": {
+          "const": "active",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "Unknown alias. No default, fallback, implicit candidate, or provider selection is permitted.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "alias",
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.alias_resolution_result.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "alias": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+          "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+          "type": "string"
+        },
+        "status": {
+          "const": "unresolved",
+          "type": "string"
+        },
+        "reason": {
+          "const": "unknown_alias",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "Exact alias metadata was observed, but its inactive lifecycle fails closed.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "alias",
+        "status",
+        "reason",
+        "matched_capability_id"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.alias_resolution_result.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "alias": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+          "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+          "type": "string"
+        },
+        "status": {
+          "const": "unresolved",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "const": "archived_capability",
+              "type": "string"
+            },
+            {
+              "const": "deprecated_without_compatibility_policy",
+              "type": "string"
+            }
+          ]
+        },
+        "matched_capability_id": {
+          "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+          "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "An alias matched a canonical capability identity, but the requested major version is incompatible. No fallback is selected.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "alias",
+        "status",
+        "reason",
+        "matched_capability_id",
+        "requested_version_token"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.alias_resolution_result.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "alias": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+          "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+          "type": "string"
+        },
+        "status": {
+          "const": "unresolved",
+          "type": "string"
+        },
+        "reason": {
+          "const": "version_incompatible",
+          "type": "string"
+        },
+        "matched_capability_id": {
+          "$ref": "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json"
+        },
+        "requested_version_token": {
+          "pattern": "^v[1-9][0-9]*$",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "Multiple exact candidates were observed. No candidate is selected and no fallback is allowed.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "alias",
+        "status",
+        "candidate_capability_ids"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.alias_resolution_result.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "alias": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+          "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+          "type": "string"
+        },
+        "status": {
+          "const": "ambiguous",
+          "type": "string"
+        },
+        "candidate_capability_ids": {
+          "minItems": 2,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "type": "array",
+          "items": {
+            "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+            "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  ]
+}

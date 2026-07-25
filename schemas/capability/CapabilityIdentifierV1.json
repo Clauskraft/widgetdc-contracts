@@ -1,0 +1,42 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json",
+  "additionalProperties": false,
+  "description": "Canonical, content-addressed capability identifier. Aliases are deliberately excluded.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_document_hash",
+    "capability_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.capability_identifier.v1",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+      "type": "string"
+    },
+    "capability_id": {
+      "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+      "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+      "type": "string"
+    }
+  }
+}
