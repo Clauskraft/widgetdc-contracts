@@ -36,6 +36,38 @@ describe('python generation hygiene', () => {
     expect(importCheck.status, `${importCheck.stdout}\n${importCheck.stderr}`).toBe(0)
   })
 
+  it('uses the exported definition reference and identifier classes throughout chain edges', () => {
+    const capabilityModule = readFileSync(
+      join(repoRoot, 'python', 'widgetdc_contracts', 'capability.py'),
+      'utf-8',
+    )
+    expect(
+      capabilityModule.match(/^class CapabilityIdentifierV1\(/gm),
+    ).toHaveLength(1)
+
+    const identityCheck = spawnSync('python', ['-c', `
+from widgetdc_contracts.capability import (
+    CapabilityChainEdgeV1,
+    CapabilityDefinitionRefV1,
+    CapabilityIdentifierV1,
+)
+
+source_type = CapabilityChainEdgeV1.model_fields["source"].annotation
+target_type = CapabilityChainEdgeV1.model_fields["target"].annotation
+assert source_type is CapabilityDefinitionRefV1
+assert target_type is CapabilityDefinitionRefV1
+assert CapabilityDefinitionRefV1.model_fields["capability_identifier"].annotation is CapabilityIdentifierV1
+`], {
+      cwd: join(repoRoot, 'python'),
+      encoding: 'utf-8',
+    })
+
+    expect(
+      identityCheck.status,
+      `${identityCheck.stdout}\n${identityCheck.stderr}`,
+    ).toBe(0)
+  })
+
   it('preserves chat-session patch variants in generated Pydantic models', () => {
     const validationScript = `
 from pydantic import ValidationError

@@ -11,6 +11,7 @@
 import { Static } from '@sinclair/typebox';
 export declare const CAPABILITY_CONTRACT_SCHEMA_IDS: {
     readonly CapabilityIdentifierV1: "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json";
+    readonly CapabilityChainEdgeV1: "https://widgetdc.com/contracts/capability/CapabilityChainEdgeV1.json";
     readonly CapabilityDefinitionV1: "https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json";
     readonly CapabilityRequirementV1: "https://widgetdc.com/contracts/capability/CapabilityRequirementV1.json";
     readonly AuthorityGrantRefV1: "https://widgetdc.com/contracts/capability/AuthorityGrantRefV1.json";
@@ -26,6 +27,66 @@ export declare const CapabilityIdentifierV1: import("@sinclair/typebox").TObject
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
 }>;
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>;
+export declare const CapabilityDefinitionRefV1: import("@sinclair/typebox").TObject<{
+    capability_identifier: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
+        capability_id: import("@sinclair/typebox").TString;
+        definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
+        canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+        hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+        canonical_document_hash: import("@sinclair/typebox").TString;
+        schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
+    }>>;
+    definition_document_hash: import("@sinclair/typebox").TString;
+}>;
+export type CapabilityDefinitionRefV1 = Static<typeof CapabilityDefinitionRefV1>;
+export declare const CapabilityChainEdgeV1: import("@sinclair/typebox").TObject<{
+    source: import("@sinclair/typebox").TObject<{
+        capability_identifier: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
+            capability_id: import("@sinclair/typebox").TString;
+            definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
+            canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+            hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+            canonical_document_hash: import("@sinclair/typebox").TString;
+            schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
+        }>>;
+        definition_document_hash: import("@sinclair/typebox").TString;
+    }>;
+    target: import("@sinclair/typebox").TObject<{
+        capability_identifier: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
+            capability_id: import("@sinclair/typebox").TString;
+            definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
+            canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+            hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+            canonical_document_hash: import("@sinclair/typebox").TString;
+            schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
+        }>>;
+        definition_document_hash: import("@sinclair/typebox").TString;
+    }>;
+    edge_property: import("@sinclair/typebox").TLiteral<"requires">;
+    definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
+    canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+    hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+    canonical_document_hash: import("@sinclair/typebox").TString;
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_chain_edge.v1">;
+}>;
+export type CapabilityChainEdgeV1 = Static<typeof CapabilityChainEdgeV1>;
+export interface CapabilityChainEdgeCoverageRequirementV1 {
+    readonly source_ref: string;
+    readonly source_hash: string;
+    readonly edge: CapabilityChainEdgeV1;
+}
+export interface CapabilityChainEdgeCoverageObservationV1 extends CapabilityChainEdgeCoverageRequirementV1 {
+    readonly routability_evidence_ref?: string;
+}
+export interface CapabilityChainEdgeCoverageResultV1 {
+    readonly status: 'empty' | 'partial' | 'complete';
+    readonly required_count: number;
+    readonly routable_count: number;
+    readonly coverage_rate: number | null;
+    readonly passes: boolean;
+}
+export declare function hasValidCapabilityChainEdgeIdentityV1(edge: unknown): edge is CapabilityChainEdgeV1;
+export declare function evaluateCapabilityChainEdgeCoverage(requirements: readonly CapabilityChainEdgeCoverageRequirementV1[], observations: readonly CapabilityChainEdgeCoverageObservationV1[]): CapabilityChainEdgeCoverageResultV1;
 export declare const CapabilityDefinitionV1: import("@sinclair/typebox").TObject<{
     capability_id: import("@sinclair/typebox").TString;
     lifecycle: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"active">, import("@sinclair/typebox").TLiteral<"deprecated">, import("@sinclair/typebox").TLiteral<"archived">]>;

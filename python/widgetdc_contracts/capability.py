@@ -13,7 +13,7 @@ from pydantic import BeforeValidator
 from typing import Annotated
 from typing import Literal
 
-__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
+__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CapabilityChainEdgeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1", "CapabilityDefinitionRefV1"]
 
 def _reject_duplicate_items(value: object) -> object:
     if isinstance(value, list):
@@ -243,6 +243,44 @@ class AuthorityGrantRefV1(_CapabilityContractDumpMixin, BaseModel):
     )
     reference_only: Annotated[Literal[True], BeforeValidator(_require_json_boolean)]
 
+class CapabilityDefinitionRefV1(_CapabilityContractDumpMixin, BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    capability_identifier: CapabilityIdentifierV1
+    definition_document_hash: str = Field(
+        ...,
+        description='Canonical document hash of the referenced CapabilityDefinitionV1 document. This is not the owning edge document self-hash.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
+
+
+class CapabilityChainEdgeV1(_CapabilityContractDumpMixin, BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.capability_chain_edge.v1']
+    definition_version: Literal['1.0.0']
+    canonicalization_profile: Literal['jcs-rfc8785-v1']
+    hash_algorithm: Literal['sha256']
+    canonical_document_hash: str = Field(
+        ...,
+        description='SHA-256 identity over the canonical contract projection, excluding this field itself.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
+    source: CapabilityDefinitionRefV1 = Field(
+        ...,
+        description='Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.',
+    )
+    target: CapabilityDefinitionRefV1 = Field(
+        ...,
+        description='Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.',
+    )
+    edge_property: Literal['requires'] = Field(
+        ...,
+        description='Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.',
+    )
+
 class OperationRef(RootModel[str]):
     root: str = Field(
         ..., max_length=512, pattern='^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$'
@@ -367,3 +405,5 @@ class CapabilityRequirementV1(
         ...,
         description='Closed capability requirement. Provider, model, tool, skill, pattern, and caller-provided authority selection are excluded.',
     )
+
+CapabilityChainEdgeV1.model_rebuild()

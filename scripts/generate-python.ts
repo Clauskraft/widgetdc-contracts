@@ -315,7 +315,17 @@ const scopedTypeAliases: Record<string, Record<string, string>> = {
   'WdcChatSessionPage': {
     'Item': 'WdcChatSession',
   },
+  'CapabilityChainEdgeV1': {
+    'CapabilityIdentifier': 'CapabilityIdentifierV1',
+    'Target': 'CapabilityDefinitionRefV1',
+  },
 }
+const scopedTypePromotions: Record<string, Record<string, string>> = {
+  'CapabilityChainEdgeV1': {
+    'Source': 'CapabilityDefinitionRefV1',
+  },
+}
+const CAPABILITY_DERIVED_MODEL_CLASS_NAMES = ['CapabilityDefinitionRefV1'] as const
 
 function getScopedTypeAlias(filePath: string, privateClass: string): string | null {
   return scopedTypeAliases[basename(filePath, '.py')]?.[privateClass] ?? null
@@ -405,6 +415,21 @@ function applyScopedTypeAliases(filePath: string, content: string): string {
 
   for (const [from, to] of Object.entries(aliases)) {
     result = replaceClassDefinition(result, from)
+    result = result.replace(new RegExp(`\\b${from}\\b`, 'g'), to)
+  }
+
+  return result
+}
+
+function applyScopedTypePromotions(filePath: string, content: string): string {
+  let result = content
+  const promotions = scopedTypePromotions[basename(filePath, '.py')] ?? {}
+
+  for (const [from, to] of Object.entries(promotions)) {
+    result = result.replace(
+      new RegExp(`^class ${from}\\(`, 'm'),
+      `class ${to}(`,
+    )
     result = result.replace(new RegExp(`\\b${from}\\b`, 'g'), to)
   }
 
@@ -533,21 +558,33 @@ function applyCapabilityDumpParity(content: string, classNames: string[]): strin
   return result
 }
 
-function removeSecondCapabilityIdentifierDefinition(content: string): string {
+function removeDuplicateCapabilityIdentifierDefinitions(content: string): string {
   const marker = 'class CapabilityIdentifierV1('
-  const firstStart = content.indexOf(marker)
-  const secondStart = content.indexOf(marker, firstStart + marker.length)
+  let result = content
+  const firstStart = result.indexOf(marker)
+  let duplicateStart = result.indexOf(marker, firstStart + marker.length)
 
-  if (firstStart === -1 || secondStart === -1) {
-    throw new Error('[generate-python] Expected two generated CapabilityIdentifierV1 definitions.')
+  if (firstStart === -1 || duplicateStart === -1) {
+    throw new Error(
+      '[generate-python] Expected at least two generated CapabilityIdentifierV1 definitions.',
+    )
   }
 
-  const secondEnd = content.indexOf('\nclass ', secondStart + marker.length)
-  if (secondEnd === -1) {
-    throw new Error('[generate-python] Could not bound the duplicate CapabilityIdentifierV1 definition.')
+  while (duplicateStart !== -1) {
+    const duplicateEnd = result.indexOf(
+      '\nclass ',
+      duplicateStart + marker.length,
+    )
+    if (duplicateEnd === -1) {
+      throw new Error(
+        '[generate-python] Could not bound a duplicate CapabilityIdentifierV1 definition.',
+      )
+    }
+    result = `${result.slice(0, duplicateStart)}${result.slice(duplicateEnd + 1)}`
+    duplicateStart = result.indexOf(marker, firstStart + marker.length)
   }
 
-  return `${content.slice(0, secondStart)}${content.slice(secondEnd + 1)}`
+  return result
 }
 
 function mergeModule(
@@ -558,6 +595,9 @@ function mergeModule(
   outputDir: string,
 ): void {
   const imports = new Set<string>()
+  const exportedClassNames = moduleName === 'capability'
+    ? [...classNames, ...CAPABILITY_DERIVED_MODEL_CLASS_NAMES]
+    : classNames
 
   for (const filePath of generatedFiles) {
     for (const line of readFileSync(filePath, 'utf-8').split(/\r?\n/)) {
@@ -591,7 +631,7 @@ function mergeModule(
     '',
     ...Array.from(imports).sort(),
     '',
-    `__all__ = [${classNames.map((name) => `"${name}"`).join(', ')}]`,
+    `__all__ = [${exportedClassNames.map((name) => `"${name}"`).join(', ')}]`,
     '',
     ...(moduleName === 'chat-contract-runtime' ? [JSON_INTEGER_PARITY_HELPER, ''] : []),
     ...(moduleName === 'capability'
@@ -609,18 +649,20 @@ function mergeModule(
   ]
 
   for (const filePath of generatedFiles) {
-    const body = applyScopedTypeAliases(filePath, extractBody(filePath))
+    const promotedBody = applyScopedTypePromotions(filePath, extractBody(filePath))
+    const body = applyScopedTypeAliases(filePath, promotedBody)
     parts.push(applyJsonIntegerParity(filePath, body), '')
   }
 
   let content = `${parts.join('\n').trimEnd()}\n`
   content = applyTypeAliases(content, aliases)
   if (moduleName === 'capability') {
-    content = removeSecondCapabilityIdentifierDefinition(content)
+    content = removeDuplicateCapabilityIdentifierDefinitions(content)
     content = applyCapabilityUniqueItemsParity(content)
     content = applyCapabilityNonNullOptionalParity(content)
     content = applyCapabilityStrictBooleanParity(content)
-    content = applyCapabilityDumpParity(content, classNames)
+    content = applyCapabilityDumpParity(content, exportedClassNames)
+    content = `${content.trimEnd()}\n\nCapabilityChainEdgeV1.model_rebuild()\n`
   }
 
   writeFileSync(join(outputDir, `${outputName}.py`), content, 'utf-8')

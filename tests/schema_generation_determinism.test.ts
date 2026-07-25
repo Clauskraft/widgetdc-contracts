@@ -65,6 +65,26 @@ describe('schema generator determinism', () => {
     expect(outputs[0]?.outPath.replaceAll('\\', '/')).toContain('/schemas/sample/ExampleSchema.json')
   })
 
+  it('exports only registered capability roots, not reusable nested references', () => {
+    const outputs = collectSchemaExports({
+      capability: {
+        CapabilityIdentifierV1: {
+          $id: 'CapabilityIdentifierV1',
+          type: 'object',
+          [Symbol.for('TypeBox.Kind')]: 'Object',
+        },
+        CapabilityDefinitionRefV1: {
+          type: 'object',
+          [Symbol.for('TypeBox.Kind')]: 'Object',
+        },
+      },
+    })
+
+    expect(outputs.map(({ exportName }) => exportName)).toEqual([
+      'CapabilityIdentifierV1',
+    ])
+  })
+
   it('does not return a completion receipt when a generator write fails', () => {
     const outputs: SchemaExportOutput[] = [{
       moduleName: 'sample',
