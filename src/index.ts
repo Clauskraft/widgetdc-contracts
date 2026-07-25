@@ -22,6 +22,7 @@
  *   import { WdcChatTurnRequest, WdcChatTurnResult } from '@widgetdc/contracts/chat-contract-runtime'
  *   import { ContinuationReceipt, ContinuationState } from '@widgetdc/contracts/continuation'
  *   import { ExecutionEnvelope, SynthesisReceipt } from '@widgetdc/contracts/execution'
+ *   import { CapabilityDefinitionV1, CapabilityRequirementV1 } from '@widgetdc/contracts/capability'
  */
 
 export * from './cognitive/index.js'
@@ -44,3 +45,4 @@ export * from './parl/index.js'
 export * from './chat-contract-runtime/index.js'
 export * from './continuation/index.js'
 export * from './execution/index.js'
+export * from './capability/index.js'

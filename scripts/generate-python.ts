@@ -35,6 +35,43 @@ const JSON_INTEGER_PARITY_HELPER = `def _normalize_json_integer(value: object) -
 
 
 JsonInteger = Annotated[StrictInt, BeforeValidator(_normalize_json_integer)]`
+const CAPABILITY_UNIQUE_ITEMS_FIELDS = [
+  'operation_refs',
+  'risk_refs',
+  'proof_requirement_refs',
+  'legacy_aliases',
+  'candidate_capability_ids',
+] as const
+const CAPABILITY_UNIQUE_ITEMS_HELPER = `def _reject_duplicate_items(value: object) -> object:
+    if isinstance(value, list):
+        seen: list[object] = []
+        for item in value:
+            if item in seen:
+                raise ValueError('Input should contain unique items')
+            seen.append(item)
+    return value`
+const CAPABILITY_NON_NULL_OPTIONAL_FIELDS = {
+  legacy_aliases: 1,
+  workbom_id: 2,
+  correlation_id: 2,
+} as const
+const CAPABILITY_NON_NULL_OPTIONAL_HELPER = `def _reject_explicit_none(value: object) -> object:
+    if value is None:
+        raise ValueError('Explicit null is not allowed; omit the field instead')
+    return value`
+const CAPABILITY_STRICT_BOOLEAN_FIELDS = ['reference_only'] as const
+const CAPABILITY_STRICT_BOOLEAN_HELPER = `def _require_json_boolean(value: object) -> object:
+    if type(value) is not bool:
+        raise ValueError('Input should be a JSON boolean')
+    return value`
+const CAPABILITY_DUMP_HELPER = `class _CapabilityContractDumpMixin:
+    def model_dump(self, *args: object, **kwargs: object):
+        kwargs['exclude_none'] = True
+        return super().model_dump(*args, **kwargs)
+
+    def model_dump_json(self, *args: object, **kwargs: object):
+        kwargs['exclude_none'] = True
+        return super().model_dump_json(*args, **kwargs)`
 
 const BASE_MODEL = `"""Base model for all WidgeTDC contracts. Wire format is snake_case."""
 from pydantic import BaseModel, ConfigDict
@@ -393,6 +430,126 @@ function applyTypeAliases(content: string, aliases: TypeAlias[]): string {
   return result
 }
 
+function applyCapabilityUniqueItemsParity(content: string): string {
+  let result = content
+  let replacements = 0
+
+  for (const field of CAPABILITY_UNIQUE_ITEMS_FIELDS) {
+    const fieldPattern = new RegExp(`^(\\s*${field}: )(.+?)( = Field\\()`, 'm')
+    result = result.replace(fieldPattern, (_match, prefix: string, annotation: string, suffix: string) => {
+      replacements += 1
+      return `${prefix}Annotated[${annotation}, AfterValidator(_reject_duplicate_items)]${suffix}`
+    })
+  }
+
+  if (replacements !== CAPABILITY_UNIQUE_ITEMS_FIELDS.length) {
+    throw new Error(
+      `[generate-python] Expected ${CAPABILITY_UNIQUE_ITEMS_FIELDS.length} capability uniqueItems fields, replaced ${replacements}.`,
+    )
+  }
+
+  return result
+}
+
+function applyCapabilityNonNullOptionalParity(content: string): string {
+  let result = content
+  let replacements = 0
+  const expectedReplacements = Object.values(CAPABILITY_NON_NULL_OPTIONAL_FIELDS)
+    .reduce((total, count) => total + count, 0)
+
+  for (const [field, expected] of Object.entries(CAPABILITY_NON_NULL_OPTIONAL_FIELDS)) {
+    let fieldReplacements = 0
+    const fieldPattern = new RegExp(`^(\\s*${field}: )(.+?)( = Field\\()`, 'gm')
+    result = result.replace(fieldPattern, (_match, prefix: string, annotation: string, suffix: string) => {
+      fieldReplacements += 1
+      replacements += 1
+      return `${prefix}Annotated[${annotation}, BeforeValidator(_reject_explicit_none)]${suffix}`
+    })
+    if (fieldReplacements !== expected) {
+      throw new Error(
+        `[generate-python] Expected ${expected} capability ${field} fields, replaced ${fieldReplacements}.`,
+      )
+    }
+  }
+
+  if (replacements !== expectedReplacements) {
+    throw new Error(
+      `[generate-python] Expected ${expectedReplacements} capability non-null optional fields, replaced ${replacements}.`,
+    )
+  }
+
+  return result
+}
+
+function applyCapabilityStrictBooleanParity(content: string): string {
+  let result = content
+  let replacements = 0
+
+  for (const field of CAPABILITY_STRICT_BOOLEAN_FIELDS) {
+    const fieldPattern = new RegExp(`^(\\s*${field}: )(.+)$`, 'm')
+    result = result.replace(fieldPattern, (_match, prefix: string, annotation: string) => {
+      replacements += 1
+      return `${prefix}Annotated[${annotation}, BeforeValidator(_require_json_boolean)]`
+    })
+  }
+
+  if (replacements !== CAPABILITY_STRICT_BOOLEAN_FIELDS.length) {
+    throw new Error(
+      `[generate-python] Expected ${CAPABILITY_STRICT_BOOLEAN_FIELDS.length} capability strict boolean fields, replaced ${replacements}.`,
+    )
+  }
+
+  return result
+}
+
+function applyCapabilityDumpParity(content: string, classNames: string[]): string {
+  let result = content
+  let replacements = 0
+
+  for (const className of classNames) {
+    const multilineClassPattern = new RegExp(`^class ${className}\\(\\n`, 'm')
+    if (multilineClassPattern.test(result)) {
+      result = result.replace(
+        multilineClassPattern,
+        `class ${className}(\n    _CapabilityContractDumpMixin,\n`,
+      )
+      replacements += 1
+      continue
+    }
+
+    const inlineClassPattern = new RegExp(`^class ${className}\\(`, 'm')
+    result = result.replace(inlineClassPattern, () => {
+      replacements += 1
+      return `class ${className}(_CapabilityContractDumpMixin, `
+    })
+  }
+
+  if (replacements !== classNames.length) {
+    throw new Error(
+      `[generate-python] Expected ${classNames.length} public capability model classes, replaced ${replacements}.`,
+    )
+  }
+
+  return result
+}
+
+function removeSecondCapabilityIdentifierDefinition(content: string): string {
+  const marker = 'class CapabilityIdentifierV1('
+  const firstStart = content.indexOf(marker)
+  const secondStart = content.indexOf(marker, firstStart + marker.length)
+
+  if (firstStart === -1 || secondStart === -1) {
+    throw new Error('[generate-python] Expected two generated CapabilityIdentifierV1 definitions.')
+  }
+
+  const secondEnd = content.indexOf('\nclass ', secondStart + marker.length)
+  if (secondEnd === -1) {
+    throw new Error('[generate-python] Could not bound the duplicate CapabilityIdentifierV1 definition.')
+  }
+
+  return `${content.slice(0, secondStart)}${content.slice(secondEnd + 1)}`
+}
+
 function mergeModule(
   moduleName: string,
   outputName: string,
@@ -415,6 +572,11 @@ function mergeModule(
     imports.add('from pydantic import BeforeValidator')
     imports.add('from typing import Annotated')
   }
+  if (moduleName === 'capability') {
+    imports.add('from pydantic import AfterValidator')
+    imports.add('from pydantic import BeforeValidator')
+    imports.add('from typing import Annotated')
+  }
 
   const aliases = detectDuplicateTypes(classNames, generatedFiles)
 
@@ -432,6 +594,18 @@ function mergeModule(
     `__all__ = [${classNames.map((name) => `"${name}"`).join(', ')}]`,
     '',
     ...(moduleName === 'chat-contract-runtime' ? [JSON_INTEGER_PARITY_HELPER, ''] : []),
+    ...(moduleName === 'capability'
+      ? [
+          CAPABILITY_UNIQUE_ITEMS_HELPER,
+          '',
+          CAPABILITY_NON_NULL_OPTIONAL_HELPER,
+          '',
+          CAPABILITY_STRICT_BOOLEAN_HELPER,
+          '',
+          CAPABILITY_DUMP_HELPER,
+          '',
+        ]
+      : []),
   ]
 
   for (const filePath of generatedFiles) {
@@ -441,6 +615,13 @@ function mergeModule(
 
   let content = `${parts.join('\n').trimEnd()}\n`
   content = applyTypeAliases(content, aliases)
+  if (moduleName === 'capability') {
+    content = removeSecondCapabilityIdentifierDefinition(content)
+    content = applyCapabilityUniqueItemsParity(content)
+    content = applyCapabilityNonNullOptionalParity(content)
+    content = applyCapabilityStrictBooleanParity(content)
+    content = applyCapabilityDumpParity(content, classNames)
+  }
 
   writeFileSync(join(outputDir, `${outputName}.py`), content, 'utf-8')
 }

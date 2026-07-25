@@ -1,0 +1,107 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json",
+  "additionalProperties": false,
+  "description": "Canonical capability definition. Capability, lifecycle, and evidence references do not convey authority.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_document_hash",
+    "capability_id",
+    "lifecycle",
+    "operation_refs",
+    "risk_refs",
+    "proof_requirement_refs"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.capability_definition.v1",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+      "type": "string"
+    },
+    "capability_id": {
+      "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+      "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+      "type": "string"
+    },
+    "lifecycle": {
+      "anyOf": [
+        {
+          "const": "active",
+          "type": "string"
+        },
+        {
+          "const": "deprecated",
+          "type": "string"
+        },
+        {
+          "const": "archived",
+          "type": "string"
+        }
+      ]
+    },
+    "operation_refs": {
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+        "maxLength": 512,
+        "type": "string"
+      }
+    },
+    "risk_refs": {
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "pattern": "^risk:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+        "maxLength": 512,
+        "type": "string"
+      }
+    },
+    "proof_requirement_refs": {
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "pattern": "^proof:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+        "maxLength": 512,
+        "type": "string"
+      }
+    },
+    "legacy_aliases": {
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "description": "Read-only compatibility metadata. It is neither canonical identity nor authority.",
+      "type": "array",
+      "items": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+        "description": "Read-only compatibility alias. Colon-free by contract so it cannot be a canonical capability URN.",
+        "type": "string"
+      }
+    }
+  }
+}

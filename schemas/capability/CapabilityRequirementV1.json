@@ -1,0 +1,156 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/CapabilityRequirementV1.json",
+  "description": "Closed capability requirement. Provider, model, tool, skill, pattern, and caller-provided authority selection are excluded.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "description": "Exact canonical capability requirement. It cannot select execution machinery or manufacture authority.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "operation_ref",
+        "context_ref",
+        "selector_kind",
+        "requested_capability_id"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.capability_requirement.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "operation_ref": {
+          "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "context_ref": {
+          "pattern": "^context:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "workbom_id": {
+          "pattern": "^workbom:[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "correlation_id": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "selector_kind": {
+          "const": "exact",
+          "type": "string"
+        },
+        "requested_capability_id": {
+          "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+          "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "description": "Canonical major-version range input. Range ordering and resolution belong to a later resolver slice.",
+      "type": "object",
+      "required": [
+        "schema_version",
+        "definition_version",
+        "canonicalization_profile",
+        "hash_algorithm",
+        "canonical_document_hash",
+        "operation_ref",
+        "context_ref",
+        "selector_kind",
+        "capability_domain",
+        "capability_action",
+        "minimum_major",
+        "maximum_major"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.capability_requirement.v1",
+          "type": "string"
+        },
+        "definition_version": {
+          "const": "1.0.0",
+          "type": "string"
+        },
+        "canonicalization_profile": {
+          "const": "jcs-rfc8785-v1",
+          "type": "string"
+        },
+        "hash_algorithm": {
+          "const": "sha256",
+          "type": "string"
+        },
+        "canonical_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+          "type": "string"
+        },
+        "operation_ref": {
+          "pattern": "^operation:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "context_ref": {
+          "pattern": "^context:[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "workbom_id": {
+          "pattern": "^workbom:[A-Za-z0-9][A-Za-z0-9._:-]*$",
+          "maxLength": 512,
+          "type": "string"
+        },
+        "correlation_id": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "selector_kind": {
+          "const": "major_range",
+          "type": "string"
+        },
+        "capability_domain": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "type": "string"
+        },
+        "capability_action": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "type": "string"
+        },
+        "minimum_major": {
+          "pattern": "^[1-9][0-9]*$",
+          "type": "string"
+        },
+        "maximum_major": {
+          "pattern": "^[1-9][0-9]*$",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
