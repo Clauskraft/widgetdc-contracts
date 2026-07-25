@@ -1,0 +1,82 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/CapabilityChainEdgeV1.json",
+  "additionalProperties": false,
+  "description": "Closed, content-addressed capability-chain edge identity. It carries no authority, provider, model, tool, or dispatch selection.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_document_hash",
+    "source",
+    "target",
+    "edge_property"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.capability_chain_edge.v1",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 identity over the canonical contract projection, excluding this field itself.",
+      "type": "string"
+    },
+    "source": {
+      "additionalProperties": false,
+      "description": "Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.",
+      "type": "object",
+      "required": [
+        "capability_identifier",
+        "definition_document_hash"
+      ],
+      "properties": {
+        "capability_identifier": {
+          "$ref": "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json"
+        },
+        "definition_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "Canonical document hash of the referenced CapabilityDefinitionV1 document. This is not the owning edge document self-hash.",
+          "type": "string"
+        }
+      }
+    },
+    "target": {
+      "additionalProperties": false,
+      "description": "Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.",
+      "type": "object",
+      "required": [
+        "capability_identifier",
+        "definition_document_hash"
+      ],
+      "properties": {
+        "capability_identifier": {
+          "$ref": "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json"
+        },
+        "definition_document_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "Canonical document hash of the referenced CapabilityDefinitionV1 document. This is not the owning edge document self-hash.",
+          "type": "string"
+        }
+      }
+    },
+    "edge_property": {
+      "description": "Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.",
+      "const": "requires",
+      "type": "string"
+    }
+  }
+}

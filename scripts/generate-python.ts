@@ -533,21 +533,33 @@ function applyCapabilityDumpParity(content: string, classNames: string[]): strin
   return result
 }
 
-function removeSecondCapabilityIdentifierDefinition(content: string): string {
+function removeDuplicateCapabilityIdentifierDefinitions(content: string): string {
   const marker = 'class CapabilityIdentifierV1('
-  const firstStart = content.indexOf(marker)
-  const secondStart = content.indexOf(marker, firstStart + marker.length)
+  let result = content
+  const firstStart = result.indexOf(marker)
+  let duplicateStart = result.indexOf(marker, firstStart + marker.length)
 
-  if (firstStart === -1 || secondStart === -1) {
-    throw new Error('[generate-python] Expected two generated CapabilityIdentifierV1 definitions.')
+  if (firstStart === -1 || duplicateStart === -1) {
+    throw new Error(
+      '[generate-python] Expected at least two generated CapabilityIdentifierV1 definitions.',
+    )
   }
 
-  const secondEnd = content.indexOf('\nclass ', secondStart + marker.length)
-  if (secondEnd === -1) {
-    throw new Error('[generate-python] Could not bound the duplicate CapabilityIdentifierV1 definition.')
+  while (duplicateStart !== -1) {
+    const duplicateEnd = result.indexOf(
+      '\nclass ',
+      duplicateStart + marker.length,
+    )
+    if (duplicateEnd === -1) {
+      throw new Error(
+        '[generate-python] Could not bound a duplicate CapabilityIdentifierV1 definition.',
+      )
+    }
+    result = `${result.slice(0, duplicateStart)}${result.slice(duplicateEnd + 1)}`
+    duplicateStart = result.indexOf(marker, firstStart + marker.length)
   }
 
-  return `${content.slice(0, secondStart)}${content.slice(secondEnd + 1)}`
+  return result
 }
 
 function mergeModule(
@@ -616,7 +628,7 @@ function mergeModule(
   let content = `${parts.join('\n').trimEnd()}\n`
   content = applyTypeAliases(content, aliases)
   if (moduleName === 'capability') {
-    content = removeSecondCapabilityIdentifierDefinition(content)
+    content = removeDuplicateCapabilityIdentifierDefinitions(content)
     content = applyCapabilityUniqueItemsParity(content)
     content = applyCapabilityNonNullOptionalParity(content)
     content = applyCapabilityStrictBooleanParity(content)

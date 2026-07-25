@@ -900,6 +900,75 @@
         "capability_id": "urn:wdc:capability:contracts:legacy-validate:v1",
         "capability_lifecycle": "archived"
       }
+    },
+    {
+      "name": "endpoint-qualified capability chain edge",
+      "schema": "CapabilityChainEdgeV1",
+      "valid": true,
+      "value": {
+        "schema_version": "wdc.capability_chain_edge.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "source": {
+          "capability_identifier": {
+            "schema_version": "wdc.capability_identifier.v1",
+            "definition_version": "1.0.0",
+            "canonicalization_profile": "jcs-rfc8785-v1",
+            "hash_algorithm": "sha256",
+            "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1"
+          },
+          "definition_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        "target": {
+          "capability_identifier": {
+            "schema_version": "wdc.capability_identifier.v1",
+            "definition_version": "1.0.0",
+            "canonicalization_profile": "jcs-rfc8785-v1",
+            "hash_algorithm": "sha256",
+            "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "capability_id": "urn:wdc:capability:contracts:validate-schema:v1"
+          },
+          "definition_document_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "edge_property": "requires"
+      }
+    },
+    {
+      "name": "capability chain edge rejects missing source definition hash",
+      "schema": "CapabilityChainEdgeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_chain_edge.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "source": {
+          "capability_identifier": {
+            "schema_version": "wdc.capability_identifier.v1",
+            "definition_version": "1.0.0",
+            "canonicalization_profile": "jcs-rfc8785-v1",
+            "hash_algorithm": "sha256",
+            "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1"
+          }
+        },
+        "target": {
+          "capability_identifier": {
+            "schema_version": "wdc.capability_identifier.v1",
+            "definition_version": "1.0.0",
+            "canonicalization_profile": "jcs-rfc8785-v1",
+            "hash_algorithm": "sha256",
+            "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+            "capability_id": "urn:wdc:capability:contracts:validate-schema:v1"
+          },
+          "definition_document_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "edge_property": "requires"
+      }
     }
   ]
 }

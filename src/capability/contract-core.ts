@@ -9,6 +9,7 @@
  * Wire format: snake_case JSON.
  */
 import { Static, Type } from '@sinclair/typebox'
+import { Value } from '@sinclair/typebox/value'
 import {
   CANONICALIZATION_VERSION,
   CONTENT_HASH_ALGORITHM,
@@ -20,6 +21,8 @@ import {
 export const CAPABILITY_CONTRACT_SCHEMA_IDS = {
   CapabilityIdentifierV1:
     'https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json',
+  CapabilityChainEdgeV1:
+    'https://widgetdc.com/contracts/capability/CapabilityChainEdgeV1.json',
   CapabilityDefinitionV1:
     'https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json',
   CapabilityRequirementV1:
@@ -36,6 +39,8 @@ export type CapabilityContractSchemaIdV1 =
 const CAPABILITY_SCHEMA_VERSIONS: Record<CapabilityContractSchemaIdV1, string> = {
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1]:
     'wdc.capability_identifier.v1',
+  [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityChainEdgeV1]:
+    'wdc.capability_chain_edge.v1',
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityDefinitionV1]:
     'wdc.capability_definition.v1',
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityRequirementV1]:
@@ -110,6 +115,190 @@ export const CapabilityIdentifierV1 = Type.Object(
   },
 )
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>
+
+const CapabilityDefinitionRefV1Schema = Type.Object(
+  {
+    capability_identifier: Type.Ref(CapabilityIdentifierV1),
+    definition_document_hash: Type.String({
+      pattern: CANONICAL_DOCUMENT_HASH_PATTERN,
+      description:
+        'Canonical document hash of the referenced CapabilityDefinitionV1 document. This is not the owning edge document self-hash.',
+    }),
+  },
+  {
+    additionalProperties: false,
+    description:
+      'Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.',
+  },
+)
+export type CapabilityDefinitionRefV1 = Static<
+  typeof CapabilityDefinitionRefV1Schema
+>
+
+export const CapabilityChainEdgeV1 = Type.Object(
+  {
+    schema_version: Type.Literal('wdc.capability_chain_edge.v1'),
+    ...CanonicalMetadataV1,
+    source: CapabilityDefinitionRefV1Schema,
+    target: CapabilityDefinitionRefV1Schema,
+    edge_property: Type.Literal('requires', {
+      description:
+        'Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.',
+    }),
+  },
+  {
+    $id: CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityChainEdgeV1,
+    additionalProperties: false,
+    description:
+      'Closed, content-addressed capability-chain edge identity. It carries no authority, provider, model, tool, or dispatch selection.',
+  },
+)
+export type CapabilityChainEdgeV1 = Static<typeof CapabilityChainEdgeV1>
+
+export interface CapabilityChainEdgeCoverageRequirementV1 {
+  readonly source_ref: string
+  readonly source_hash: string
+  readonly edge: CapabilityChainEdgeV1
+}
+
+export interface CapabilityChainEdgeCoverageObservationV1
+  extends CapabilityChainEdgeCoverageRequirementV1 {
+  readonly routability_evidence_ref?: string
+}
+
+export interface CapabilityChainEdgeCoverageResultV1 {
+  readonly status: 'empty' | 'partial' | 'complete'
+  readonly required_count: number
+  readonly routable_count: number
+  readonly coverage_rate: number | null
+  readonly passes: boolean
+}
+
+export function hasValidCapabilityChainEdgeIdentityV1(
+  edge: unknown,
+): edge is CapabilityChainEdgeV1 {
+  if (!edge || typeof edge !== 'object') return false
+  const candidate = edge as Partial<CapabilityChainEdgeV1>
+  return (
+    Value.Check(
+      CapabilityChainEdgeV1,
+      [CapabilityIdentifierV1],
+      candidate,
+    ) &&
+    hasValidCanonicalCapabilityDocumentHashV1(
+      CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityChainEdgeV1,
+      candidate,
+    ) &&
+    !!candidate.source?.capability_identifier &&
+    hasValidCanonicalCapabilityDocumentHashV1(
+      CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1,
+      candidate.source.capability_identifier,
+    ) &&
+    !!candidate.target?.capability_identifier &&
+    hasValidCanonicalCapabilityDocumentHashV1(
+      CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1,
+      candidate.target.capability_identifier,
+    )
+  )
+}
+
+const COVERAGE_REFERENCE_MAX_LENGTH = 2048
+
+function isBoundedNonEmptyReference(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= COVERAGE_REFERENCE_MAX_LENGTH &&
+    value.trim() === value
+  )
+}
+
+function isCanonicalDocumentHash(value: unknown): value is string {
+  return typeof value === 'string' && /^sha256:[0-9a-f]{64}$/.test(value)
+}
+
+export function evaluateCapabilityChainEdgeCoverage(
+  requirements: readonly CapabilityChainEdgeCoverageRequirementV1[],
+  observations: readonly CapabilityChainEdgeCoverageObservationV1[],
+): CapabilityChainEdgeCoverageResultV1 {
+  const requirementBySource = new Map<
+    string,
+    {
+      readonly edge_hash: string
+      readonly edge_identity_valid: boolean
+    }
+  >()
+  for (const requirement of requirements) {
+    const key = JSON.stringify([
+      requirement.source_ref,
+      requirement.source_hash,
+    ])
+    const sourceIdentityValid =
+      isBoundedNonEmptyReference(requirement.source_ref) &&
+      isCanonicalDocumentHash(requirement.source_hash)
+    const edgeIdentityValid = hasValidCapabilityChainEdgeIdentityV1(
+      requirement.edge,
+    )
+    const existing = requirementBySource.get(key)
+    if (existing) {
+      requirementBySource.set(key, {
+        edge_hash: existing.edge_hash,
+        edge_identity_valid:
+          existing.edge_identity_valid &&
+          sourceIdentityValid &&
+          edgeIdentityValid &&
+          existing.edge_hash === requirement.edge.canonical_document_hash,
+      })
+      continue
+    }
+    requirementBySource.set(key, {
+      edge_hash: requirement.edge.canonical_document_hash,
+      edge_identity_valid: sourceIdentityValid && edgeIdentityValid,
+    })
+  }
+
+  const requiredCount = requirementBySource.size
+  if (requiredCount === 0) {
+    return {
+      status: 'empty',
+      required_count: 0,
+      routable_count: 0,
+      coverage_rate: null,
+      passes: false,
+    }
+  }
+
+  const routableSources = new Set<string>()
+  for (const observation of observations) {
+    const key = JSON.stringify([
+      observation.source_ref,
+      observation.source_hash,
+    ])
+    const requirement = requirementBySource.get(key)
+    if (
+      !requirement ||
+      !requirement.edge_identity_valid ||
+      observation.edge.canonical_document_hash !== requirement.edge_hash ||
+      !hasValidCapabilityChainEdgeIdentityV1(observation.edge) ||
+      !isBoundedNonEmptyReference(observation.source_ref) ||
+      !isCanonicalDocumentHash(observation.source_hash) ||
+      !isBoundedNonEmptyReference(observation.routability_evidence_ref)
+    ) {
+      continue
+    }
+    routableSources.add(key)
+  }
+
+  const routableCount = routableSources.size
+  const passes = routableCount === requiredCount
+  return {
+    status: passes ? 'complete' : 'partial',
+    required_count: requiredCount,
+    routable_count: routableCount,
+    coverage_rate: routableCount / requiredCount,
+    passes,
+  }
+}
 
 export const CapabilityDefinitionV1 = Type.Object(
   {
