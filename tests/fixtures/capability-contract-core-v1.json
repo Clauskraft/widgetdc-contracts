@@ -900,6 +900,65 @@
         "capability_id": "urn:wdc:capability:contracts:legacy-validate:v1",
         "capability_lifecycle": "archived"
       }
+    },
+    {
+      "name": "canonical identity envelope",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": true,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1",
+        "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "name": "canonical identity envelope rejects missing definition hash",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1"
+      }
+    },
+    {
+      "name": "canonical identity envelope rejects malformed definition hash",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1",
+        "canonical_document_hash": "sha256:not-a-hash"
+      }
+    },
+    {
+      "name": "canonical identity envelope rejects alias as capability id",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "capability_id": "legacy/reason-deeply",
+        "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "name": "canonical identity envelope rejects extra property",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1",
+        "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "selected_provider": "qwen"
+      }
+    },
+    {
+      "name": "canonical identity envelope rejects missing capability id",
+      "schema": "CanonicalIdentityEnvelopeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.canonical_identity_envelope.v1",
+        "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      }
     }
   ]
 }
