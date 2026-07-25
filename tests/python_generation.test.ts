@@ -36,7 +36,7 @@ describe('python generation hygiene', () => {
     expect(importCheck.status, `${importCheck.stdout}\n${importCheck.stderr}`).toBe(0)
   })
 
-  it('uses one exported CapabilityIdentifierV1 class throughout chain edges', () => {
+  it('uses the exported definition reference and identifier classes throughout chain edges', () => {
     const capabilityModule = readFileSync(
       join(repoRoot, 'python', 'widgetdc_contracts', 'capability.py'),
       'utf-8',
@@ -46,12 +46,17 @@ describe('python generation hygiene', () => {
     ).toHaveLength(1)
 
     const identityCheck = spawnSync('python', ['-c', `
-from widgetdc_contracts.capability import CapabilityChainEdgeV1, CapabilityIdentifierV1
+from widgetdc_contracts.capability import (
+    CapabilityChainEdgeV1,
+    CapabilityDefinitionRefV1,
+    CapabilityIdentifierV1,
+)
 
 source_type = CapabilityChainEdgeV1.model_fields["source"].annotation
 target_type = CapabilityChainEdgeV1.model_fields["target"].annotation
-assert source_type.model_fields["capability_identifier"].annotation is CapabilityIdentifierV1
-assert target_type.model_fields["capability_identifier"].annotation is CapabilityIdentifierV1
+assert source_type is CapabilityDefinitionRefV1
+assert target_type is CapabilityDefinitionRefV1
+assert CapabilityDefinitionRefV1.model_fields["capability_identifier"].annotation is CapabilityIdentifierV1
 `], {
       cwd: join(repoRoot, 'python'),
       encoding: 'utf-8',

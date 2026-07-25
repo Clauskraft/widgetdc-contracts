@@ -76,7 +76,7 @@ export const CapabilityIdentifierV1 = Type.Object({
     additionalProperties: false,
     description: 'Canonical, content-addressed capability identifier. Aliases are deliberately excluded.',
 });
-const CapabilityDefinitionRefV1Schema = Type.Object({
+export const CapabilityDefinitionRefV1 = Type.Object({
     capability_identifier: Type.Ref(CapabilityIdentifierV1),
     definition_document_hash: Type.String({
         pattern: CANONICAL_DOCUMENT_HASH_PATTERN,
@@ -89,8 +89,8 @@ const CapabilityDefinitionRefV1Schema = Type.Object({
 export const CapabilityChainEdgeV1 = Type.Object({
     schema_version: Type.Literal('wdc.capability_chain_edge.v1'),
     ...CanonicalMetadataV1,
-    source: CapabilityDefinitionRefV1Schema,
-    target: CapabilityDefinitionRefV1Schema,
+    source: CapabilityDefinitionRefV1,
+    target: CapabilityDefinitionRefV1,
     edge_property: Type.Literal('requires', {
         description: 'Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.',
     }),

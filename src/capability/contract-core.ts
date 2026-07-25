@@ -116,7 +116,7 @@ export const CapabilityIdentifierV1 = Type.Object(
 )
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>
 
-const CapabilityDefinitionRefV1Schema = Type.Object(
+export const CapabilityDefinitionRefV1 = Type.Object(
   {
     capability_identifier: Type.Ref(CapabilityIdentifierV1),
     definition_document_hash: Type.String({
@@ -132,15 +132,15 @@ const CapabilityDefinitionRefV1Schema = Type.Object(
   },
 )
 export type CapabilityDefinitionRefV1 = Static<
-  typeof CapabilityDefinitionRefV1Schema
+  typeof CapabilityDefinitionRefV1
 >
 
 export const CapabilityChainEdgeV1 = Type.Object(
   {
     schema_version: Type.Literal('wdc.capability_chain_edge.v1'),
     ...CanonicalMetadataV1,
-    source: CapabilityDefinitionRefV1Schema,
-    target: CapabilityDefinitionRefV1Schema,
+    source: CapabilityDefinitionRefV1,
+    target: CapabilityDefinitionRefV1,
     edge_property: Type.Literal('requires', {
       description:
         'Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.',

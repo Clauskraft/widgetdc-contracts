@@ -10,6 +10,7 @@ import {
   AuthorityGrantRefV1,
   CAPABILITY_CONTRACT_SCHEMA_IDS,
   CapabilityChainEdgeV1,
+  CapabilityDefinitionRefV1,
   CapabilityDefinitionV1,
   CapabilityIdentifierV1,
   CapabilityRequirementV1,
@@ -316,6 +317,32 @@ describe('Capability Contract Core v1 version-incompatible result', () => {
 })
 
 describe('Capability Chain Edge v1 identity envelope', () => {
+  it('publishes a closed definition reference without conflating its hash with the edge self-hash', () => {
+    const edge = capabilityChainEdge()
+    const edgeHash = canonicalCapabilityDocumentHashV1(EDGE_SCHEMA_ID, edge)
+    const validEdge = { ...edge, canonical_document_hash: edgeHash }
+
+    expect(
+      Reflect.get(capabilityPackage, 'CapabilityDefinitionRefV1'),
+    ).toBeDefined()
+    expect(
+      Value.Check(
+        CapabilityDefinitionRefV1,
+        [CapabilityIdentifierV1],
+        validEdge.source,
+      ),
+    ).toBe(true)
+    expect(
+      hasValidCanonicalCapabilityDocumentHashV1(EDGE_SCHEMA_ID, {
+        ...validEdge,
+        canonical_document_hash: validEdge.source.definition_document_hash,
+      }),
+    ).toBe(false)
+    expect(
+      hasValidCanonicalCapabilityDocumentHashV1(EDGE_SCHEMA_ID, validEdge),
+    ).toBe(true)
+  })
+
   it('publishes a closed endpoint-qualified edge', () => {
     expect(Reflect.get(capabilityPackage, 'CapabilityChainEdgeV1')).toBeDefined()
     expect(

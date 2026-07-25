@@ -27,7 +27,7 @@ export declare const CapabilityIdentifierV1: import("@sinclair/typebox").TObject
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
 }>;
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>;
-declare const CapabilityDefinitionRefV1Schema: import("@sinclair/typebox").TObject<{
+export declare const CapabilityDefinitionRefV1: import("@sinclair/typebox").TObject<{
     capability_identifier: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
         capability_id: import("@sinclair/typebox").TString;
         definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
@@ -38,7 +38,7 @@ declare const CapabilityDefinitionRefV1Schema: import("@sinclair/typebox").TObje
     }>>;
     definition_document_hash: import("@sinclair/typebox").TString;
 }>;
-export type CapabilityDefinitionRefV1 = Static<typeof CapabilityDefinitionRefV1Schema>;
+export type CapabilityDefinitionRefV1 = Static<typeof CapabilityDefinitionRefV1>;
 export declare const CapabilityChainEdgeV1: import("@sinclair/typebox").TObject<{
     source: import("@sinclair/typebox").TObject<{
         capability_identifier: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{

@@ -51,6 +51,9 @@ const modules: Record<string, Record<string, unknown>> = {
   execution,
   capability,
 }
+const capabilityCanonicalRootExports = new Set(
+  Object.keys(capability.CAPABILITY_CONTRACT_SCHEMA_IDS),
+)
 
 export interface SchemaExportOutput {
   readonly moduleName: string
@@ -114,6 +117,13 @@ export function collectSchemaExports(
 
   for (const [moduleName, exports] of Object.entries(schemaModules)) {
     for (const [exportName, schema] of Object.entries(exports)) {
+      if (
+        moduleName === 'capability'
+        && !capabilityCanonicalRootExports.has(exportName)
+      ) {
+        continue
+      }
+
       // Skip non-schema exports (types, constants like DOMAIN_SHORT_IDS)
       if (
         !schema ||

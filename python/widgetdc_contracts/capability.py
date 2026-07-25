@@ -13,7 +13,7 @@ from pydantic import BeforeValidator
 from typing import Annotated
 from typing import Literal
 
-__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CapabilityChainEdgeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
+__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CapabilityChainEdgeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1", "CapabilityDefinitionRefV1"]
 
 def _reject_duplicate_items(value: object) -> object:
     if isinstance(value, list):
@@ -243,19 +243,7 @@ class AuthorityGrantRefV1(_CapabilityContractDumpMixin, BaseModel):
     )
     reference_only: Annotated[Literal[True], BeforeValidator(_require_json_boolean)]
 
-class Source(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    capability_identifier: CapabilityIdentifierV1
-    definition_document_hash: str = Field(
-        ...,
-        description='Canonical document hash of the referenced CapabilityDefinitionV1 document. This is not the owning edge document self-hash.',
-        pattern='^sha256:[0-9a-f]{64}$',
-    )
-
-
-class Target(BaseModel):
+class CapabilityDefinitionRefV1(_CapabilityContractDumpMixin, BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -280,11 +268,11 @@ class CapabilityChainEdgeV1(_CapabilityContractDumpMixin, BaseModel):
         description='SHA-256 identity over the canonical contract projection, excluding this field itself.',
         pattern='^sha256:[0-9a-f]{64}$',
     )
-    source: Source = Field(
+    source: CapabilityDefinitionRefV1 = Field(
         ...,
         description='Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.',
     )
-    target: Target = Field(
+    target: CapabilityDefinitionRefV1 = Field(
         ...,
         description='Typed foreign reference joining a canonical capability identifier to one exact CapabilityDefinitionV1 document identity.',
     )
@@ -417,3 +405,5 @@ class CapabilityRequirementV1(
         ...,
         description='Closed capability requirement. Provider, model, tool, skill, pattern, and caller-provided authority selection are excluded.',
     )
+
+CapabilityChainEdgeV1.model_rebuild()
