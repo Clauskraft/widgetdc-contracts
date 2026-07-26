@@ -1,0 +1,27 @@
+{
+  "$id": "https://widgetdc.com/contracts/capability/CanonicalIdentityEnvelopeV1.json",
+  "additionalProperties": false,
+  "description": "Closed reference envelope joining a canonical capability URN to one authoritative CapabilityDefinitionV1 document identity.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "capability_id",
+    "canonical_document_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.canonical_identity_envelope.v1",
+      "type": "string"
+    },
+    "capability_id": {
+      "pattern": "^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$",
+      "description": "Canonical capability URN. Aliases and compatibility identifiers are never valid here.",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.",
+      "type": "string"
+    }
+  }
+}

@@ -13,7 +13,7 @@ from pydantic import BeforeValidator
 from typing import Annotated
 from typing import Literal
 
-__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
+__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CanonicalIdentityEnvelopeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
 
 def _reject_duplicate_items(value: object) -> object:
     if isinstance(value, list):
@@ -242,6 +242,22 @@ class AuthorityGrantRefV1(_CapabilityContractDumpMixin, BaseModel):
         ..., max_length=64, pattern='^[1-9][0-9]*(?:\\.[0-9]+){0,2}$'
     )
     reference_only: Annotated[Literal[True], BeforeValidator(_require_json_boolean)]
+
+class CanonicalIdentityEnvelopeV1(_CapabilityContractDumpMixin, BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.canonical_identity_envelope.v1']
+    capability_id: str = Field(
+        ...,
+        description='Canonical capability URN. Aliases and compatibility identifiers are never valid here.',
+        pattern='^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$',
+    )
+    canonical_document_hash: str = Field(
+        ...,
+        description='Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
 
 class OperationRef(RootModel[str]):
     root: str = Field(

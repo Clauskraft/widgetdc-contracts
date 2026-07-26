@@ -9,6 +9,7 @@ import {
   AliasResolutionResultV1,
   AuthorityGrantRefV1,
   CAPABILITY_CONTRACT_SCHEMA_IDS,
+  CanonicalIdentityEnvelopeV1,
   CapabilityDefinitionV1,
   CapabilityIdentifierV1,
   CapabilityRequirementV1,
@@ -17,6 +18,7 @@ import {
 } from '../src/capability/index.js'
 
 const HASH = `sha256:${'0'.repeat(64)}`
+const DEFINITION_HASH = `sha256:${'1'.repeat(64)}`
 const repoRoot = process.cwd()
 
 type SchemaName = keyof typeof schemas
@@ -38,6 +40,7 @@ interface HashVector {
 const schemas = {
   AliasResolutionResultV1,
   AuthorityGrantRefV1,
+  CanonicalIdentityEnvelopeV1,
   CapabilityDefinitionV1,
   CapabilityIdentifierV1,
   CapabilityRequirementV1,
@@ -75,6 +78,14 @@ function versionIncompatible(requestedVersionToken: string) {
   }
 }
 
+function canonicalIdentityEnvelope() {
+  return {
+    schema_version: 'wdc.canonical_identity_envelope.v1',
+    capability_id: 'urn:wdc:capability:reasoning:deep-plan:v1',
+    canonical_document_hash: DEFINITION_HASH,
+  }
+}
+
 describe('Capability Contract Core v1 baseline', () => {
   for (const fixture of fixtures.cases) {
     it(`${fixture.valid ? 'accepts' : 'rejects'} ${fixture.name}`, () => {
@@ -105,7 +116,7 @@ describe('Capability Contract Core v1 baseline', () => {
     })
   }
 
-  it('publishes and materializes exactly the five public roots', () => {
+  it('publishes and materializes exactly the six public roots', () => {
     expect(Object.keys(CAPABILITY_CONTRACT_SCHEMA_IDS).sort()).toEqual(
       Object.keys(schemas).sort(),
     )
@@ -129,6 +140,7 @@ from pydantic import ValidationError
 from widgetdc_contracts.capability import (
     AliasResolutionResultV1,
     AuthorityGrantRefV1,
+    CanonicalIdentityEnvelopeV1,
     CapabilityDefinitionV1,
     CapabilityIdentifierV1,
     CapabilityRequirementV1,
@@ -137,6 +149,7 @@ from widgetdc_contracts.capability import (
 schemas = {
     "AliasResolutionResultV1": AliasResolutionResultV1,
     "AuthorityGrantRefV1": AuthorityGrantRefV1,
+    "CanonicalIdentityEnvelopeV1": CanonicalIdentityEnvelopeV1,
     "CapabilityDefinitionV1": CapabilityDefinitionV1,
     "CapabilityIdentifierV1": CapabilityIdentifierV1,
     "CapabilityRequirementV1": CapabilityRequirementV1,
@@ -236,13 +249,70 @@ describe('Capability Contract Core v1 version-incompatible result', () => {
     ).toBe(false)
   })
 
-  it('keeps exactly five canonical Capability Core roots', () => {
+  it('keeps exactly six canonical Capability Core roots', () => {
     expect(Object.keys(CAPABILITY_CONTRACT_SCHEMA_IDS).sort()).toEqual([
       'AliasResolutionResultV1',
       'AuthorityGrantRefV1',
+      'CanonicalIdentityEnvelopeV1',
       'CapabilityDefinitionV1',
       'CapabilityIdentifierV1',
       'CapabilityRequirementV1',
     ])
+  })
+})
+
+describe('Canonical Identity Envelope v1', () => {
+  it('publishes a closed reference envelope', () => {
+    expect(
+      Reflect.get(capabilityPackage, 'CanonicalIdentityEnvelopeV1'),
+    ).toBeDefined()
+    expect(
+      Value.Check(
+        CanonicalIdentityEnvelopeV1,
+        canonicalIdentityEnvelope(),
+      ),
+    ).toBe(true)
+  })
+
+  it('requires the capability id and authoritative definition hash', () => {
+    const missingCapabilityId = canonicalIdentityEnvelope()
+    Reflect.deleteProperty(missingCapabilityId, 'capability_id')
+    expect(
+      Value.Check(CanonicalIdentityEnvelopeV1, missingCapabilityId),
+    ).toBe(false)
+
+    const missingHash = canonicalIdentityEnvelope()
+    Reflect.deleteProperty(missingHash, 'canonical_document_hash')
+    expect(Value.Check(CanonicalIdentityEnvelopeV1, missingHash)).toBe(false)
+  })
+
+  it('rejects malformed hashes and aliases in the capability id slot', () => {
+    expect(
+      Value.Check(CanonicalIdentityEnvelopeV1, {
+        ...canonicalIdentityEnvelope(),
+        canonical_document_hash: 'sha256:not-a-hash',
+      }),
+    ).toBe(false)
+    expect(
+      Value.Check(CanonicalIdentityEnvelopeV1, {
+        ...canonicalIdentityEnvelope(),
+        capability_id: 'legacy/reason-deeply',
+      }),
+    ).toBe(false)
+  })
+
+  it('rejects extra fields and self-hash metadata', () => {
+    expect(
+      Value.Check(CanonicalIdentityEnvelopeV1, {
+        ...canonicalIdentityEnvelope(),
+        selected_provider: 'qwen',
+      }),
+    ).toBe(false)
+    expect(
+      Value.Check(CanonicalIdentityEnvelopeV1, {
+        ...canonicalIdentityEnvelope(),
+        definition_version: '1.0.0',
+      }),
+    ).toBe(false)
   })
 })

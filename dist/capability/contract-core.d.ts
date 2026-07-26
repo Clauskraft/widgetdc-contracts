@@ -11,6 +11,7 @@
 import { Static } from '@sinclair/typebox';
 export declare const CAPABILITY_CONTRACT_SCHEMA_IDS: {
     readonly CapabilityIdentifierV1: "https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json";
+    readonly CanonicalIdentityEnvelopeV1: "https://widgetdc.com/contracts/capability/CanonicalIdentityEnvelopeV1.json";
     readonly CapabilityDefinitionV1: "https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json";
     readonly CapabilityRequirementV1: "https://widgetdc.com/contracts/capability/CapabilityRequirementV1.json";
     readonly AuthorityGrantRefV1: "https://widgetdc.com/contracts/capability/AuthorityGrantRefV1.json";
@@ -26,6 +27,12 @@ export declare const CapabilityIdentifierV1: import("@sinclair/typebox").TObject
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.capability_identifier.v1">;
 }>;
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>;
+export declare const CanonicalIdentityEnvelopeV1: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.canonical_identity_envelope.v1">;
+    capability_id: import("@sinclair/typebox").TString;
+    canonical_document_hash: import("@sinclair/typebox").TString;
+}>;
+export type CanonicalIdentityEnvelopeV1 = Static<typeof CanonicalIdentityEnvelopeV1>;
 export declare const CapabilityDefinitionV1: import("@sinclair/typebox").TObject<{
     capability_id: import("@sinclair/typebox").TString;
     lifecycle: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"active">, import("@sinclair/typebox").TLiteral<"deprecated">, import("@sinclair/typebox").TLiteral<"archived">]>;

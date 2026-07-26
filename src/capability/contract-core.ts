@@ -20,6 +20,8 @@ import {
 export const CAPABILITY_CONTRACT_SCHEMA_IDS = {
   CapabilityIdentifierV1:
     'https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json',
+  CanonicalIdentityEnvelopeV1:
+    'https://widgetdc.com/contracts/capability/CanonicalIdentityEnvelopeV1.json',
   CapabilityDefinitionV1:
     'https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json',
   CapabilityRequirementV1:
@@ -36,6 +38,8 @@ export type CapabilityContractSchemaIdV1 =
 const CAPABILITY_SCHEMA_VERSIONS: Record<CapabilityContractSchemaIdV1, string> = {
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1]:
     'wdc.capability_identifier.v1',
+  [CAPABILITY_CONTRACT_SCHEMA_IDS.CanonicalIdentityEnvelopeV1]:
+    'wdc.canonical_identity_envelope.v1',
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityDefinitionV1]:
     'wdc.capability_definition.v1',
   [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityRequirementV1]:
@@ -110,6 +114,27 @@ export const CapabilityIdentifierV1 = Type.Object(
   },
 )
 export type CapabilityIdentifierV1 = Static<typeof CapabilityIdentifierV1>
+
+export const CanonicalIdentityEnvelopeV1 = Type.Object(
+  {
+    schema_version: Type.Literal('wdc.canonical_identity_envelope.v1'),
+    capability_id: CanonicalCapabilityId,
+    canonical_document_hash: Type.String({
+      pattern: CANONICAL_DOCUMENT_HASH_PATTERN,
+      description:
+        'Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.',
+    }),
+  },
+  {
+    $id: CAPABILITY_CONTRACT_SCHEMA_IDS.CanonicalIdentityEnvelopeV1,
+    additionalProperties: false,
+    description:
+      'Closed reference envelope joining a canonical capability URN to one authoritative CapabilityDefinitionV1 document identity.',
+  },
+)
+export type CanonicalIdentityEnvelopeV1 = Static<
+  typeof CanonicalIdentityEnvelopeV1
+>
 
 export const CapabilityDefinitionV1 = Type.Object(
   {

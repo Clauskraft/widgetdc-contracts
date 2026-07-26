@@ -12,6 +12,7 @@ import { Type } from '@sinclair/typebox';
 import { CANONICALIZATION_VERSION, CONTENT_HASH_ALGORITHM, contentAddressedIdentity, } from '../normalization/canonical-json.js';
 export const CAPABILITY_CONTRACT_SCHEMA_IDS = {
     CapabilityIdentifierV1: 'https://widgetdc.com/contracts/capability/CapabilityIdentifierV1.json',
+    CanonicalIdentityEnvelopeV1: 'https://widgetdc.com/contracts/capability/CanonicalIdentityEnvelopeV1.json',
     CapabilityDefinitionV1: 'https://widgetdc.com/contracts/capability/CapabilityDefinitionV1.json',
     CapabilityRequirementV1: 'https://widgetdc.com/contracts/capability/CapabilityRequirementV1.json',
     AuthorityGrantRefV1: 'https://widgetdc.com/contracts/capability/AuthorityGrantRefV1.json',
@@ -19,6 +20,7 @@ export const CAPABILITY_CONTRACT_SCHEMA_IDS = {
 };
 const CAPABILITY_SCHEMA_VERSIONS = {
     [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1]: 'wdc.capability_identifier.v1',
+    [CAPABILITY_CONTRACT_SCHEMA_IDS.CanonicalIdentityEnvelopeV1]: 'wdc.canonical_identity_envelope.v1',
     [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityDefinitionV1]: 'wdc.capability_definition.v1',
     [CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityRequirementV1]: 'wdc.capability_requirement.v1',
     [CAPABILITY_CONTRACT_SCHEMA_IDS.AuthorityGrantRefV1]: 'wdc.authority_grant_ref.v1',
@@ -72,6 +74,18 @@ export const CapabilityIdentifierV1 = Type.Object({
     $id: CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityIdentifierV1,
     additionalProperties: false,
     description: 'Canonical, content-addressed capability identifier. Aliases are deliberately excluded.',
+});
+export const CanonicalIdentityEnvelopeV1 = Type.Object({
+    schema_version: Type.Literal('wdc.canonical_identity_envelope.v1'),
+    capability_id: CanonicalCapabilityId,
+    canonical_document_hash: Type.String({
+        pattern: CANONICAL_DOCUMENT_HASH_PATTERN,
+        description: 'Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.',
+    }),
+}, {
+    $id: CAPABILITY_CONTRACT_SCHEMA_IDS.CanonicalIdentityEnvelopeV1,
+    additionalProperties: false,
+    description: 'Closed reference envelope joining a canonical capability URN to one authoritative CapabilityDefinitionV1 document identity.',
 });
 export const CapabilityDefinitionV1 = Type.Object({
     schema_version: Type.Literal('wdc.capability_definition.v1'),
