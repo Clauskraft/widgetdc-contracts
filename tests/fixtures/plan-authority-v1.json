@@ -1,0 +1,97 @@
+{
+  "golden_vectors": [
+    {
+      "name": "fully bound source mutation plan",
+      "document": {
+        "schema_version": "wdc.plan_authority_envelope.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:6b0a94c2d20028b58a8abb86bf644c482a6d674572496cb23c9cbe87fc442816",
+        "plan_id": "plan:pfba-r0",
+        "plan_version": 1,
+        "mission_id": "provider-folding-building-block-activation",
+        "slice_id": "PFBA-R0",
+        "workbom_id": "taskbom:adaptive:f80388e11a56",
+        "linear_issue": "LIN-2384",
+        "exact_head_sha": "0123456789abcdef0123456789abcdef01234567",
+        "binding_hashes": {
+          "mission_bundle_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "workbom_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "success_contract_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "claim_contract_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+        },
+        "actor_binding": {
+          "actor_id": "operator:claus",
+          "authority_ref": "authority:operator:claus:chat-directive:2026-08-11:do-it",
+          "required_capability": "mutation:source_code",
+          "actor_binding_verified": true
+        },
+        "approval_binding": {
+          "approval_id": "approval:pfba-r0",
+          "approved_by": "operator:claus",
+          "approval_signature_ref": "signature:sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "approval_signature_verified": true,
+          "approval_usable": true,
+          "issued_at": "2026-08-11T17:00:00Z",
+          "expires_at": "2026-08-12T17:00:00Z"
+        },
+        "execution_admitted": true
+      }
+    }
+  ],
+  "schema_mutations": [
+    {
+      "name": "legacy unversioned plan",
+      "path": "schema_version",
+      "operation": "delete"
+    },
+    {
+      "name": "unverified actor binding",
+      "path": "actor_binding.actor_binding_verified",
+      "operation": "replace",
+      "value": false
+    },
+    {
+      "name": "unverified approval signature",
+      "path": "approval_binding.approval_signature_verified",
+      "operation": "replace",
+      "value": false
+    },
+    {
+      "name": "unusable approval",
+      "path": "approval_binding.approval_usable",
+      "operation": "replace",
+      "value": false
+    },
+    {
+      "name": "execution not admitted",
+      "path": "execution_admitted",
+      "operation": "replace",
+      "value": false
+    },
+    {
+      "name": "legacy compatibility residue",
+      "path": "legacy_plan",
+      "operation": "replace",
+      "value": true
+    }
+  ],
+  "hash_mutations": [
+    {
+      "name": "different exact head",
+      "path": "exact_head_sha",
+      "value": "fedcba9876543210fedcba9876543210fedcba98"
+    },
+    {
+      "name": "different actor authority",
+      "path": "actor_binding.authority_ref",
+      "value": "authority:operator:other"
+    },
+    {
+      "name": "different approval signature",
+      "path": "approval_binding.approval_signature_ref",
+      "value": "signature:sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ]
+}

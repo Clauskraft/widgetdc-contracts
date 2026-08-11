@@ -15,4 +15,5 @@ export * from './launcher-contracts.js';
 export * from './artifact-contracts.js';
 export * from './completion-ledger.js';
 export * from './routing-evidence.js';
+export * from './plan-authority.js';
 //# sourceMappingURL=index.d.ts.map

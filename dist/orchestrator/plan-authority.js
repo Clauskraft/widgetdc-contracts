@@ -1,0 +1,165 @@
+/**
+ * Canonical Plan Authority Contract v1.
+ *
+ * This module defines the only proof-eligible envelope for admitting a plan to
+ * execution. It carries references and verification outcomes; it does not
+ * issue actor authority, create approvals, execute plans, or mutate a mission.
+ * Legacy or partially bound plans are represented only by a rejected result.
+ *
+ * Wire format: snake_case JSON.
+ */
+import { Type } from '@sinclair/typebox';
+import { CANONICALIZATION_VERSION, CONTENT_HASH_ALGORITHM, contentAddressedIdentity, } from '../normalization/canonical-json.js';
+export const PLAN_AUTHORITY_SCHEMA_IDS = {
+    PlanAuthorityEnvelopeV1: 'https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json',
+    PlanAuthorityAdmissionResultV1: 'https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV1.json',
+};
+const PLAN_AUTHORITY_SCHEMA_VERSION = 'wdc.plan_authority_envelope.v1';
+const HASH_PATTERN = '^sha256:[0-9a-f]{64}$';
+const OPAQUE_ID_PATTERN = '^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$';
+const BindingHashes = Type.Object({
+    mission_bundle_hash: Type.String({ pattern: HASH_PATTERN }),
+    workbom_hash: Type.String({ pattern: HASH_PATTERN }),
+    success_contract_hash: Type.String({ pattern: HASH_PATTERN }),
+    claim_contract_hash: Type.String({ pattern: HASH_PATTERN }),
+}, {
+    additionalProperties: false,
+    description: 'Exact hash tuple that binds the admitted plan to its mission and contracts.',
+});
+const ActorBinding = Type.Object({
+    actor_id: Type.String({ minLength: 1, maxLength: 512 }),
+    authority_ref: Type.String({ minLength: 1, maxLength: 512 }),
+    required_capability: Type.Literal('mutation:source_code'),
+    actor_binding_verified: Type.Literal(true),
+}, {
+    additionalProperties: false,
+    description: 'Verified actor authority required for source mutation.',
+});
+const ApprovalBinding = Type.Object({
+    approval_id: Type.String({ minLength: 1, maxLength: 512 }),
+    approved_by: Type.String({ minLength: 1, maxLength: 512 }),
+    approval_signature_ref: Type.String({
+        pattern: '^signature:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$',
+    }),
+    approval_signature_verified: Type.Literal(true),
+    approval_usable: Type.Literal(true),
+    issued_at: Type.String({ format: 'date-time' }),
+    expires_at: Type.String({ format: 'date-time' }),
+}, {
+    additionalProperties: false,
+    description: 'Usable, verified approval signature and its bounded validity window.',
+});
+export const PlanAuthorityEnvelopeV1 = Type.Object({
+    schema_version: Type.Literal(PLAN_AUTHORITY_SCHEMA_VERSION),
+    definition_version: Type.Literal('1.0.0'),
+    canonicalization_profile: Type.Literal(CANONICALIZATION_VERSION),
+    hash_algorithm: Type.Literal(CONTENT_HASH_ALGORITHM),
+    canonical_document_hash: Type.String({
+        pattern: HASH_PATTERN,
+        description: 'SHA-256 identity over the canonical plan projection, excluding this field.',
+    }),
+    plan_id: Type.String({
+        pattern: '^plan:[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$',
+    }),
+    plan_version: Type.Integer({ minimum: 1 }),
+    mission_id: Type.String({ pattern: OPAQUE_ID_PATTERN }),
+    slice_id: Type.String({ pattern: OPAQUE_ID_PATTERN }),
+    workbom_id: Type.String({
+        pattern: '^(?:taskbom|workbom):[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$',
+    }),
+    linear_issue: Type.String({ pattern: '^LIN-[1-9][0-9]*$' }),
+    exact_head_sha: Type.String({ pattern: '^[0-9a-f]{40}$' }),
+    binding_hashes: BindingHashes,
+    actor_binding: ActorBinding,
+    approval_binding: ApprovalBinding,
+    execution_admitted: Type.Literal(true),
+}, {
+    $id: PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityEnvelopeV1,
+    additionalProperties: false,
+    description: 'Closed, versioned and content-addressed authority envelope for one executable plan.',
+});
+const AdmittedPlanAuthorityResultV1 = Type.Object({
+    schema_version: Type.Literal('wdc.plan_authority_admission_result.v1'),
+    status: Type.Literal('admitted'),
+    plan: PlanAuthorityEnvelopeV1,
+    execution_admitted: Type.Literal(true),
+}, { additionalProperties: false });
+const RejectedPlanAuthorityResultV1 = Type.Object({
+    schema_version: Type.Literal('wdc.plan_authority_admission_result.v1'),
+    status: Type.Literal('rejected'),
+    reason: Type.Union([
+        Type.Literal('legacy_unversioned_plan'),
+        Type.Literal('schema_invalid'),
+        Type.Literal('hash_mismatch'),
+        Type.Literal('actor_binding_unverified'),
+        Type.Literal('approval_signature_unverified'),
+        Type.Literal('approval_unusable'),
+        Type.Literal('authority_expired'),
+        Type.Literal('binding_mismatch'),
+    ]),
+    execution_admitted: Type.Literal(false),
+}, { additionalProperties: false });
+export const PlanAuthorityAdmissionResultV1 = Type.Union([
+    AdmittedPlanAuthorityResultV1,
+    RejectedPlanAuthorityResultV1,
+], {
+    $id: PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityAdmissionResultV1,
+    description: 'Terminal fail-closed result: a fully bound plan is admitted, every other input is rejected.',
+});
+function projectCanonicalPlanAuthorityDocumentV1(document) {
+    if (document === null ||
+        typeof document !== 'object' ||
+        Array.isArray(document) ||
+        Object.getPrototypeOf(document) !== Object.prototype) {
+        throw new TypeError('plan authority document must be a plain object');
+    }
+    if (Object.getOwnPropertySymbols(document).length > 0) {
+        throw new TypeError('plan authority document cannot contain symbol properties');
+    }
+    const payload = Object.create(null);
+    let schemaVersion;
+    for (const key of Object.getOwnPropertyNames(document)) {
+        const descriptor = Object.getOwnPropertyDescriptor(document, key);
+        if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) {
+            throw new TypeError('plan authority members must be enumerable data properties');
+        }
+        if (key === 'canonical_document_hash')
+            continue;
+        if (key === 'schema_version') {
+            if (typeof descriptor.value !== 'string') {
+                throw new TypeError('schema_version must be a string');
+            }
+            schemaVersion = descriptor.value;
+            continue;
+        }
+        payload[key] = descriptor.value;
+    }
+    if (schemaVersion !== PLAN_AUTHORITY_SCHEMA_VERSION) {
+        throw new TypeError(`schema_version ${schemaVersion ?? '<missing>'} does not match ${PLAN_AUTHORITY_SCHEMA_VERSION}`);
+    }
+    return { schemaVersion, payload };
+}
+export function canonicalPlanAuthorityDocumentHashV1(document) {
+    const { schemaVersion, payload } = projectCanonicalPlanAuthorityDocumentV1(document);
+    return contentAddressedIdentity({
+        object_type: PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityEnvelopeV1,
+        schema_version: schemaVersion,
+        payload,
+    }).id;
+}
+export function hasValidCanonicalPlanAuthorityDocumentHashV1(document) {
+    try {
+        const candidate = document;
+        const descriptor = Object.getOwnPropertyDescriptor(candidate, 'canonical_document_hash');
+        if (!descriptor || !descriptor.enumerable || !('value' in descriptor))
+            return false;
+        const claimedHash = descriptor.value;
+        return typeof claimedHash === 'string' &&
+            /^sha256:[0-9a-f]{64}$/.test(claimedHash) &&
+            canonicalPlanAuthorityDocumentHashV1(candidate) === claimedHash;
+    }
+    catch {
+        return false;
+    }
+}
+//# sourceMappingURL=plan-authority.js.map
