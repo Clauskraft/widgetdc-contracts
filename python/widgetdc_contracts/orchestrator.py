@@ -20,7 +20,7 @@ from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OctopusProviderMapping", "OctopusProviderMappingStatus", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "PlatformCompletionLedger", "PlatformCompletionLedgerEntry", "PlatformCompletionLifecycleState", "PlatformCompletionWorkstream", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingEvidenceReadback", "RoutingEvidenceStatus", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OctopusProviderMapping", "OctopusProviderMappingStatus", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "PlanAuthorityAdmissionResultV1", "PlanAuthorityEnvelopeV1", "PlatformCompletionLedger", "PlatformCompletionLedgerEntry", "PlatformCompletionLifecycleState", "PlatformCompletionWorkstream", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingEvidenceReadback", "RoutingEvidenceStatus", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
 
 class AgentCapability(
     RootModel[
@@ -1428,6 +1428,116 @@ class OrchestratorToolStatus(
 ):
     root: Literal['success', 'error', 'timeout', 'rate_limited', 'unauthorized'] = (
         Field(..., description='Outcome status of an Orchestrator tool call')
+    )
+
+class PlanAuthorityAdmissionResultV12(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_admission_result.v1']
+    status: Literal['rejected']
+    reason: Literal[
+        'legacy_unversioned_plan',
+        'schema_invalid',
+        'hash_mismatch',
+        'actor_binding_unverified',
+        'approval_signature_unverified',
+        'approval_unusable',
+        'authority_window_invalid',
+        'authority_not_yet_valid',
+        'authority_expired',
+        'binding_mismatch',
+    ]
+    execution_admitted: Literal[False]
+
+
+class BindingHashes(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    mission_bundle_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+    workbom_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+    success_contract_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+    claim_contract_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+
+
+class ActorBinding(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    actor_id: str = Field(..., max_length=512, min_length=1)
+    authority_ref: str = Field(..., max_length=512, min_length=1)
+    required_capability: Literal['mutation:source_code']
+    actor_binding_verified: Literal[True]
+
+
+class ApprovalBinding(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    approval_id: str = Field(..., max_length=512, min_length=1)
+    approved_by: str = Field(..., max_length=512, min_length=1)
+    approval_signature_ref: str = Field(
+        ..., pattern='^signature:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$'
+    )
+    approval_signature_verified: Literal[True]
+    approval_usable: Literal[True]
+    issued_at: AwareDatetime
+    expires_at: AwareDatetime
+
+
+class PlanAuthorityEnvelopeV1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_envelope.v1']
+    definition_version: Literal['1.0.0']
+    canonicalization_profile: Literal['jcs-rfc8785-v1']
+    hash_algorithm: Literal['sha256']
+    canonical_document_hash: str = Field(
+        ...,
+        description='SHA-256 identity over the canonical plan projection, excluding this field.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
+    plan_id: str = Field(..., pattern='^plan:[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$')
+    plan_version: int = Field(..., ge=1)
+    mission_id: str = Field(..., pattern='^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$')
+    slice_id: str = Field(..., pattern='^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$')
+    workbom_id: str = Field(
+        ..., pattern='^(?:taskbom|workbom):[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$'
+    )
+    linear_issue: str = Field(..., pattern='^LIN-[1-9][0-9]*$')
+    exact_head_sha: str = Field(..., pattern='^[0-9a-f]{40}$')
+    binding_hashes: BindingHashes = Field(
+        ...,
+        description='Exact hash tuple that binds the admitted plan to its mission and contracts.',
+    )
+    actor_binding: ActorBinding = Field(
+        ..., description='Verified actor authority required for source mutation.'
+    )
+    approval_binding: ApprovalBinding = Field(
+        ...,
+        description='Usable, verified approval signature and its bounded validity window.',
+    )
+    execution_admitted: Literal[True]
+
+
+class PlanAuthorityAdmissionResultV11(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_admission_result.v1']
+    status: Literal['admitted']
+    plan: PlanAuthorityEnvelopeV1
+    execution_admitted: Literal[True]
+
+
+class PlanAuthorityAdmissionResultV1(
+    RootModel[PlanAuthorityAdmissionResultV11 | PlanAuthorityAdmissionResultV12]
+):
+    root: PlanAuthorityAdmissionResultV11 | PlanAuthorityAdmissionResultV12 = Field(
+        ...,
+        description='Terminal fail-closed result: a fully bound plan is admitted, every other input is rejected.',
     )
 
 class Entries(BaseModel):

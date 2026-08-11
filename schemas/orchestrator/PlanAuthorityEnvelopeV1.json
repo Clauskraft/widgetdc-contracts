@@ -1,0 +1,185 @@
+{
+  "$id": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json",
+  "additionalProperties": false,
+  "description": "Closed, versioned and content-addressed authority envelope for one executable plan.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_document_hash",
+    "plan_id",
+    "plan_version",
+    "mission_id",
+    "slice_id",
+    "workbom_id",
+    "linear_issue",
+    "exact_head_sha",
+    "binding_hashes",
+    "actor_binding",
+    "approval_binding",
+    "execution_admitted"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.plan_authority_envelope.v1",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "1.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_document_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 identity over the canonical plan projection, excluding this field.",
+      "type": "string"
+    },
+    "plan_id": {
+      "pattern": "^plan:[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "mission_id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+      "type": "string"
+    },
+    "slice_id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+      "type": "string"
+    },
+    "workbom_id": {
+      "pattern": "^(?:taskbom|workbom):[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$",
+      "type": "string"
+    },
+    "linear_issue": {
+      "pattern": "^LIN-[1-9][0-9]*$",
+      "type": "string"
+    },
+    "exact_head_sha": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "binding_hashes": {
+      "additionalProperties": false,
+      "description": "Exact hash tuple that binds the admitted plan to its mission and contracts.",
+      "type": "object",
+      "required": [
+        "mission_bundle_hash",
+        "workbom_hash",
+        "success_contract_hash",
+        "claim_contract_hash"
+      ],
+      "properties": {
+        "mission_bundle_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "workbom_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "success_contract_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "claim_contract_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      }
+    },
+    "actor_binding": {
+      "additionalProperties": false,
+      "description": "Verified actor authority required for source mutation.",
+      "type": "object",
+      "required": [
+        "actor_id",
+        "authority_ref",
+        "required_capability",
+        "actor_binding_verified"
+      ],
+      "properties": {
+        "actor_id": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "authority_ref": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "required_capability": {
+          "const": "mutation:source_code",
+          "type": "string"
+        },
+        "actor_binding_verified": {
+          "const": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "approval_binding": {
+      "additionalProperties": false,
+      "description": "Usable, verified approval signature and its bounded validity window.",
+      "type": "object",
+      "required": [
+        "approval_id",
+        "approved_by",
+        "approval_signature_ref",
+        "approval_signature_verified",
+        "approval_usable",
+        "issued_at",
+        "expires_at"
+      ],
+      "properties": {
+        "approval_id": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "approved_by": {
+          "minLength": 1,
+          "maxLength": 512,
+          "type": "string"
+        },
+        "approval_signature_ref": {
+          "pattern": "^signature:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$",
+          "type": "string"
+        },
+        "approval_signature_verified": {
+          "const": true,
+          "type": "boolean"
+        },
+        "approval_usable": {
+          "const": true,
+          "type": "boolean"
+        },
+        "issued_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "execution_admitted": {
+      "const": true,
+      "type": "boolean"
+    }
+  }
+}

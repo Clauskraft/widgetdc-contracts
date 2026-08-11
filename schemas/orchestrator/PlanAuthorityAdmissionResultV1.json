@@ -1,0 +1,101 @@
+{
+  "$id": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV1.json",
+  "description": "Terminal fail-closed result: a fully bound plan is admitted, every other input is rejected.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "status",
+        "plan",
+        "execution_admitted"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.plan_authority_admission_result.v1",
+          "type": "string"
+        },
+        "status": {
+          "const": "admitted",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json"
+        },
+        "execution_admitted": {
+          "const": true,
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "status",
+        "reason",
+        "execution_admitted"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.plan_authority_admission_result.v1",
+          "type": "string"
+        },
+        "status": {
+          "const": "rejected",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "const": "legacy_unversioned_plan",
+              "type": "string"
+            },
+            {
+              "const": "schema_invalid",
+              "type": "string"
+            },
+            {
+              "const": "hash_mismatch",
+              "type": "string"
+            },
+            {
+              "const": "actor_binding_unverified",
+              "type": "string"
+            },
+            {
+              "const": "approval_signature_unverified",
+              "type": "string"
+            },
+            {
+              "const": "approval_unusable",
+              "type": "string"
+            },
+            {
+              "const": "authority_window_invalid",
+              "type": "string"
+            },
+            {
+              "const": "authority_not_yet_valid",
+              "type": "string"
+            },
+            {
+              "const": "authority_expired",
+              "type": "string"
+            },
+            {
+              "const": "binding_mismatch",
+              "type": "string"
+            }
+          ]
+        },
+        "execution_admitted": {
+          "const": false,
+          "type": "boolean"
+        }
+      }
+    }
+  ]
+}
