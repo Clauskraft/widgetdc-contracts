@@ -550,6 +550,40 @@ function removeSecondCapabilityIdentifierDefinition(content: string): string {
   return `${content.slice(0, secondStart)}${content.slice(secondEnd + 1)}`
 }
 
+function deduplicateEquivalentClassDefinitions(
+  content: string,
+  classNames: readonly string[],
+): string {
+  let result = content
+
+  for (const className of classNames) {
+    const lines = result.split('\n')
+    const starts = lines
+      .map((line, index) => line.startsWith(`class ${className}(`) ? index : -1)
+      .filter((index) => index >= 0)
+
+    if (starts.length < 2) continue
+
+    const blocks = starts.map((start) => {
+      let end = start + 1
+      while (end < lines.length && !lines[end].startsWith('class ')) end += 1
+      return { start, end, body: lines.slice(start, end).join('\n').trim() }
+    })
+    if (blocks.some((block) => block.body !== blocks[0].body)) {
+      throw new Error(
+        `[generate-python] Refused to deduplicate non-equivalent ${className} definitions.`,
+      )
+    }
+
+    for (const block of blocks.slice(1).reverse()) {
+      lines.splice(block.start, block.end - block.start)
+    }
+    result = lines.join('\n')
+  }
+
+  return result
+}
+
 function mergeModule(
   moduleName: string,
   outputName: string,
@@ -621,6 +655,14 @@ function mergeModule(
     content = applyCapabilityNonNullOptionalParity(content)
     content = applyCapabilityStrictBooleanParity(content)
     content = applyCapabilityDumpParity(content, classNames)
+  }
+  if (moduleName === 'orchestrator') {
+    content = deduplicateEquivalentClassDefinitions(content, [
+      'BindingHashes',
+      'ActorBinding',
+      'ApprovalBinding',
+      'PlanAuthorityEnvelopeV1',
+    ])
   }
 
   writeFileSync(join(outputDir, `${outputName}.py`), content, 'utf-8')

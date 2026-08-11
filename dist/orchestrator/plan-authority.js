@@ -9,6 +9,8 @@
  * Wire format: snake_case JSON.
  */
 import { Type } from '@sinclair/typebox';
+import { Value } from '@sinclair/typebox/value';
+import '../formats.js';
 import { CANONICALIZATION_VERSION, CONTENT_HASH_ALGORITHM, contentAddressedIdentity, } from '../normalization/canonical-json.js';
 export const PLAN_AUTHORITY_SCHEMA_IDS = {
     PlanAuthorityEnvelopeV1: 'https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json',
@@ -81,7 +83,7 @@ export const PlanAuthorityEnvelopeV1 = Type.Object({
 const AdmittedPlanAuthorityResultV1 = Type.Object({
     schema_version: Type.Literal('wdc.plan_authority_admission_result.v1'),
     status: Type.Literal('admitted'),
-    plan: PlanAuthorityEnvelopeV1,
+    plan: Type.Ref(PlanAuthorityEnvelopeV1),
     execution_admitted: Type.Literal(true),
 }, { additionalProperties: false });
 const RejectedPlanAuthorityResultV1 = Type.Object({
@@ -94,6 +96,8 @@ const RejectedPlanAuthorityResultV1 = Type.Object({
         Type.Literal('actor_binding_unverified'),
         Type.Literal('approval_signature_unverified'),
         Type.Literal('approval_unusable'),
+        Type.Literal('authority_window_invalid'),
+        Type.Literal('authority_not_yet_valid'),
         Type.Literal('authority_expired'),
         Type.Literal('binding_mismatch'),
     ]),
@@ -106,6 +110,77 @@ export const PlanAuthorityAdmissionResultV1 = Type.Union([
     $id: PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityAdmissionResultV1,
     description: 'Terminal fail-closed result: a fully bound plan is admitted, every other input is rejected.',
 });
+function rejectedPlanAuthorityAdmissionV1(reason) {
+    return {
+        schema_version: 'wdc.plan_authority_admission_result.v1',
+        status: 'rejected',
+        reason,
+        execution_admitted: false,
+    };
+}
+const STRICT_RFC3339_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/;
+function strictRfc3339EpochMilliseconds(value) {
+    const match = STRICT_RFC3339_PATTERN.exec(value);
+    if (!match)
+        return null;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4]);
+    const minute = Number(match[5]);
+    const second = Number(match[6]);
+    const offsetHour = Number(match[7] ?? 0);
+    const offsetMinute = Number(match[8] ?? 0);
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    if (month < 1 || month > 12 ||
+        day < 1 || day > daysInMonth ||
+        hour > 23 || minute > 59 || second > 59 ||
+        offsetHour > 23 || offsetMinute > 59) {
+        return null;
+    }
+    const epochMilliseconds = Date.parse(value);
+    return Number.isFinite(epochMilliseconds) ? epochMilliseconds : null;
+}
+/**
+ * Guarded admission boundary. Structural schema validation alone is not an
+ * execution authorization because JSON Schema cannot recompute content hashes.
+ */
+export function evaluatePlanAuthorityAdmissionV1(input, options) {
+    if (!Value.Check(PlanAuthorityEnvelopeV1, input)) {
+        return rejectedPlanAuthorityAdmissionV1('schema_invalid');
+    }
+    if (!hasValidCanonicalPlanAuthorityDocumentHashV1(input)) {
+        return rejectedPlanAuthorityAdmissionV1('hash_mismatch');
+    }
+    const plan = structuredClone(input);
+    const issuedAt = strictRfc3339EpochMilliseconds(plan.approval_binding.issued_at);
+    const expiresAt = strictRfc3339EpochMilliseconds(plan.approval_binding.expires_at);
+    let nowEpochMilliseconds;
+    try {
+        nowEpochMilliseconds = options.clock().getTime();
+    }
+    catch {
+        return rejectedPlanAuthorityAdmissionV1('authority_window_invalid');
+    }
+    if (issuedAt === null ||
+        expiresAt === null ||
+        !Number.isFinite(nowEpochMilliseconds) ||
+        issuedAt >= expiresAt) {
+        return rejectedPlanAuthorityAdmissionV1('authority_window_invalid');
+    }
+    if (nowEpochMilliseconds < issuedAt) {
+        return rejectedPlanAuthorityAdmissionV1('authority_not_yet_valid');
+    }
+    if (nowEpochMilliseconds >= expiresAt) {
+        return rejectedPlanAuthorityAdmissionV1('authority_expired');
+    }
+    return {
+        schema_version: 'wdc.plan_authority_admission_result.v1',
+        status: 'admitted',
+        plan,
+        execution_admitted: true,
+    };
+}
 function projectCanonicalPlanAuthorityDocumentV1(document) {
     if (document === null ||
         typeof document !== 'object' ||

@@ -9,6 +9,7 @@
  * Wire format: snake_case JSON.
  */
 import { Static } from '@sinclair/typebox';
+import '../formats.js';
 export declare const PLAN_AUTHORITY_SCHEMA_IDS: {
     readonly PlanAuthorityEnvelopeV1: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json";
     readonly PlanAuthorityAdmissionResultV1: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV1.json";
@@ -53,7 +54,7 @@ export type PlanAuthorityEnvelopeV1 = Static<typeof PlanAuthorityEnvelopeV1>;
 export declare const PlanAuthorityAdmissionResultV1: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TObject<{
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_admission_result.v1">;
     status: import("@sinclair/typebox").TLiteral<"admitted">;
-    plan: import("@sinclair/typebox").TObject<{
+    plan: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
         schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_envelope.v1">;
         definition_version: import("@sinclair/typebox").TLiteral<"1.0.0">;
         canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
@@ -88,15 +89,23 @@ export declare const PlanAuthorityAdmissionResultV1: import("@sinclair/typebox")
             expires_at: import("@sinclair/typebox").TString;
         }>;
         execution_admitted: import("@sinclair/typebox").TLiteral<true>;
-    }>;
+    }>>;
     execution_admitted: import("@sinclair/typebox").TLiteral<true>;
 }>, import("@sinclair/typebox").TObject<{
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_admission_result.v1">;
     status: import("@sinclair/typebox").TLiteral<"rejected">;
-    reason: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"legacy_unversioned_plan">, import("@sinclair/typebox").TLiteral<"schema_invalid">, import("@sinclair/typebox").TLiteral<"hash_mismatch">, import("@sinclair/typebox").TLiteral<"actor_binding_unverified">, import("@sinclair/typebox").TLiteral<"approval_signature_unverified">, import("@sinclair/typebox").TLiteral<"approval_unusable">, import("@sinclair/typebox").TLiteral<"authority_expired">, import("@sinclair/typebox").TLiteral<"binding_mismatch">]>;
+    reason: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"legacy_unversioned_plan">, import("@sinclair/typebox").TLiteral<"schema_invalid">, import("@sinclair/typebox").TLiteral<"hash_mismatch">, import("@sinclair/typebox").TLiteral<"actor_binding_unverified">, import("@sinclair/typebox").TLiteral<"approval_signature_unverified">, import("@sinclair/typebox").TLiteral<"approval_unusable">, import("@sinclair/typebox").TLiteral<"authority_window_invalid">, import("@sinclair/typebox").TLiteral<"authority_not_yet_valid">, import("@sinclair/typebox").TLiteral<"authority_expired">, import("@sinclair/typebox").TLiteral<"binding_mismatch">]>;
     execution_admitted: import("@sinclair/typebox").TLiteral<false>;
 }>]>;
 export type PlanAuthorityAdmissionResultV1 = Static<typeof PlanAuthorityAdmissionResultV1>;
+export interface PlanAuthorityAdmissionOptionsV1 {
+    readonly clock: () => Date;
+}
+/**
+ * Guarded admission boundary. Structural schema validation alone is not an
+ * execution authorization because JSON Schema cannot recompute content hashes.
+ */
+export declare function evaluatePlanAuthorityAdmissionV1(input: unknown, options: PlanAuthorityAdmissionOptionsV1): PlanAuthorityAdmissionResultV1;
 export interface CanonicalPlanAuthorityDocumentHashInputV1 {
     schema_version: string;
     canonical_document_hash?: unknown;
