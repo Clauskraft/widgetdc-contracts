@@ -1,0 +1,119 @@
+{
+  "$id": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV2.json",
+  "additionalProperties": false,
+  "description": "Server-signed, actor-bound and content-addressed authority for one plan approval.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "definition_version",
+    "canonicalization_profile",
+    "hash_algorithm",
+    "canonical_payload_hash",
+    "plan_id",
+    "approval_id",
+    "actor_id",
+    "authority_ref",
+    "capabilities",
+    "scope",
+    "scope_hash",
+    "issued_at",
+    "expires_at",
+    "correlation_id",
+    "idempotency_key",
+    "signing_key_id",
+    "server_signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "wdc.plan_authority_envelope.v2",
+      "type": "string"
+    },
+    "definition_version": {
+      "const": "2.0.0",
+      "type": "string"
+    },
+    "canonicalization_profile": {
+      "const": "jcs-rfc8785-v1",
+      "type": "string"
+    },
+    "hash_algorithm": {
+      "const": "sha256",
+      "type": "string"
+    },
+    "canonical_payload_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "plan_id": {
+      "pattern": "^plan:[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$",
+      "type": "string"
+    },
+    "approval_id": {
+      "pattern": "^approval:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$",
+      "type": "string"
+    },
+    "actor_id": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "authority_ref": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "capabilities": {
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "maxLength": 256,
+        "type": "string"
+      }
+    },
+    "scope": {
+      "minItems": 1,
+      "maxItems": 512,
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "minLength": 1,
+        "maxLength": 1024,
+        "type": "string"
+      }
+    },
+    "scope_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "issued_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "correlation_id": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "idempotency_key": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "signing_key_id": {
+      "minLength": 1,
+      "maxLength": 512,
+      "type": "string"
+    },
+    "server_signature": {
+      "pattern": "^signature:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$",
+      "type": "string"
+    }
+  }
+}

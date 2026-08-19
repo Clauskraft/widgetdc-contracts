@@ -1,0 +1,89 @@
+{
+  "$id": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV2.json",
+  "description": "Fail-closed V2 admission result backed by recomputed hashes and server signature evidence.",
+  "anyOf": [
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "status",
+        "plan",
+        "execution_admitted"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.plan_authority_admission_result.v2",
+          "type": "string"
+        },
+        "status": {
+          "const": "admitted",
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV2.json"
+        },
+        "execution_admitted": {
+          "const": true,
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "schema_version",
+        "status",
+        "reason",
+        "execution_admitted"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "wdc.plan_authority_admission_result.v2",
+          "type": "string"
+        },
+        "status": {
+          "const": "rejected",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "const": "schema_invalid",
+              "type": "string"
+            },
+            {
+              "const": "scope_hash_mismatch",
+              "type": "string"
+            },
+            {
+              "const": "payload_hash_mismatch",
+              "type": "string"
+            },
+            {
+              "const": "server_signature_invalid",
+              "type": "string"
+            },
+            {
+              "const": "authority_window_invalid",
+              "type": "string"
+            },
+            {
+              "const": "authority_not_yet_valid",
+              "type": "string"
+            },
+            {
+              "const": "authority_expired",
+              "type": "string"
+            }
+          ]
+        },
+        "execution_admitted": {
+          "const": false,
+          "type": "boolean"
+        }
+      }
+    }
+  ]
+}

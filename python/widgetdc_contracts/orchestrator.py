@@ -6,6 +6,7 @@ Do not edit manually — regenerate with: npm run python
 
 from __future__ import annotations
 
+from pydantic import AfterValidator
 from pydantic import AnyUrl, BaseModel, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
@@ -15,12 +16,22 @@ from pydantic import BaseModel
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import BaseModel, Field
 from pydantic import Field, RootModel
+from typing import Annotated
 from typing import Any
 from typing import Any, Literal
 from typing import Literal
 from uuid import UUID
 
-__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OctopusProviderMapping", "OctopusProviderMappingStatus", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "PlanAuthorityAdmissionResultV1", "PlanAuthorityEnvelopeV1", "PlatformCompletionLedger", "PlatformCompletionLedgerEntry", "PlatformCompletionLifecycleState", "PlatformCompletionWorkstream", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingEvidenceReadback", "RoutingEvidenceStatus", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
+__all__ = ["AgentCapability", "AgentHandshake", "AgentHandshakeStatus", "AgentId", "AgentMessage", "AgentMessageSource", "AgentMessageType", "AgentTrustProfile", "AgentWorkflowEnvelope", "ArtifactChallengeGraphWriteV1", "ArtifactChallengeOutcomeV1", "ArtifactRequestReviewGraphWriteV1", "BackendGovernanceEvidenceFamilyResponseV1", "BackendGovernanceEvidenceItemResponseV1", "BackendGovernanceEvidencePacketGovernanceV1", "FabricProof", "HyperAgentPlan", "LauncherEvidenceFamily", "LauncherEvidenceFamilyPacket", "LauncherEvidenceItem", "LauncherEvidencePacket", "LauncherEvidenceStatus", "LauncherExecution", "LauncherExecutionMetadata", "LauncherGovernanceGate", "LauncherGovernancePromotionPolicy", "LauncherGovernanceRoutePolicy", "LauncherGovernanceSummary", "LauncherHandoffPayload", "LauncherIntent", "LauncherMode", "LauncherPlanCore", "LauncherRequest", "LauncherRequestEcho", "LauncherResponse", "OctopusProviderMapping", "OctopusProviderMappingStatus", "OodaRuntimeContext", "OodaRuntimeRequest", "OrchestratorTaskDomain", "OrchestratorToolCall", "OrchestratorToolResult", "OrchestratorToolStatus", "PlanAuthorityAdmissionResultV1", "PlanAuthorityAdmissionResultV2", "PlanAuthorityEnvelopeV1", "PlanAuthorityEnvelopeV2", "PlatformCompletionLedger", "PlatformCompletionLedgerEntry", "PlatformCompletionLifecycleState", "PlatformCompletionWorkstream", "ReasonRuntimeContext", "ReasonRuntimeRequest", "ReasonRuntimeResponse", "ReasonRuntimeResponseContract", "ReasonRuntimeRouting", "ReasonRuntimeTelemetry", "RoutingCapability", "RoutingDecision", "RoutingEvidenceReadback", "RoutingEvidenceStatus", "RoutingIntent", "ScopeOwner", "ScorecardDimension", "ScorecardEntry", "ScorecardMetricStatus", "StoredMessage", "TelemetryEntry", "TelemetryOutcome", "TelemetryPhase", "TrustEvidenceSource", "WorkflowPhase", "WorkflowType", "ArtifactChallengeEnvelopeV1", "ArtifactRequestReviewEnvelopeV1", "BackendGovernanceEvidencePacketResponseV1"]
+
+def _reject_duplicate_items(value: object) -> object:
+    if isinstance(value, list):
+        seen: list[object] = []
+        for item in value:
+            if item in seen:
+                raise ValueError('Input should contain unique items')
+            seen.append(item)
+    return value
 
 class AgentCapability(
     RootModel[
@@ -1538,6 +1549,78 @@ class PlanAuthorityAdmissionResultV1(
     root: PlanAuthorityAdmissionResultV11 | PlanAuthorityAdmissionResultV12 = Field(
         ...,
         description='Terminal fail-closed result: a fully bound plan is admitted, every other input is rejected.',
+    )
+
+class PlanAuthorityAdmissionResultV22(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_admission_result.v2']
+    status: Literal['rejected']
+    reason: Literal[
+        'schema_invalid',
+        'scope_hash_mismatch',
+        'payload_hash_mismatch',
+        'server_signature_invalid',
+        'authority_window_invalid',
+        'authority_not_yet_valid',
+        'authority_expired',
+    ]
+    execution_admitted: Literal[False]
+
+
+class Capability(RootModel[str]):
+    root: str = Field(..., max_length=256, min_length=1)
+
+
+class ScopeItem(RootModel[str]):
+    root: str = Field(..., max_length=1024, min_length=1)
+
+
+class PlanAuthorityEnvelopeV2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_envelope.v2']
+    definition_version: Literal['2.0.0']
+    canonicalization_profile: Literal['jcs-rfc8785-v1']
+    hash_algorithm: Literal['sha256']
+    canonical_payload_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+    plan_id: str = Field(..., pattern='^plan:[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$')
+    approval_id: str = Field(
+        ..., pattern='^approval:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$'
+    )
+    actor_id: str = Field(..., max_length=512, min_length=1)
+    authority_ref: str = Field(..., max_length=512, min_length=1)
+    capabilities: Annotated[list[Capability], AfterValidator(_reject_duplicate_items)] = Field(..., max_length=128, min_length=1)
+    scope: Annotated[list[ScopeItem], AfterValidator(_reject_duplicate_items)] = Field(..., max_length=512, min_length=1)
+    scope_hash: str = Field(..., pattern='^sha256:[0-9a-f]{64}$')
+    issued_at: AwareDatetime
+    expires_at: AwareDatetime
+    correlation_id: str = Field(..., max_length=512, min_length=1)
+    idempotency_key: str = Field(..., max_length=512, min_length=1)
+    signing_key_id: str = Field(..., max_length=512, min_length=1)
+    server_signature: str = Field(
+        ..., pattern='^signature:[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$'
+    )
+
+
+class PlanAuthorityAdmissionResultV21(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.plan_authority_admission_result.v2']
+    status: Literal['admitted']
+    plan: PlanAuthorityEnvelopeV2
+    execution_admitted: Literal[True]
+
+
+class PlanAuthorityAdmissionResultV2(
+    RootModel[PlanAuthorityAdmissionResultV21 | PlanAuthorityAdmissionResultV22]
+):
+    root: PlanAuthorityAdmissionResultV21 | PlanAuthorityAdmissionResultV22 = Field(
+        ...,
+        description='Fail-closed V2 admission result backed by recomputed hashes and server signature evidence.',
     )
 
 class Entries(BaseModel):
