@@ -9,10 +9,17 @@ import * as orchestratorPackage from '@widgetdc/contracts/orchestrator'
 import {
   PLAN_AUTHORITY_SCHEMA_IDS,
   PlanAuthorityAdmissionResultV1,
+  PlanAuthorityAdmissionResultV2,
   PlanAuthorityEnvelopeV1,
+  PlanAuthorityEnvelopeV2,
   canonicalPlanAuthorityDocumentHashV1,
+  canonicalPlanAuthorityPayloadHashV2,
+  canonicalPlanAuthorityScopeHashV2,
   evaluatePlanAuthorityAdmissionV1,
+  evaluatePlanAuthorityAdmissionV2,
   hasValidCanonicalPlanAuthorityDocumentHashV1,
+  hasValidCanonicalPlanAuthorityPayloadHashV2,
+  hasValidCanonicalPlanAuthorityScopeHashV2,
 } from '../src/orchestrator/index.js'
 
 const repoRoot = process.cwd()
@@ -26,6 +33,10 @@ const fixture = JSON.parse(readFileSync(fixturePath, 'utf-8')) as {
     value?: unknown
   }>
   hash_mutations: Array<{ name: string; path: string; value: unknown }>
+}
+const fixtureV2Path = join(repoRoot, 'tests', 'fixtures', 'plan-authority-v2.json')
+const fixtureV2 = JSON.parse(readFileSync(fixtureV2Path, 'utf-8')) as {
+  golden_vectors: Array<{ name: string; document: Record<string, unknown> }>
 }
 
 function clone<T>(value: T): T {
@@ -56,6 +67,13 @@ function mutate(
 function rehash(document: Record<string, unknown>): Record<string, unknown> {
   const result = clone(document)
   result.canonical_document_hash = canonicalPlanAuthorityDocumentHashV1(result)
+  return result
+}
+
+function rehashV2(document: Record<string, unknown>): Record<string, unknown> {
+  const result = clone(document)
+  result.scope_hash = canonicalPlanAuthorityScopeHashV2(result.scope)
+  result.canonical_payload_hash = canonicalPlanAuthorityPayloadHashV2(result)
   return result
 }
 
@@ -358,5 +376,244 @@ assert launcher.intent == "info"
       encoding: 'utf-8',
     })
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0)
+  })
+})
+
+describe('Plan Authority Contract v2', () => {
+  const golden = fixtureV2.golden_vectors[0].document
+  const clock = () => new Date('2026-08-19T02:15:00Z')
+  const acceptingVerifier = () => true
+  const evaluate = (
+    document: unknown,
+    verifyServerSignature: () => boolean = acceptingVerifier,
+  ) => evaluatePlanAuthorityAdmissionV2(document, { clock, verifyServerSignature })
+
+  it('publishes an additive closed V2 schema without changing V1 identity', () => {
+    expect(PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityEnvelopeV1).toBe(
+      'https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json',
+    )
+    expect(PlanAuthorityEnvelopeV2.$id).toBe(
+      PLAN_AUTHORITY_SCHEMA_IDS.PlanAuthorityEnvelopeV2,
+    )
+    expect(Value.Check(PlanAuthorityEnvelopeV2, golden)).toBe(true)
+    expect(hasValidCanonicalPlanAuthorityScopeHashV2(golden)).toBe(true)
+    expect(hasValidCanonicalPlanAuthorityPayloadHashV2(golden)).toBe(true)
+  })
+
+  it('admits only a canonical envelope accepted by the injected server verifier', () => {
+    const observed: unknown[] = []
+    const result = evaluatePlanAuthorityAdmissionV2(golden, {
+      clock,
+      verifyServerSignature: (input) => {
+        observed.push(input)
+        return true
+      },
+    })
+
+    expect(result).toMatchObject({
+      schema_version: 'wdc.plan_authority_admission_result.v2',
+      status: 'admitted',
+      execution_admitted: true,
+      plan: { actor_id: 'operator:clauskraft@gmail.com' },
+    })
+    expect(observed).toEqual([{
+      canonical_payload_hash: golden.canonical_payload_hash,
+      signing_key_id: golden.signing_key_id,
+      server_signature: golden.server_signature,
+    }])
+  })
+
+  it.each([
+    ['missing plan id', 'plan_id'],
+    ['missing approval id', 'approval_id'],
+    ['missing actor', 'actor_id'],
+    ['missing authority ref', 'authority_ref'],
+    ['missing expiry', 'expires_at'],
+    ['missing correlation id', 'correlation_id'],
+    ['missing idempotency key', 'idempotency_key'],
+    ['missing signing key id', 'signing_key_id'],
+    ['missing signature', 'server_signature'],
+  ])('fails closed for %s', (_name, field) => {
+    expect(evaluate(mutate(golden, field, 'delete'))).toMatchObject({
+      status: 'rejected',
+      reason: 'schema_invalid',
+      execution_admitted: false,
+    })
+  })
+
+  it('rejects empty or duplicate capability and scope sets', () => {
+    for (const [field, value] of [
+      ['capabilities', []],
+      ['scope', []],
+      ['capabilities', ['approval:plan', 'approval:plan']],
+      ['scope', ['plan:one', 'plan:one']],
+    ] as const) {
+      expect(evaluate(mutate(golden, field, 'replace', value))).toMatchObject({
+        status: 'rejected',
+        reason: 'schema_invalid',
+      })
+    }
+  })
+
+  it('rejects caller-supplied verification outcomes instead of treating them as authority', () => {
+    for (const field of [
+      'actor_binding_verified',
+      'approval_signature_verified',
+      'approval_usable',
+      'execution_admitted',
+    ]) {
+      expect(evaluate(mutate(golden, field, 'replace', true))).toMatchObject({
+        status: 'rejected',
+        reason: 'schema_invalid',
+      })
+    }
+  })
+
+  it('never throws on hostile accessor input', () => {
+    const hostile = Object.defineProperty({}, 'schema_version', {
+      enumerable: true,
+      get: () => {
+        throw new Error('caller accessor executed')
+      },
+    })
+    expect(() => evaluate(hostile)).not.toThrow()
+    expect(evaluate(hostile)).toMatchObject({
+      status: 'rejected',
+      reason: 'schema_invalid',
+      execution_admitted: false,
+    })
+  })
+
+  it('recomputes scope and payload hashes before invoking signature verification', () => {
+    let verifierCalls = 0
+    const verifier = () => {
+      verifierCalls += 1
+      return true
+    }
+    const scopeTampered = mutate(golden, 'scope', 'replace', ['plan:other'])
+    expect(evaluate(scopeTampered, verifier)).toMatchObject({
+      status: 'rejected',
+      reason: 'scope_hash_mismatch',
+    })
+    const actorTampered = mutate(golden, 'actor_id', 'replace', 'operator:other')
+    expect(evaluate(actorTampered, verifier)).toMatchObject({
+      status: 'rejected',
+      reason: 'payload_hash_mismatch',
+    })
+    const idempotencyTampered = mutate(golden, 'idempotency_key', 'replace', 'idem:other')
+    expect(evaluate(idempotencyTampered, verifier)).toMatchObject({
+      status: 'rejected',
+      reason: 'payload_hash_mismatch',
+    })
+    expect(verifierCalls).toBe(0)
+  })
+
+  it('fails closed when signature verification refuses or throws', () => {
+    expect(evaluate(golden, () => false)).toMatchObject({
+      status: 'rejected',
+      reason: 'server_signature_invalid',
+    })
+    expect(() => evaluate(golden, () => {
+      throw new Error('key service unavailable')
+    })).not.toThrow()
+    expect(evaluate(golden, () => {
+      throw new Error('key service unavailable')
+    })).toMatchObject({
+      status: 'rejected',
+      reason: 'server_signature_invalid',
+    })
+  })
+
+  it('enforces strict half-open authority time boundaries', () => {
+    const evaluateAt = (instant: string, document: Record<string, unknown> = golden) =>
+      evaluatePlanAuthorityAdmissionV2(document, {
+        clock: () => new Date(instant),
+        verifyServerSignature: acceptingVerifier,
+      })
+
+    expect(evaluateAt('2026-08-19T01:59:59.999Z')).toMatchObject({
+      status: 'rejected',
+      reason: 'authority_not_yet_valid',
+    })
+    expect(evaluateAt('2026-08-19T02:45:00.000Z')).toMatchObject({
+      status: 'rejected',
+      reason: 'authority_expired',
+    })
+    expect(evaluateAt('2026-08-19T02:00:00.000Z')).toMatchObject({ status: 'admitted' })
+
+    const malformedWindow = rehashV2(mutate(golden, 'expires_at', 'replace', 'not-a-date'))
+    expect(evaluateAt('2026-08-19T02:15:00Z', malformedWindow)).toMatchObject({
+      status: 'rejected',
+      reason: 'schema_invalid',
+    })
+  })
+
+  it('publishes an admission schema that cannot encode a false admitted result', () => {
+    expect(Value.Check(
+      PlanAuthorityAdmissionResultV2,
+      [PlanAuthorityEnvelopeV2],
+      {
+        schema_version: 'wdc.plan_authority_admission_result.v2',
+        status: 'admitted',
+        plan: golden,
+        execution_admitted: true,
+      },
+    )).toBe(true)
+    expect(Value.Check(
+      PlanAuthorityAdmissionResultV2,
+      [PlanAuthorityEnvelopeV2],
+      {
+        schema_version: 'wdc.plan_authority_admission_result.v2',
+        status: 'admitted',
+        plan: golden,
+        execution_admitted: false,
+      },
+    )).toBe(false)
+  })
+
+  it('validates the V2 golden vector and fail-closed mutations in generated Python', () => {
+    const script = `
+import json
+from pathlib import Path
+from pydantic import ValidationError
+from widgetdc_contracts.orchestrator import PlanAuthorityEnvelopeV2
+
+fixtures = json.loads(Path(${JSON.stringify(fixtureV2Path)}).read_text(encoding="utf-8"))
+golden = fixtures["golden_vectors"][0]["document"]
+PlanAuthorityEnvelopeV2.model_validate(golden)
+
+for field, value in [
+    ("capabilities", []),
+    ("scope", []),
+    ("capabilities", ["approval:plan", "approval:plan"]),
+    ("scope", ["plan:one", "plan:one"]),
+    ("actor_binding_verified", True),
+    ("approval_signature_verified", True),
+]:
+    candidate = json.loads(json.dumps(golden))
+    candidate[field] = value
+    try:
+        PlanAuthorityEnvelopeV2.model_validate(candidate)
+    except ValidationError:
+        continue
+    raise AssertionError(f"Pydantic accepted fail-closed mutation: {field}")
+`
+    const result = spawnSync('python', ['-B', '-c', script], {
+      cwd: join(repoRoot, 'python'),
+      encoding: 'utf-8',
+      env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+    })
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0)
+
+    const pythonSource = readFileSync(
+      join(repoRoot, 'python', 'widgetdc_contracts', 'orchestrator.py'),
+      'utf-8',
+    )
+    for (const className of ['Capability', 'ScopeItem', 'PlanAuthorityEnvelopeV2']) {
+      expect(
+        pythonSource.match(new RegExp(`^class ${className}\\(`, 'gm')) ?? [],
+        `expected one generated ${className} definition`,
+      ).toHaveLength(1)
+    }
   })
 })

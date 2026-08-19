@@ -1,0 +1,33 @@
+{
+  "golden_vectors": [
+    {
+      "name": "server-signed actor-bound plan authority",
+      "document": {
+        "schema_version": "wdc.plan_authority_envelope.v2",
+        "definition_version": "2.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_payload_hash": "sha256:e1a778b56d942188c925376c35bc66cf0e98f3c88b294f54d90f360a3278b392",
+        "plan_id": "plan:lin-2423-capability-exchange",
+        "approval_id": "approval:lin-2423-capability-exchange",
+        "actor_id": "operator:clauskraft@gmail.com",
+        "authority_ref": "authority:operator:clauskraft@gmail.com:capability-exchange:2026-08-19",
+        "capabilities": [
+          "approval:plan",
+          "mutation:graph"
+        ],
+        "scope": [
+          "linear.issue_create:LIN-2423",
+          "plan:lin-2423-capability-exchange"
+        ],
+        "scope_hash": "sha256:4c2cc26028ecf8cca44d31d780a026b7dac9df16678fd5ad1d3c02d9d7ee2349",
+        "issued_at": "2026-08-19T02:00:00Z",
+        "expires_at": "2026-08-19T02:45:00Z",
+        "correlation_id": "corr:lin-2423-plan-authority-v2",
+        "idempotency_key": "idem:lin-2423-plan-authority-v2",
+        "signing_key_id": "key:orchestrator-plan-authority-v2",
+        "server_signature": "signature:test:plan-authority-v2"
+      }
+    }
+  ]
+}

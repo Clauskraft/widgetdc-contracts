@@ -451,6 +451,35 @@ function applyCapabilityUniqueItemsParity(content: string): string {
   return result
 }
 
+function applyPlanAuthorityV2UniqueItemsParity(content: string): string {
+  const classMarker = 'class PlanAuthorityEnvelopeV2('
+  const classStart = content.indexOf(classMarker)
+  if (classStart === -1) {
+    throw new Error('[generate-python] Missing PlanAuthorityEnvelopeV2 class for uniqueItems parity.')
+  }
+  const nextClass = content.indexOf('\nclass ', classStart + classMarker.length)
+  const classEnd = nextClass === -1 ? content.length : nextClass
+  let classBlock = content.slice(classStart, classEnd)
+  let replacements = 0
+
+  for (const field of ['capabilities', 'scope']) {
+    const fieldPattern = new RegExp(`^(\\s*${field}: )(.+?)( = Field\\()`, 'm')
+    classBlock = classBlock.replace(
+      fieldPattern,
+      (_match, prefix: string, annotation: string, suffix: string) => {
+        replacements += 1
+        return `${prefix}Annotated[${annotation}, AfterValidator(_reject_duplicate_items)]${suffix}`
+      },
+    )
+  }
+  if (replacements !== 2) {
+    throw new Error(
+      `[generate-python] Expected 2 PlanAuthorityEnvelopeV2 uniqueItems fields, replaced ${replacements}.`,
+    )
+  }
+  return `${content.slice(0, classStart)}${classBlock}${content.slice(classEnd)}`
+}
+
 function applyCapabilityNonNullOptionalParity(content: string): string {
   let result = content
   let replacements = 0
@@ -611,6 +640,10 @@ function mergeModule(
     imports.add('from pydantic import BeforeValidator')
     imports.add('from typing import Annotated')
   }
+  if (moduleName === 'orchestrator') {
+    imports.add('from pydantic import AfterValidator')
+    imports.add('from typing import Annotated')
+  }
 
   const aliases = detectDuplicateTypes(classNames, generatedFiles)
 
@@ -640,6 +673,7 @@ function mergeModule(
           '',
         ]
       : []),
+    ...(moduleName === 'orchestrator' ? [CAPABILITY_UNIQUE_ITEMS_HELPER, ''] : []),
   ]
 
   for (const filePath of generatedFiles) {
@@ -662,7 +696,11 @@ function mergeModule(
       'ActorBinding',
       'ApprovalBinding',
       'PlanAuthorityEnvelopeV1',
+      'Capability',
+      'ScopeItem',
+      'PlanAuthorityEnvelopeV2',
     ])
+    content = applyPlanAuthorityV2UniqueItemsParity(content)
   }
 
   writeFileSync(join(outputDir, `${outputName}.py`), content, 'utf-8')

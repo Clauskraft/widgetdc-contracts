@@ -13,6 +13,8 @@ import '../formats.js';
 export declare const PLAN_AUTHORITY_SCHEMA_IDS: {
     readonly PlanAuthorityEnvelopeV1: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV1.json";
     readonly PlanAuthorityAdmissionResultV1: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV1.json";
+    readonly PlanAuthorityEnvelopeV2: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityEnvelopeV2.json";
+    readonly PlanAuthorityAdmissionResultV2: "https://widgetdc.com/contracts/orchestrator/PlanAuthorityAdmissionResultV2.json";
 };
 export declare const PlanAuthorityEnvelopeV1: import("@sinclair/typebox").TObject<{
     schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_envelope.v1">;
@@ -113,4 +115,76 @@ export interface CanonicalPlanAuthorityDocumentHashInputV1 {
 }
 export declare function canonicalPlanAuthorityDocumentHashV1(document: CanonicalPlanAuthorityDocumentHashInputV1): `sha256:${string}`;
 export declare function hasValidCanonicalPlanAuthorityDocumentHashV1(document: unknown): boolean;
+export declare const PlanAuthorityEnvelopeV2: import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_envelope.v2">;
+    definition_version: import("@sinclair/typebox").TLiteral<"2.0.0">;
+    canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+    hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+    canonical_payload_hash: import("@sinclair/typebox").TString;
+    plan_id: import("@sinclair/typebox").TString;
+    approval_id: import("@sinclair/typebox").TString;
+    actor_id: import("@sinclair/typebox").TString;
+    authority_ref: import("@sinclair/typebox").TString;
+    capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+    scope: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+    scope_hash: import("@sinclair/typebox").TString;
+    issued_at: import("@sinclair/typebox").TString;
+    expires_at: import("@sinclair/typebox").TString;
+    correlation_id: import("@sinclair/typebox").TString;
+    idempotency_key: import("@sinclair/typebox").TString;
+    signing_key_id: import("@sinclair/typebox").TString;
+    server_signature: import("@sinclair/typebox").TString;
+}>;
+export type PlanAuthorityEnvelopeV2 = Static<typeof PlanAuthorityEnvelopeV2>;
+export declare const PlanAuthorityAdmissionResultV2: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_admission_result.v2">;
+    status: import("@sinclair/typebox").TLiteral<"admitted">;
+    plan: import("@sinclair/typebox").TRefUnsafe<import("@sinclair/typebox").TObject<{
+        schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_envelope.v2">;
+        definition_version: import("@sinclair/typebox").TLiteral<"2.0.0">;
+        canonicalization_profile: import("@sinclair/typebox").TLiteral<"jcs-rfc8785-v1">;
+        hash_algorithm: import("@sinclair/typebox").TLiteral<"sha256">;
+        canonical_payload_hash: import("@sinclair/typebox").TString;
+        plan_id: import("@sinclair/typebox").TString;
+        approval_id: import("@sinclair/typebox").TString;
+        actor_id: import("@sinclair/typebox").TString;
+        authority_ref: import("@sinclair/typebox").TString;
+        capabilities: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+        scope: import("@sinclair/typebox").TArray<import("@sinclair/typebox").TString>;
+        scope_hash: import("@sinclair/typebox").TString;
+        issued_at: import("@sinclair/typebox").TString;
+        expires_at: import("@sinclair/typebox").TString;
+        correlation_id: import("@sinclair/typebox").TString;
+        idempotency_key: import("@sinclair/typebox").TString;
+        signing_key_id: import("@sinclair/typebox").TString;
+        server_signature: import("@sinclair/typebox").TString;
+    }>>;
+    execution_admitted: import("@sinclair/typebox").TLiteral<true>;
+}>, import("@sinclair/typebox").TObject<{
+    schema_version: import("@sinclair/typebox").TLiteral<"wdc.plan_authority_admission_result.v2">;
+    status: import("@sinclair/typebox").TLiteral<"rejected">;
+    reason: import("@sinclair/typebox").TUnion<[import("@sinclair/typebox").TLiteral<"schema_invalid">, import("@sinclair/typebox").TLiteral<"scope_hash_mismatch">, import("@sinclair/typebox").TLiteral<"payload_hash_mismatch">, import("@sinclair/typebox").TLiteral<"server_signature_invalid">, import("@sinclair/typebox").TLiteral<"authority_window_invalid">, import("@sinclair/typebox").TLiteral<"authority_not_yet_valid">, import("@sinclair/typebox").TLiteral<"authority_expired">]>;
+    execution_admitted: import("@sinclair/typebox").TLiteral<false>;
+}>]>;
+export type PlanAuthorityAdmissionResultV2 = Static<typeof PlanAuthorityAdmissionResultV2>;
+export interface PlanAuthoritySignatureVerificationInputV2 {
+    readonly canonical_payload_hash: string;
+    readonly signing_key_id: string;
+    readonly server_signature: string;
+}
+export interface PlanAuthorityAdmissionOptionsV2 {
+    readonly clock: () => Date;
+    readonly verifyServerSignature: (input: Readonly<PlanAuthoritySignatureVerificationInputV2>) => boolean;
+}
+export interface CanonicalPlanAuthorityPayloadHashInputV2 {
+    schema_version: string;
+    canonical_payload_hash?: unknown;
+    server_signature?: unknown;
+    [key: string]: unknown;
+}
+export declare function canonicalPlanAuthorityScopeHashV2(scope: unknown): `sha256:${string}`;
+export declare function canonicalPlanAuthorityPayloadHashV2(document: CanonicalPlanAuthorityPayloadHashInputV2): `sha256:${string}`;
+export declare function hasValidCanonicalPlanAuthorityScopeHashV2(document: unknown): boolean;
+export declare function hasValidCanonicalPlanAuthorityPayloadHashV2(document: unknown): boolean;
+export declare function evaluatePlanAuthorityAdmissionV2(input: unknown, options: PlanAuthorityAdmissionOptionsV2): PlanAuthorityAdmissionResultV2;
 //# sourceMappingURL=plan-authority.d.ts.map
