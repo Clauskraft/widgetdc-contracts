@@ -7,11 +7,114 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+Changes on `main` after the `0.11.0` version bump (`65d4e07`); `package.json`
+still reads `0.11.0`, so a release needs a bump and a tag.
+
 ### Added
-- `chat-contract-runtime`: add the public `wdc.chat_session.v1` lifecycle
-  contracts for backend-owned identity, optimistic concurrency, one-way
-  archival, bounded cursor pagination, and strict TypeBox/Pydantic parity
-  (LIN-2265).
+- `capability`: canonical capability identity envelope (`a98ab93`, #102).
+- `orchestrator`: canonical plan authority contract (`25997ed`, #103, LIN-2384).
+- `orchestrator`: plan authority envelope v2 (`c83dfdc`, #104).
+
+## Backfill note
+
+Entries `0.5.0` to `0.11.0` below were reconstructed on 2026-10-05 from the
+version-bump commits in `git log -G'"version":' -- package.json` and the commit
+subjects between them (the file stopped at `0.4.4`). Version `0.7.0` was never
+cut. Tags: only `v0.9.1` exists after `v0.4.4`; the other versions are untagged,
+so each heading below names its bump commit instead. This is a history repair,
+not a release: nothing is tagged or published by this change.
+
+## [0.11.0] - 2026-07-25 (`65d4e07`)
+
+### Added
+- `capability`: version-incompatible capability result (#100, LIN-2267).
+- `build`: deterministic generators and artifact parity repair (#97 `a9072dd`,
+  #98 `fbbcfa1` LIN-2269, #99 `0aba47d` LIN-2270).
+
+## [0.10.0] - 2026-07-24 (`051aced`)
+
+### Added
+- `sovereign execution` contracts (`73a4823`, #94).
+- `chat-contract-runtime`: the public `wdc.chat_session.v1` lifecycle contracts
+  for backend-owned identity, optimistic concurrency, one-way archival, bounded
+  cursor pagination, and strict TypeBox/Pydantic parity (#95, LIN-2265).
+
+## [0.9.2] - 2026-07-14 (`bea58db`)
+
+### Added
+- Canonical semantic identity (#93).
+- Continuation lifecycle contracts (#92).
+- WDC chat runtime contracts (#88) and Demand-to-Proof authority surfaces (#87,
+  synced by #89); TypeBox formats exported (#90).
+- `agent-adoption-contract.v1`, the canonical adoption contract for the 7-repo
+  platform (B11, #76).
+- LLM-agnostic consulting contracts: `OutputFormat`, `SkillTaskBinding` and 3 task
+  types (#80).
+
+### Fixed
+- LLM matrix drift: dead `mercury-2` primary, version sync, frontier Claude tier
+  (#84); `infra_fallback` task (#86); Gemini 3 routing (#91).
+- Committed the missing generated Pydantic modules (#85).
+- Runtime follow-up gates normalised (#78); cron API key passed to the harvest
+  workflow (#79).
+
+## [0.9.1] - 2026-06-06 (`b908455`; tag `v0.9.1` was cut later, `3c6f867` 2026-07-01)
+
+### Fixed
+- `llm-matrix`: retire EOL `gemini-2.0-flash` in favour of `gemini-2.5-flash` /
+  `-lite` (#74).
+
+## [0.9.0] - 2026-06-03 (`7beff26`)
+
+### Added
+- Adoption: promote `NotebookSpec` and `DrillContext` to contracts (G4, #72).
+- Governance baseline hydration (`d86a0ec`) and LF-forced `*.md` (`22a9e6b`).
+- TypeBox schemas for permanent learning aggregates `LLMModelStats`,
+  `StrategyStats`, `CandidateScoreStats` (#66).
+- Plan 3 EventSpine contract events synced (#62).
+- `OPENCLAW_OPERATOR_MCP_KEY` registered in the wallet manifest (#64).
+
+### Fixed
+- Claim-grade consumer readback is required (`6e6455b`).
+
+## [0.8.2] - 2026-05-27 (`1c57481`)
+
+### Added
+- Contracts adoption readback envelope (#45) and consumer readback evidence
+  ingest; platform completion ledger contracts (#50); secrets wallet rotation
+  manifest (#52).
+
+### Fixed
+- Platform artifact generation gaps (#38); dashboard bearer fallback removed
+  (#54); bearer examples redacted from agent docs (#56); Qwen fallback LLM matrix
+  synced (#58).
+
+## [0.8.1] - 2026-05-25 (`3e20e73`)
+
+### Added
+- Operator-anchored pheromone contracts (#23); canonical governance schemas
+  (#24, LIN-997); Phase Epsilon E1 `BOMItem` + `ConfigurationSnapshot` +
+  `WorkArtifact` (#25); Stream A schemas `AgenticPattern`, `HyperAgentPlan`,
+  `TuningHypothesis` (#28); Wonder Gateway repo contract (#36).
+
+### Fixed
+- LLM matrix provider suspension synced; Arch MCP runtime build dependencies
+  (#33, #34); harvest workflow routed through the commit endpoint (#29).
+
+## [0.8.0] - 2026-04-20 (`837bcb3`)
+
+### Added
+- Fitness helpers (#22).
+
+## [0.6.0] - 2026-04-18 (`da1ca51`)
+
+### Added
+- `canvasIntent` + `canvasRule` for the unified canvas (UC1, #21).
+
+## [0.5.0] - 2026-04-18 (`34ef7fb`)
+
+### Added
+- MRP envelope, `ProductionOrder` and `AuditHashChain` (#20).
 
 ## [0.4.4] - 2026-04-18
 
