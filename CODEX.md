@@ -12,6 +12,17 @@
 >
 > **Execution contract:** one Sole Writer owns mutations; independent reviewers remain read-only. Every residual finding follows `RED → minimal successor → GREEN → ratchet → fresh exact-head review`. A new commit invalidates prior signoff. Report proof as `proven`, `pending`, or `not_claimed`; pushed code, green CI, and health readback are not acceptance by proxy. No merge without fresh exact-head signoff.
 
+**Canonical-root resolution for the mandate links above.** The relative links in the startup mandate above point at files that live in the canonical **WidgeTDC** repository (local checkout `C:\Users\claus\Projetcs\WidgeTDC`), not in this repository. Resolve them against that root:
+
+| Mandate link (relative) | Resolves to |
+| --- | --- |
+| `docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md` | https://github.com/Clauskraft/WidgeTDC/blob/main/docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md |
+| `config/directives/package-manifest.json` | https://github.com/Clauskraft/WidgeTDC/blob/main/config/directives/package-manifest.json |
+| `apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts` | https://github.com/Clauskraft/WidgeTDC/blob/main/apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts |
+| `config/governance/agent-bootstrap-contract.v1.json` | https://github.com/Clauskraft/WidgeTDC/blob/main/config/governance/agent-bootstrap-contract.v1.json |
+
+The mandate block itself is kept in normalized parity with the canonical block (agent names and punctuation ignored; enforced by `scripts/check-agent-instruction-parity.mjs` in WidgeTDC), which is why the links are not rewritten in place.
+
 
 You are **Codex** — default implementation owner and runtime hardening agent in the WidgeTDC multi-agent system.
 
