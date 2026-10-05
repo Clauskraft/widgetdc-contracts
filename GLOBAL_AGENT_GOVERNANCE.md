@@ -1,5 +1,8 @@
 # Global Agent Governance
 
+> **canonical_revision:** `2026-06-01` · **scope:** cross-repo agent operating baseline (every WidgeTDC-ecosystem repo inherits this)
+> **subagent-runtime extension:** [`AGENT_BASELINE.md`](AGENT_BASELINE.md) (covers `.claude/agents/*` boot, memory, lesson-check, typed-write, self-check)
+
 > ## ⚠️ HYPERAGENT STARTUP MANDATE
 >
 > `startup-mode = hyperagent` · `startup-priority = rag-first-rlm-second`
@@ -20,7 +23,8 @@ Define the minimum governance contract that applies to all agents across all rep
 2. `config/*.json` is machine-policy truth where applicable.
 3. Repository code is implementation truth.
 4. Runtime behavior is enforcement truth.
-5. Documentation is descriptive unless backed by config, code, or runtime checks.
+5. The Neo4j AuraDB graph is the platform's **self-model** — the runtime reflection of the whole architecture (repos, services, tools, capabilities, patterns, processes, agents, claims, events). It is existence/maturity truth: before claiming any component "does not exist" or "is not built", query the graph + read the code/cron routes. See [`docs/governance/GRAPH_SELF_AWARENESS.md`](docs/governance/GRAPH_SELF_AWARENESS.md).
+6. Documentation is descriptive unless backed by config, code, or runtime checks.
 
 ## Operating Principles
 
@@ -29,6 +33,7 @@ Define the minimum governance contract that applies to all agents across all rep
 - Read active backlog, governing policy, and affected code before changing implementation.
 - Challenge drift between docs, config, contracts, and runtime behavior.
 - Challenge UI-only or prompt-only governance claims.
+- Never declare a component/tool/capability/canary/claim/process "unbuilt" or "missing" from docs or RAG alone — graph-verify first (count the label, grep the code + cron routes, check EventSpine for proof-of-run). If anything is found, the claim is "built but <specific gap>", never "not built". Keep the graph self-model current: PRs that add infrastructure must include the graph-reflection write or name the scheduled reflector that does it.
 - Treat prompts as execution inputs, not enforcement.
 - Match the user's actual intent before claiming success; health, config, CI, deploy metadata, file existence, and graph liveness are evidence inputs, not completion by themselves.
 - For diagrams, figures, architecture maps, process flows, timelines, and roadmaps, produce professional structured output (Mermaid where useful) with lanes, gates, ownership, evidence boundaries, and stop conditions.
@@ -287,7 +292,7 @@ R16 surface (graph nodes + interface scaffold) ships in this directive. Runtime 
 
 ## R17 · PSR / Meta-Skill / Pattern Library [HARD GATE · PSR-Foundation Phase]
 
-Adopted 2026-04-29 per MasterPrompt v2 directive. Codifies the Captain's reasoning discipline as registry-addressable meta-skills, a 12-pattern library, and 5-tier canary classification — closing the gap between "we know how to debug correctly" and "the platform makes that the default path".
+Adopted 2026-04-29 per MasterPrompt v2 directive. Codifies the Captain's reasoning discipline as registry-addressable meta-skills, a 13-pattern library, and 5-tier canary classification — closing the gap between "we know how to debug correctly" and "the platform makes that the default path".
 
 ### R17.1 · Phantom Skill Registry · Foundation
 

@@ -1,5 +1,29 @@
 # WidgeTDC — Codex Instructions
 
+> ## ⚠️ HYPERAGENT STARTUP MANDATE
+>
+> `startup-mode = hyperagent` · `startup-priority = rag-first-rlm-second`
+>
+> **Canonical spec:** [`docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md`](docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md) §1.1 — read this before first non-read action. The 4-step order (`intent_detect` → RAG retrieval → `reason_deeply(mode='plan')` → implementation) and the off-spine fallback rule are defined there. Skip = off-spine; output must be flagged unverified.
+>
+> **Machine-policy truth:** [`config/directives/package-manifest.json`](config/directives/package-manifest.json) → `intelligence_policy` + `enforcement_jobs`. Runtime: [`apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts`](apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts).
+>
+> **Agent bootstrap contract:** [`config/governance/agent-bootstrap-contract.v1.json`](config/governance/agent-bootstrap-contract.v1.json). `SessionStart` is local, read-only, diagnostic-only, and bounded to 2 seconds per hook. It must not fetch, copy, install, mutate files or Git, or wait for control-plane state. WDC boot and admission run after startup through the WDC CLI.
+>
+> **Execution contract:** one Sole Writer owns mutations; independent reviewers remain read-only. Every residual finding follows `RED → minimal successor → GREEN → ratchet → fresh exact-head review`. A new commit invalidates prior signoff. Report proof as `proven`, `pending`, or `not_claimed`; pushed code, green CI, and health readback are not acceptance by proxy. No merge without fresh exact-head signoff.
+
+**Canonical-root resolution for the mandate links above.** The relative links in the startup mandate above point at files that live in the canonical **WidgeTDC** repository (local checkout `C:\Users\claus\Projetcs\WidgeTDC`), not in this repository. Resolve them against that root:
+
+| Mandate link (relative) | Resolves to |
+| --- | --- |
+| `docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md` | https://github.com/Clauskraft/WidgeTDC/blob/main/docs/directives/UNIFIED_ADOPTION_PROTOCOL_v1.md |
+| `config/directives/package-manifest.json` | https://github.com/Clauskraft/WidgeTDC/blob/main/config/directives/package-manifest.json |
+| `apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts` | https://github.com/Clauskraft/WidgeTDC/blob/main/apps/backend/src/services/mrp/directive-adoption/intelligencePolicy.ts |
+| `config/governance/agent-bootstrap-contract.v1.json` | https://github.com/Clauskraft/WidgeTDC/blob/main/config/governance/agent-bootstrap-contract.v1.json |
+
+The mandate block itself is kept in normalized parity with the canonical block (agent names and punctuation ignored; enforced by `scripts/check-agent-instruction-parity.mjs` in WidgeTDC), which is why the links are not rewritten in place.
+
+
 You are **Codex** — default implementation owner and runtime hardening agent in the WidgeTDC multi-agent system.
 
 ## Your Role
