@@ -46,6 +46,14 @@
       "base_url": "local",
       "auth_env": null,
       "openai_compatible": false
+    },
+    "ollama": {
+      "base_url": "http://model-runner.railway.internal:11434",
+      "auth_env": null,
+      "openai_compatible": true,
+      "daily_request_cap": 500,
+      "internal_only": true,
+      "cost_note": "Free-tier CPU inference on Railway model-runner. 3 preloaded models. Latency 2-5s on CPU."
     }
   },
 
@@ -140,6 +148,36 @@
       "strengths": ["chat", "classification", "fold"],
       "weaknesses": []
     },
+    "qwen2.5-coder:1.5b": {
+      "provider": "ollama",
+      "context_window": 4096,
+      "max_output_tokens": 2048,
+      "cost_per_1k_input_usd": 0.0,
+      "cost_per_1k_output_usd": 0.0,
+      "avg_latency_ms": 2000,
+      "strengths": ["code", "classification", "cost_efficiency"],
+      "weaknesses": ["latency", "context_window", "reasoning_depth"]
+    },
+    "llama3.2:3b": {
+      "provider": "ollama",
+      "context_window": 4096,
+      "max_output_tokens": 2048,
+      "cost_per_1k_input_usd": 0.0,
+      "cost_per_1k_output_usd": 0.0,
+      "avg_latency_ms": 3000,
+      "strengths": ["chat", "summarization", "cost_efficiency"],
+      "weaknesses": ["latency", "context_window", "structured_json"]
+    },
+    "dolphin-llama3:8b": {
+      "provider": "ollama",
+      "context_window": 4096,
+      "max_output_tokens": 2048,
+      "cost_per_1k_input_usd": 0.0,
+      "cost_per_1k_output_usd": 0.0,
+      "avg_latency_ms": 5000,
+      "strengths": ["security_audit", "uncensored_analysis", "reasoning"],
+      "weaknesses": ["latency", "context_window", "structured_json"]
+    },
     "mercury-2": {
       "provider": "inception",
       "context_window": 128000,
@@ -182,11 +220,11 @@
     },
     "extraction_short": {
       "description": "Short-prompt entity/field extraction (prompt < 500 tokens). Speed matters, quality is acceptable with short outputs.",
-      "chain": ["mercury-2", "qwen-plus", "deepseek-chat"],
+      "chain": ["mercury-2", "qwen-plus", "deepseek-chat", "qwen2.5-coder:1.5b"],
       "override_env": "EXTRACTION_SHORT_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "Mercury excels at short prompts where the reasoning budget isn't exhausted. Documented in feedback_llm_routing.md — keep prompts SHORT and direct for Mercury."
+      "rationale": "Mercury excels at short prompts where the reasoning budget isn't exhausted. Documented in feedback_llm_routing.md — keep prompts SHORT and direct for Mercury. 2026-10-08: qwen2.5-coder:1.5b (Ollama) added as free-tier last-resort."
     },
     "extraction_long": {
       "description": "Long-prompt entity extraction with detailed rules or many fields. Mercury unsafe here.",
@@ -197,11 +235,11 @@
     },
     "classification": {
       "description": "Short-label classification (sentiment, intent, category).",
-      "chain": ["mercury-2", "gemini-3.1-flash-lite", "qwen-plus"],
+      "chain": ["mercury-2", "gemini-3.1-flash-lite", "qwen-plus", "qwen2.5-coder:1.5b"],
       "override_env": "CLASSIFICATION_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-07-12: Gemini 2.5 routes retired from active WDC matrix after provider availability/deprecation risk. Gemini 3.1 Flash-Lite is the current lightweight Gemini fallback for short-label classification."
+      "rationale": "2026-07-12: Gemini 2.5 routes retired from active WDC matrix after provider availability/deprecation risk. Gemini 3.1 Flash-Lite is the current lightweight Gemini fallback for short-label classification. 2026-10-08: qwen2.5-coder:1.5b (Ollama) added as free-tier last-resort."
     },
     "fold_context": {
       "description": "Context folding / compression — reduce large context to fit downstream token budget.",
@@ -213,11 +251,11 @@
     },
     "chat_standard": {
       "description": "Standard chat / conversational responses. Balance cost and quality.",
-      "chain": ["deepseek-chat", "qwen-plus", "gemini-3.1-flash-lite"],
+      "chain": ["deepseek-chat", "qwen-plus", "gemini-3.1-flash-lite", "llama3.2:3b"],
       "override_env": "CHAT_STANDARD_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-07-12: Gemini 2.5 removed from active chat fallback chain. Gemini 3.1 Flash-Lite is the lightweight Gemini fallback behind DeepSeek and Qwen."
+      "rationale": "2026-07-12: Gemini 2.5 removed from active chat fallback chain. Gemini 3.1 Flash-Lite is the lightweight Gemini fallback behind DeepSeek and Qwen. 2026-10-08: llama3.2:3b (Ollama) added as free-tier last-resort fallback."
     },
     "chat_premium": {
       "description": "Premium chat — highest-quality conversational output for critical user interactions.",
@@ -229,11 +267,11 @@
     },
     "code_generation": {
       "description": "Generate code from natural language or spec.",
-      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o", "qwen2.5-coder:1.5b"],
       "override_env": "CODE_GEN_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix."
+      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix. 2026-10-08: qwen2.5-coder:1.5b (Ollama) added as free-tier last-resort."
     },
     "planning": {
       "description": "Task decomposition, multi-step planning, architecture design.",
@@ -269,11 +307,11 @@
     },
     "self_healing": {
       "description": "Auto-repair of broken code / failed tests / runtime errors.",
-      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o"],
+      "chain": ["deepseek-coder", "qwen-plus", "gpt-4o", "qwen2.5-coder:1.5b"],
       "override_env": "SELF_HEALING_MODEL",
       "disable_env": null,
       "default_disabled": false,
-      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix."
+      "rationale": "2026-05-27: qwen3-235b-a22b removed after deployed runtime observed DashScope/OpenAI-compatible 404. qwen-plus remains the verified Qwen fallback model in this matrix. 2026-10-08: qwen2.5-coder:1.5b (Ollama) added as free-tier last-resort."
     },
     "embedding_text": {
       "description": "Generate text embeddings for semantic search / RAG.",
