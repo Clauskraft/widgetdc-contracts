@@ -1,0 +1,58 @@
+{
+  "$id": "BlockEconomics",
+  "description": "Unit economics and FinOps resource tensor.",
+  "type": "object",
+  "required": [
+    "currency",
+    "marginal_cost_unit",
+    "compute_latency_ms_p95",
+    "licensing_model"
+  ],
+  "properties": {
+    "currency": {
+      "default": "DKK",
+      "description": "Settlement currency (ISO 4217).",
+      "type": "string"
+    },
+    "marginal_cost_unit": {
+      "minimum": 0,
+      "description": "Marginal execution cost per call in specified currency.",
+      "type": "number"
+    },
+    "compute_latency_ms_p95": {
+      "minimum": 0,
+      "description": "P95 expected latency in milliseconds.",
+      "type": "number"
+    },
+    "estimated_tokens": {
+      "minimum": 0,
+      "description": "Token budget if LLM/cognitive reasoning is involved.",
+      "type": "integer"
+    },
+    "marginal_carbon_gCO2e": {
+      "minimum": 0,
+      "description": "Estimated GHG Scope 2/3 carbon footprint per invocation.",
+      "type": "number"
+    },
+    "licensing_model": {
+      "anyOf": [
+        {
+          "const": "open_source",
+          "type": "string"
+        },
+        {
+          "const": "internal_proprietary",
+          "type": "string"
+        },
+        {
+          "const": "commercial_api_metered",
+          "type": "string"
+        },
+        {
+          "const": "per_seat_subscription",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

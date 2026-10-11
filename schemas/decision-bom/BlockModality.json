@@ -1,0 +1,40 @@
+{
+  "$id": "BlockModality",
+  "anyOf": [
+    {
+      "description": "Pure functions, WASM, compiled algorithms with zero epistemic variance.",
+      "const": "code_deterministic",
+      "type": "string"
+    },
+    {
+      "description": "External market feed, commodity spot price, FX, freight index, or IoT sensor stream.",
+      "const": "live_market_signal",
+      "type": "string"
+    },
+    {
+      "description": "Parametric formula (Little's Law, DuPont ROE, EOQ, Black-Scholes, LCA GHG).",
+      "const": "parametric_analytical_model",
+      "type": "string"
+    },
+    {
+      "description": "Regulatory articles (NIS2, CSRD, GDPR), procurement contracts, or SLA clauses.",
+      "const": "normative_policy_text",
+      "type": "string"
+    },
+    {
+      "description": "Gozinto BOMs, routing steps, workstation capacities, lead times from ERP.",
+      "const": "operational_ground_data",
+      "type": "string"
+    },
+    {
+      "description": "Cognitive reasoning prompt pattern, Minto pyramid synthesis, multi-agent arbitration.",
+      "const": "cognitive_prompt_agent",
+      "type": "string"
+    },
+    {
+      "description": "Asynchronous human sign-off, four-eyes principle, compliance officer approval.",
+      "const": "human_gate",
+      "type": "string"
+    }
+  ]
+}

@@ -8,15 +8,20 @@ from __future__ import annotations
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, constr
+from pydantic import AwareDatetime, BaseModel, Field
 from pydantic import BaseModel
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 from pydantic import BaseModel, constr
 from pydantic import Field, RootModel
 from pydantic import RootModel
 from typing import Any
+from typing import Any, Literal
 from typing import Literal
 
-__all__ = ["BOMDataClass", "BOMDecisionType", "BOMItem", "BOMItemType", "BOMJurisdictionPolicy", "BOMMethod", "BOMValidationStatus", "ConfigurationSnapshot", "ConfigurationSnapshotApproval", "ConfigurationSnapshotDerivedArtifact", "ConfigurationSnapshotItem", "ConfigurationSnapshotType", "LlmAgnosticResponse", "OutputFormat", "PhantomBOMComposeRequest", "PhantomBOMFramework", "PhantomBOMResponse", "PhantomBOMRouteRequest", "WorkArtifact", "WorkArtifactType", "WorkArtifactVerificationStatus"]
+__all__ = ["BOMDataClass", "BOMDecisionType", "BOMItem", "BOMItemType", "BOMJurisdictionPolicy", "BOMMethod", "BOMValidationStatus", "BitemporalAnchor", "BlockEconomics", "BlockModality", "ConfigurationSnapshot", "ConfigurationSnapshotApproval", "ConfigurationSnapshotDerivedArtifact", "ConfigurationSnapshotItem", "ConfigurationSnapshotType", "EpistemicConfidence", "LlmAgnosticResponse", "MarketSignalSpecifics", "NormativeEvaluationEngine", "NormativePolicySpecifics", "OutputFormat", "PhantomBOMComposeRequest", "PhantomBOMFramework", "PhantomBOMResponse", "PhantomBOMRouteRequest", "PortContract", "UniversalAssemblyBlock", "WorkArtifact", "WorkArtifactType", "WorkArtifactVerificationStatus"]
 
 class BOMDataClass(RootModel[Literal['pii', 'confidential', 'public', 'legal']]):
     root: Literal['pii', 'confidential', 'public', 'legal']
@@ -170,6 +175,81 @@ class BOMMethod(RootModel[Literal['RLM', 'RAG', 'Folding', 'LLM', 'MCP']]):
 class BOMValidationStatus(RootModel[Literal['pending', 'passed', 'failed', 'skipped']]):
     root: Literal['pending', 'passed', 'failed', 'skipped']
 
+class BitemporalAnchor(BaseModel):
+    valid_from: AwareDatetime = Field(
+        ...,
+        description='When this fact became valid in the real world (T_valid start).',
+    )
+    valid_to: AwareDatetime | None = Field(
+        None, description='When this fact ceases to be valid (T_valid end).'
+    )
+    recorded_at: AwareDatetime = Field(
+        ..., description='When this fact was transacted/recorded in the system (T_tx).'
+    )
+    refresh_cadence: Literal[
+        'realtime_stream',
+        'hourly_tick',
+        'daily_close',
+        'event_driven',
+        'static_immutable',
+    ]
+    ttl_seconds: int | None = Field(
+        None, description='Expected time-to-live before revalidation is required.', ge=0
+    )
+    max_staleness_seconds: int = Field(
+        ...,
+        description='Ratchet 2: Hard ceiling. If (T_now - T_valid) > max_staleness_seconds, execution must fail-closed.',
+        ge=1,
+    )
+
+class BlockEconomics(BaseModel):
+    currency: str = Field(..., description='Settlement currency (ISO 4217).')
+    marginal_cost_unit: float = Field(
+        ...,
+        description='Marginal execution cost per call in specified currency.',
+        ge=0.0,
+    )
+    compute_latency_ms_p95: float = Field(
+        ..., description='P95 expected latency in milliseconds.', ge=0.0
+    )
+    estimated_tokens: int | None = Field(
+        None, description='Token budget if LLM/cognitive reasoning is involved.', ge=0
+    )
+    marginal_carbon_gCO2e: float | None = Field(
+        None,
+        description='Estimated GHG Scope 2/3 carbon footprint per invocation.',
+        ge=0.0,
+    )
+    licensing_model: Literal[
+        'open_source',
+        'internal_proprietary',
+        'commercial_api_metered',
+        'per_seat_subscription',
+    ]
+
+class BlockModality(
+    RootModel[
+        Literal[
+            'code_deterministic',
+            'live_market_signal',
+            'parametric_analytical_model',
+            'normative_policy_text',
+            'operational_ground_data',
+            'cognitive_prompt_agent',
+            'human_gate',
+        ]
+    ]
+):
+    root: Literal[
+        'code_deterministic',
+        'live_market_signal',
+        'parametric_analytical_model',
+        'normative_policy_text',
+        'operational_ground_data',
+        'cognitive_prompt_agent',
+        'human_gate',
+    ]
+
 class Item(BaseModel):
     model_config = ConfigDict(
         extra='allow',
@@ -303,6 +383,29 @@ class ConfigurationSnapshotType(
 ):
     root: Literal['session', 'release', 'tenant', 'demo']
 
+class EpistemicConfidence(BaseModel):
+    confidence_score: float = Field(
+        ...,
+        description='1.0 for deterministic code; <1.0 for probabilistic models or feeds.',
+        ge=0.0,
+        le=1.0,
+    )
+    entropy: float | None = Field(
+        None,
+        description='Shannon entropy H(X) representing information uncertainty.',
+        ge=0.0,
+    )
+    variance_tolerance: float | None = Field(
+        None, description='Permissible variance or standard deviation.'
+    )
+    evidence_class: Literal[
+        'measured_sensor_telemetry',
+        'audited_signed_document',
+        'statistically_inferred',
+        'expert_consensus',
+        'unverified_candidate',
+    ]
+
 class LlmAgnosticResponse(BaseModel):
     model_config = ConfigDict(
         extra='allow',
@@ -325,6 +428,67 @@ class LlmAgnosticResponse(BaseModel):
         None, description='BOMItem ID if this response was persisted to the graph.'
     )
     correlation_id: str | None = None
+
+class MarketSignalSpecifics(BaseModel):
+    feed_source_uri: str = Field(
+        ...,
+        description='Authoritative URI or market symbol (e.g. LME-CU-CASH, NP-DK1-SPOT).',
+        min_length=1,
+    )
+    oracle_attestation_type: Literal[
+        'tls_notary', 'signed_jwt_oracle', 'mutual_tls_direct', 'unattested_rest_poll'
+    ]
+    standard_lot_size: float | None = Field(
+        None,
+        description='Contract standard lot volume (e.g. 25 tonnes for LME copper).',
+        ge=0.0,
+    )
+    order_book_depth_checked: bool | None = False
+
+class NormativeEvaluationEngine(
+    RootModel[
+        Literal[
+            'rego_opa',
+            'json_logic',
+            'deterministic_predicate',
+            'linked_cognitive_agent',
+            'human_verification_only',
+        ]
+    ]
+):
+    root: Literal[
+        'rego_opa',
+        'json_logic',
+        'deterministic_predicate',
+        'linked_cognitive_agent',
+        'human_verification_only',
+    ]
+
+class NormativePolicySpecifics(BaseModel):
+    jurisdiction_authority: str = Field(
+        ..., description='E.g. EU Parliament, Danish FSA, ISO Committee.', min_length=1
+    )
+    legal_reference_uri: str = Field(
+        ...,
+        description='Canonical URI to directive, regulation, or contract artifact.',
+        min_length=1,
+    )
+    evaluation_engine: Literal[
+        'rego_opa',
+        'json_logic',
+        'deterministic_predicate',
+        'linked_cognitive_agent',
+        'human_verification_only',
+    ]
+    deontic_rule_digest: str | None = Field(
+        None,
+        description='SHA-256 of the executable Rego/JSON-logic policy rule.',
+        pattern='^sha256:[a-f0-9]{64}$',
+    )
+    linked_cognitive_agent_ref: str | None = Field(
+        None,
+        description='Pinned URN of cognitive prompt agent if interpretive reasoning is needed.',
+    )
 
 class OutputFormat(
     RootModel[Literal['html', 'markdown', 'json', 'pptx', 'docx', 'text']]
@@ -362,6 +526,284 @@ class PhantomBOMResponse(BaseModel):
 
 class PhantomBOMRouteRequest(BaseModel):
     pass
+
+class PortContract(BaseModel):
+    name: str = Field(
+        ...,
+        description='Port name (e.g. "copper_spot_price", "annual_demand", "risk_status").',
+        min_length=1,
+    )
+    data_type: str = Field(
+        ...,
+        description='Underlying data type, e.g. number, string, boolean, object.',
+        min_length=1,
+    )
+    unit_of_measure: str | None = Field(
+        None,
+        description='Standardized UCUM or ISO 4217 unit, e.g. "DKK/metric_ton", "EUR/MWh", "hours", "kg_CO2e".',
+    )
+    schema_definition: dict[constr(pattern=r'^(.*)$'), Any] = Field(
+        ..., description='JSON Schema / TypeBox definition for port payload.'
+    )
+    is_optional: bool
+    allow_implicit_coercion: Literal[False] = Field(
+        ...,
+        description='Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.',
+    )
+
+class InputPort(BaseModel):
+    name: str = Field(
+        ...,
+        description='Port name (e.g. "copper_spot_price", "annual_demand", "risk_status").',
+        min_length=1,
+    )
+    data_type: str = Field(
+        ...,
+        description='Underlying data type, e.g. number, string, boolean, object.',
+        min_length=1,
+    )
+    unit_of_measure: str | None = Field(
+        None,
+        description='Standardized UCUM or ISO 4217 unit, e.g. "DKK/metric_ton", "EUR/MWh", "hours", "kg_CO2e".',
+    )
+    schema_definition: dict[constr(pattern=r'^(.*)$'), Any] = Field(
+        ..., description='JSON Schema / TypeBox definition for port payload.'
+    )
+    is_optional: bool
+    allow_implicit_coercion: Literal[False] = Field(
+        ...,
+        description='Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.',
+    )
+
+
+class OutputPort(BaseModel):
+    name: str = Field(
+        ...,
+        description='Port name (e.g. "copper_spot_price", "annual_demand", "risk_status").',
+        min_length=1,
+    )
+    data_type: str = Field(
+        ...,
+        description='Underlying data type, e.g. number, string, boolean, object.',
+        min_length=1,
+    )
+    unit_of_measure: str | None = Field(
+        None,
+        description='Standardized UCUM or ISO 4217 unit, e.g. "DKK/metric_ton", "EUR/MWh", "hours", "kg_CO2e".',
+    )
+    schema_definition: dict[constr(pattern=r'^(.*)$'), Any] = Field(
+        ..., description='JSON Schema / TypeBox definition for port payload.'
+    )
+    is_optional: bool
+    allow_implicit_coercion: Literal[False] = Field(
+        ...,
+        description='Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.',
+    )
+
+
+class MarketSignal(BaseModel):
+    feed_source_uri: str = Field(
+        ...,
+        description='Authoritative URI or market symbol (e.g. LME-CU-CASH, NP-DK1-SPOT).',
+        min_length=1,
+    )
+    oracle_attestation_type: Literal[
+        'tls_notary', 'signed_jwt_oracle', 'mutual_tls_direct', 'unattested_rest_poll'
+    ]
+    standard_lot_size: float | None = Field(
+        None,
+        description='Contract standard lot volume (e.g. 25 tonnes for LME copper).',
+        ge=0.0,
+    )
+    order_book_depth_checked: bool | None = False
+
+
+class NormativePolicy(BaseModel):
+    jurisdiction_authority: str = Field(
+        ..., description='E.g. EU Parliament, Danish FSA, ISO Committee.', min_length=1
+    )
+    legal_reference_uri: str = Field(
+        ...,
+        description='Canonical URI to directive, regulation, or contract artifact.',
+        min_length=1,
+    )
+    evaluation_engine: Literal[
+        'rego_opa',
+        'json_logic',
+        'deterministic_predicate',
+        'linked_cognitive_agent',
+        'human_verification_only',
+    ]
+    deontic_rule_digest: str | None = Field(
+        None,
+        description='SHA-256 of the executable Rego/JSON-logic policy rule.',
+        pattern='^sha256:[a-f0-9]{64}$',
+    )
+    linked_cognitive_agent_ref: str | None = Field(
+        None,
+        description='Pinned URN of cognitive prompt agent if interpretive reasoning is needed.',
+    )
+
+
+class Bitemporal(BaseModel):
+    valid_from: AwareDatetime = Field(
+        ...,
+        description='When this fact became valid in the real world (T_valid start).',
+    )
+    valid_to: AwareDatetime | None = Field(
+        None, description='When this fact ceases to be valid (T_valid end).'
+    )
+    recorded_at: AwareDatetime = Field(
+        ..., description='When this fact was transacted/recorded in the system (T_tx).'
+    )
+    refresh_cadence: Literal[
+        'realtime_stream',
+        'hourly_tick',
+        'daily_close',
+        'event_driven',
+        'static_immutable',
+    ]
+    ttl_seconds: int | None = Field(
+        None, description='Expected time-to-live before revalidation is required.', ge=0
+    )
+    max_staleness_seconds: int = Field(
+        ...,
+        description='Ratchet 2: Hard ceiling. If (T_now - T_valid) > max_staleness_seconds, execution must fail-closed.',
+        ge=1,
+    )
+
+
+class Epistemic(BaseModel):
+    confidence_score: float = Field(
+        ...,
+        description='1.0 for deterministic code; <1.0 for probabilistic models or feeds.',
+        ge=0.0,
+        le=1.0,
+    )
+    entropy: float | None = Field(
+        None,
+        description='Shannon entropy H(X) representing information uncertainty.',
+        ge=0.0,
+    )
+    variance_tolerance: float | None = Field(
+        None, description='Permissible variance or standard deviation.'
+    )
+    evidence_class: Literal[
+        'measured_sensor_telemetry',
+        'audited_signed_document',
+        'statistically_inferred',
+        'expert_consensus',
+        'unverified_candidate',
+    ]
+
+
+class Economics(BaseModel):
+    currency: str = Field(..., description='Settlement currency (ISO 4217).')
+    marginal_cost_unit: float = Field(
+        ...,
+        description='Marginal execution cost per call in specified currency.',
+        ge=0.0,
+    )
+    compute_latency_ms_p95: float = Field(
+        ..., description='P95 expected latency in milliseconds.', ge=0.0
+    )
+    estimated_tokens: int | None = Field(
+        None, description='Token budget if LLM/cognitive reasoning is involved.', ge=0
+    )
+    marginal_carbon_gCO2e: float | None = Field(
+        None,
+        description='Estimated GHG Scope 2/3 carbon footprint per invocation.',
+        ge=0.0,
+    )
+    licensing_model: Literal[
+        'open_source',
+        'internal_proprietary',
+        'commercial_api_metered',
+        'per_seat_subscription',
+    ]
+
+
+class UniversalAssemblyBlock(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: str = Field(
+        ...,
+        description='Canonical block URN (e.g. "urn:wdc:block:supply-chain:copper-spot-feed:v1").',
+        pattern='^urn:wdc:block:[a-z0-9_.-]+:[a-z0-9_.-]+:v[0-9]+$',
+    )
+    title: str = Field(..., description='Human-readable title.', min_length=1)
+    version: str = Field(
+        ..., description='SemVer version string.', pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$'
+    )
+    modality: Literal[
+        'code_deterministic',
+        'live_market_signal',
+        'parametric_analytical_model',
+        'normative_policy_text',
+        'operational_ground_data',
+        'cognitive_prompt_agent',
+        'human_gate',
+    ]
+    domain: str = Field(
+        ...,
+        description='Business or functional domain (e.g. Procurement, Energy, CyberNIS2, Finance, Manufacturing).',
+    )
+    required_capabilities: list[str] = Field(
+        ..., description='Canonical capability URNs this block depends on.'
+    )
+    provided_capabilities: list[str] = Field(
+        ..., description='Canonical capability URNs this block satisfies.'
+    )
+    input_ports: list[InputPort] = Field(
+        ..., description='Input ports with typed schemas and unit dimensions.'
+    )
+    output_ports: list[OutputPort] = Field(
+        ..., description='Output ports with guaranteed schemas and unit dimensions.'
+    )
+    preconditions: list[str] = Field(
+        ..., description='Semantic invariants that MUST hold before invocation.'
+    )
+    postconditions: list[str] = Field(
+        ..., description='Semantic guarantees produced upon successful termination.'
+    )
+    failure_rail: Literal[
+        'fail_closed',
+        'use_last_valid_with_staleness_flag',
+        'fallback_to_designated_proxy',
+        'halt_and_escalate_to_human',
+    ]
+    fallback_block_urn: str | None = Field(
+        None, pattern='^urn:wdc:block:[a-z0-9_.-]+:[a-z0-9_.-]+:v[0-9]+$'
+    )
+    market_signal: MarketSignal | None = None
+    normative_policy: NormativePolicy | None = None
+    bitemporal: Bitemporal = Field(
+        ..., description='Bitemporal validity anchors per SQL:2011.'
+    )
+    epistemic: Epistemic = Field(
+        ..., description='Epistemic uncertainty and proof grading for the block.'
+    )
+    economics: Economics = Field(
+        ..., description='Unit economics and FinOps resource tensor.'
+    )
+    jurisdiction_policy: Literal[
+        'EU_ONLY', 'DK_ONLY', 'NO_CN', 'NO_US', 'LOCAL_ONLY', 'NONE'
+    ]
+    data_class: Literal['pii', 'confidential', 'public', 'legal']
+    content_digest: str = Field(
+        ...,
+        description='RFC 8785 Canonical JSON content-addressed SHA-256.',
+        pattern='^sha256:[a-f0-9]{64}$',
+    )
+    attestation_authority: str = Field(
+        ...,
+        description='Signing authority identity (agent, CI runner, or operator key).',
+    )
+    signature: str | None = Field(
+        None, description='Ed25519 signature over canonical content digest.'
+    )
+    lifecycle: Literal['candidate', 'canary', 'verified', 'deprecated', 'revoked']
 
 class LineageChainItem(RootModel[str]):
     root: str = Field(..., pattern='^bomitem-[a-zA-Z0-9-]{8,}$')

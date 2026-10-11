@@ -1,0 +1,50 @@
+{
+  "$id": "EpistemicConfidence",
+  "description": "Epistemic uncertainty and proof grading for the block.",
+  "type": "object",
+  "required": [
+    "confidence_score",
+    "evidence_class"
+  ],
+  "properties": {
+    "confidence_score": {
+      "minimum": 0,
+      "maximum": 1,
+      "description": "1.0 for deterministic code; <1.0 for probabilistic models or feeds.",
+      "type": "number"
+    },
+    "entropy": {
+      "minimum": 0,
+      "description": "Shannon entropy H(X) representing information uncertainty.",
+      "type": "number"
+    },
+    "variance_tolerance": {
+      "description": "Permissible variance or standard deviation.",
+      "type": "number"
+    },
+    "evidence_class": {
+      "anyOf": [
+        {
+          "const": "measured_sensor_telemetry",
+          "type": "string"
+        },
+        {
+          "const": "audited_signed_document",
+          "type": "string"
+        },
+        {
+          "const": "statistically_inferred",
+          "type": "string"
+        },
+        {
+          "const": "expert_consensus",
+          "type": "string"
+        },
+        {
+          "const": "unverified_candidate",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

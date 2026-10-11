@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "required": [
+    "jurisdiction_authority",
+    "legal_reference_uri",
+    "evaluation_engine"
+  ],
+  "properties": {
+    "jurisdiction_authority": {
+      "minLength": 1,
+      "description": "E.g. EU Parliament, Danish FSA, ISO Committee.",
+      "type": "string"
+    },
+    "legal_reference_uri": {
+      "minLength": 1,
+      "description": "Canonical URI to directive, regulation, or contract artifact.",
+      "type": "string"
+    },
+    "evaluation_engine": {
+      "$id": "NormativeEvaluationEngine",
+      "anyOf": [
+        {
+          "description": "Deterministic Open Policy Agent / Rego policy bytecode.",
+          "const": "rego_opa",
+          "type": "string"
+        },
+        {
+          "description": "Deterministic JSON Logic predicate tree.",
+          "const": "json_logic",
+          "type": "string"
+        },
+        {
+          "description": "Compiled pure function predicate.",
+          "const": "deterministic_predicate",
+          "type": "string"
+        },
+        {
+          "description": "Explicitly linked cognitive agent with pinned prompt-hash and model.",
+          "const": "linked_cognitive_agent",
+          "type": "string"
+        },
+        {
+          "description": "Requires direct human gate evaluation.",
+          "const": "human_verification_only",
+          "type": "string"
+        }
+      ]
+    },
+    "deontic_rule_digest": {
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 of the executable Rego/JSON-logic policy rule.",
+      "type": "string"
+    },
+    "linked_cognitive_agent_ref": {
+      "description": "Pinned URN of cognitive prompt agent if interpretive reasoning is needed.",
+      "type": "string"
+    }
+  },
+  "$id": "NormativePolicySpecifics"
+}

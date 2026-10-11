@@ -1,0 +1,45 @@
+{
+  "$id": "PortContract",
+  "description": "Typed port interface for AssemblyBlock snapping contracts.",
+  "type": "object",
+  "required": [
+    "name",
+    "data_type",
+    "schema_definition",
+    "is_optional",
+    "allow_implicit_coercion"
+  ],
+  "properties": {
+    "name": {
+      "minLength": 1,
+      "description": "Port name (e.g. \"copper_spot_price\", \"annual_demand\", \"risk_status\").",
+      "type": "string"
+    },
+    "data_type": {
+      "minLength": 1,
+      "description": "Underlying data type, e.g. number, string, boolean, object.",
+      "type": "string"
+    },
+    "unit_of_measure": {
+      "description": "Standardized UCUM or ISO 4217 unit, e.g. \"DKK/metric_ton\", \"EUR/MWh\", \"hours\", \"kg_CO2e\".",
+      "type": "string"
+    },
+    "schema_definition": {
+      "description": "JSON Schema / TypeBox definition for port payload.",
+      "type": "object",
+      "patternProperties": {
+        "^(.*)$": {}
+      }
+    },
+    "is_optional": {
+      "default": false,
+      "type": "boolean"
+    },
+    "allow_implicit_coercion": {
+      "default": false,
+      "description": "Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.",
+      "const": false,
+      "type": "boolean"
+    }
+  }
+}

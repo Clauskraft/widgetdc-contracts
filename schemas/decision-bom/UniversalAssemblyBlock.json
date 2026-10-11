@@ -1,0 +1,598 @@
+{
+  "$id": "UniversalAssemblyBlock",
+  "description": "The universal atomic building block standard for WDC multi-domain execution (Plan B).",
+  "additionalProperties": false,
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "version",
+    "modality",
+    "domain",
+    "required_capabilities",
+    "provided_capabilities",
+    "input_ports",
+    "output_ports",
+    "preconditions",
+    "postconditions",
+    "failure_rail",
+    "bitemporal",
+    "epistemic",
+    "economics",
+    "jurisdiction_policy",
+    "data_class",
+    "content_digest",
+    "attestation_authority",
+    "lifecycle"
+  ],
+  "properties": {
+    "id": {
+      "pattern": "^urn:wdc:block:[a-z0-9_.-]+:[a-z0-9_.-]+:v[0-9]+$",
+      "description": "Canonical block URN (e.g. \"urn:wdc:block:supply-chain:copper-spot-feed:v1\").",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "description": "Human-readable title.",
+      "type": "string"
+    },
+    "version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "SemVer version string.",
+      "type": "string"
+    },
+    "modality": {
+      "$id": "BlockModality",
+      "anyOf": [
+        {
+          "description": "Pure functions, WASM, compiled algorithms with zero epistemic variance.",
+          "const": "code_deterministic",
+          "type": "string"
+        },
+        {
+          "description": "External market feed, commodity spot price, FX, freight index, or IoT sensor stream.",
+          "const": "live_market_signal",
+          "type": "string"
+        },
+        {
+          "description": "Parametric formula (Little's Law, DuPont ROE, EOQ, Black-Scholes, LCA GHG).",
+          "const": "parametric_analytical_model",
+          "type": "string"
+        },
+        {
+          "description": "Regulatory articles (NIS2, CSRD, GDPR), procurement contracts, or SLA clauses.",
+          "const": "normative_policy_text",
+          "type": "string"
+        },
+        {
+          "description": "Gozinto BOMs, routing steps, workstation capacities, lead times from ERP.",
+          "const": "operational_ground_data",
+          "type": "string"
+        },
+        {
+          "description": "Cognitive reasoning prompt pattern, Minto pyramid synthesis, multi-agent arbitration.",
+          "const": "cognitive_prompt_agent",
+          "type": "string"
+        },
+        {
+          "description": "Asynchronous human sign-off, four-eyes principle, compliance officer approval.",
+          "const": "human_gate",
+          "type": "string"
+        }
+      ]
+    },
+    "domain": {
+      "description": "Business or functional domain (e.g. Procurement, Energy, CyberNIS2, Finance, Manufacturing).",
+      "type": "string"
+    },
+    "required_capabilities": {
+      "description": "Canonical capability URNs this block depends on.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provided_capabilities": {
+      "description": "Canonical capability URNs this block satisfies.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_ports": {
+      "description": "Input ports with typed schemas and unit dimensions.",
+      "type": "array",
+      "items": {
+        "$id": "PortContract",
+        "description": "Typed port interface for AssemblyBlock snapping contracts.",
+        "type": "object",
+        "required": [
+          "name",
+          "data_type",
+          "schema_definition",
+          "is_optional",
+          "allow_implicit_coercion"
+        ],
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "description": "Port name (e.g. \"copper_spot_price\", \"annual_demand\", \"risk_status\").",
+            "type": "string"
+          },
+          "data_type": {
+            "minLength": 1,
+            "description": "Underlying data type, e.g. number, string, boolean, object.",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "description": "Standardized UCUM or ISO 4217 unit, e.g. \"DKK/metric_ton\", \"EUR/MWh\", \"hours\", \"kg_CO2e\".",
+            "type": "string"
+          },
+          "schema_definition": {
+            "description": "JSON Schema / TypeBox definition for port payload.",
+            "type": "object",
+            "patternProperties": {
+              "^(.*)$": {}
+            }
+          },
+          "is_optional": {
+            "default": false,
+            "type": "boolean"
+          },
+          "allow_implicit_coercion": {
+            "default": false,
+            "description": "Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.",
+            "const": false,
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "output_ports": {
+      "description": "Output ports with guaranteed schemas and unit dimensions.",
+      "type": "array",
+      "items": {
+        "$id": "PortContract",
+        "description": "Typed port interface for AssemblyBlock snapping contracts.",
+        "type": "object",
+        "required": [
+          "name",
+          "data_type",
+          "schema_definition",
+          "is_optional",
+          "allow_implicit_coercion"
+        ],
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "description": "Port name (e.g. \"copper_spot_price\", \"annual_demand\", \"risk_status\").",
+            "type": "string"
+          },
+          "data_type": {
+            "minLength": 1,
+            "description": "Underlying data type, e.g. number, string, boolean, object.",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "description": "Standardized UCUM or ISO 4217 unit, e.g. \"DKK/metric_ton\", \"EUR/MWh\", \"hours\", \"kg_CO2e\".",
+            "type": "string"
+          },
+          "schema_definition": {
+            "description": "JSON Schema / TypeBox definition for port payload.",
+            "type": "object",
+            "patternProperties": {
+              "^(.*)$": {}
+            }
+          },
+          "is_optional": {
+            "default": false,
+            "type": "boolean"
+          },
+          "allow_implicit_coercion": {
+            "default": false,
+            "description": "Ratchet 3: Implicit unit conversion is forbidden. Explicit adapter blocks required.",
+            "const": false,
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "preconditions": {
+      "description": "Semantic invariants that MUST hold before invocation.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "postconditions": {
+      "description": "Semantic guarantees produced upon successful termination.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_rail": {
+      "anyOf": [
+        {
+          "const": "fail_closed",
+          "type": "string"
+        },
+        {
+          "const": "use_last_valid_with_staleness_flag",
+          "type": "string"
+        },
+        {
+          "const": "fallback_to_designated_proxy",
+          "type": "string"
+        },
+        {
+          "const": "halt_and_escalate_to_human",
+          "type": "string"
+        }
+      ]
+    },
+    "fallback_block_urn": {
+      "pattern": "^urn:wdc:block:[a-z0-9_.-]+:[a-z0-9_.-]+:v[0-9]+$",
+      "type": "string"
+    },
+    "market_signal": {
+      "type": "object",
+      "required": [
+        "feed_source_uri",
+        "oracle_attestation_type"
+      ],
+      "properties": {
+        "feed_source_uri": {
+          "minLength": 1,
+          "description": "Authoritative URI or market symbol (e.g. LME-CU-CASH, NP-DK1-SPOT).",
+          "type": "string"
+        },
+        "oracle_attestation_type": {
+          "anyOf": [
+            {
+              "const": "tls_notary",
+              "type": "string"
+            },
+            {
+              "const": "signed_jwt_oracle",
+              "type": "string"
+            },
+            {
+              "const": "mutual_tls_direct",
+              "type": "string"
+            },
+            {
+              "const": "unattested_rest_poll",
+              "type": "string"
+            }
+          ]
+        },
+        "standard_lot_size": {
+          "minimum": 0,
+          "description": "Contract standard lot volume (e.g. 25 tonnes for LME copper).",
+          "type": "number"
+        },
+        "order_book_depth_checked": {
+          "default": false,
+          "type": "boolean"
+        }
+      }
+    },
+    "normative_policy": {
+      "type": "object",
+      "required": [
+        "jurisdiction_authority",
+        "legal_reference_uri",
+        "evaluation_engine"
+      ],
+      "properties": {
+        "jurisdiction_authority": {
+          "minLength": 1,
+          "description": "E.g. EU Parliament, Danish FSA, ISO Committee.",
+          "type": "string"
+        },
+        "legal_reference_uri": {
+          "minLength": 1,
+          "description": "Canonical URI to directive, regulation, or contract artifact.",
+          "type": "string"
+        },
+        "evaluation_engine": {
+          "$id": "NormativeEvaluationEngine",
+          "anyOf": [
+            {
+              "description": "Deterministic Open Policy Agent / Rego policy bytecode.",
+              "const": "rego_opa",
+              "type": "string"
+            },
+            {
+              "description": "Deterministic JSON Logic predicate tree.",
+              "const": "json_logic",
+              "type": "string"
+            },
+            {
+              "description": "Compiled pure function predicate.",
+              "const": "deterministic_predicate",
+              "type": "string"
+            },
+            {
+              "description": "Explicitly linked cognitive agent with pinned prompt-hash and model.",
+              "const": "linked_cognitive_agent",
+              "type": "string"
+            },
+            {
+              "description": "Requires direct human gate evaluation.",
+              "const": "human_verification_only",
+              "type": "string"
+            }
+          ]
+        },
+        "deontic_rule_digest": {
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "description": "SHA-256 of the executable Rego/JSON-logic policy rule.",
+          "type": "string"
+        },
+        "linked_cognitive_agent_ref": {
+          "description": "Pinned URN of cognitive prompt agent if interpretive reasoning is needed.",
+          "type": "string"
+        }
+      }
+    },
+    "bitemporal": {
+      "$id": "BitemporalAnchor",
+      "description": "Bitemporal validity anchors per SQL:2011.",
+      "type": "object",
+      "required": [
+        "valid_from",
+        "recorded_at",
+        "refresh_cadence",
+        "max_staleness_seconds"
+      ],
+      "properties": {
+        "valid_from": {
+          "format": "date-time",
+          "description": "When this fact became valid in the real world (T_valid start).",
+          "type": "string"
+        },
+        "valid_to": {
+          "format": "date-time",
+          "description": "When this fact ceases to be valid (T_valid end).",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "description": "When this fact was transacted/recorded in the system (T_tx).",
+          "type": "string"
+        },
+        "refresh_cadence": {
+          "anyOf": [
+            {
+              "const": "realtime_stream",
+              "type": "string"
+            },
+            {
+              "const": "hourly_tick",
+              "type": "string"
+            },
+            {
+              "const": "daily_close",
+              "type": "string"
+            },
+            {
+              "const": "event_driven",
+              "type": "string"
+            },
+            {
+              "const": "static_immutable",
+              "type": "string"
+            }
+          ]
+        },
+        "ttl_seconds": {
+          "minimum": 0,
+          "description": "Expected time-to-live before revalidation is required.",
+          "type": "integer"
+        },
+        "max_staleness_seconds": {
+          "minimum": 1,
+          "description": "Ratchet 2: Hard ceiling. If (T_now - T_valid) > max_staleness_seconds, execution must fail-closed.",
+          "type": "integer"
+        }
+      }
+    },
+    "epistemic": {
+      "$id": "EpistemicConfidence",
+      "description": "Epistemic uncertainty and proof grading for the block.",
+      "type": "object",
+      "required": [
+        "confidence_score",
+        "evidence_class"
+      ],
+      "properties": {
+        "confidence_score": {
+          "minimum": 0,
+          "maximum": 1,
+          "description": "1.0 for deterministic code; <1.0 for probabilistic models or feeds.",
+          "type": "number"
+        },
+        "entropy": {
+          "minimum": 0,
+          "description": "Shannon entropy H(X) representing information uncertainty.",
+          "type": "number"
+        },
+        "variance_tolerance": {
+          "description": "Permissible variance or standard deviation.",
+          "type": "number"
+        },
+        "evidence_class": {
+          "anyOf": [
+            {
+              "const": "measured_sensor_telemetry",
+              "type": "string"
+            },
+            {
+              "const": "audited_signed_document",
+              "type": "string"
+            },
+            {
+              "const": "statistically_inferred",
+              "type": "string"
+            },
+            {
+              "const": "expert_consensus",
+              "type": "string"
+            },
+            {
+              "const": "unverified_candidate",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "economics": {
+      "$id": "BlockEconomics",
+      "description": "Unit economics and FinOps resource tensor.",
+      "type": "object",
+      "required": [
+        "currency",
+        "marginal_cost_unit",
+        "compute_latency_ms_p95",
+        "licensing_model"
+      ],
+      "properties": {
+        "currency": {
+          "default": "DKK",
+          "description": "Settlement currency (ISO 4217).",
+          "type": "string"
+        },
+        "marginal_cost_unit": {
+          "minimum": 0,
+          "description": "Marginal execution cost per call in specified currency.",
+          "type": "number"
+        },
+        "compute_latency_ms_p95": {
+          "minimum": 0,
+          "description": "P95 expected latency in milliseconds.",
+          "type": "number"
+        },
+        "estimated_tokens": {
+          "minimum": 0,
+          "description": "Token budget if LLM/cognitive reasoning is involved.",
+          "type": "integer"
+        },
+        "marginal_carbon_gCO2e": {
+          "minimum": 0,
+          "description": "Estimated GHG Scope 2/3 carbon footprint per invocation.",
+          "type": "number"
+        },
+        "licensing_model": {
+          "anyOf": [
+            {
+              "const": "open_source",
+              "type": "string"
+            },
+            {
+              "const": "internal_proprietary",
+              "type": "string"
+            },
+            {
+              "const": "commercial_api_metered",
+              "type": "string"
+            },
+            {
+              "const": "per_seat_subscription",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "jurisdiction_policy": {
+      "$id": "BOMJurisdictionPolicy",
+      "anyOf": [
+        {
+          "const": "EU_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "DK_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NO_CN",
+          "type": "string"
+        },
+        {
+          "const": "NO_US",
+          "type": "string"
+        },
+        {
+          "const": "LOCAL_ONLY",
+          "type": "string"
+        },
+        {
+          "const": "NONE",
+          "type": "string"
+        }
+      ]
+    },
+    "data_class": {
+      "$id": "BOMDataClass",
+      "anyOf": [
+        {
+          "const": "pii",
+          "type": "string"
+        },
+        {
+          "const": "confidential",
+          "type": "string"
+        },
+        {
+          "const": "public",
+          "type": "string"
+        },
+        {
+          "const": "legal",
+          "type": "string"
+        }
+      ]
+    },
+    "content_digest": {
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "RFC 8785 Canonical JSON content-addressed SHA-256.",
+      "type": "string"
+    },
+    "attestation_authority": {
+      "description": "Signing authority identity (agent, CI runner, or operator key).",
+      "type": "string"
+    },
+    "signature": {
+      "description": "Ed25519 signature over canonical content digest.",
+      "type": "string"
+    },
+    "lifecycle": {
+      "anyOf": [
+        {
+          "const": "candidate",
+          "type": "string"
+        },
+        {
+          "const": "canary",
+          "type": "string"
+        },
+        {
+          "const": "verified",
+          "type": "string"
+        },
+        {
+          "const": "deprecated",
+          "type": "string"
+        },
+        {
+          "const": "revoked",
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

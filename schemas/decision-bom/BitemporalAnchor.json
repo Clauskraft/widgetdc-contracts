@@ -1,0 +1,62 @@
+{
+  "$id": "BitemporalAnchor",
+  "description": "Bitemporal validity anchors per SQL:2011.",
+  "type": "object",
+  "required": [
+    "valid_from",
+    "recorded_at",
+    "refresh_cadence",
+    "max_staleness_seconds"
+  ],
+  "properties": {
+    "valid_from": {
+      "format": "date-time",
+      "description": "When this fact became valid in the real world (T_valid start).",
+      "type": "string"
+    },
+    "valid_to": {
+      "format": "date-time",
+      "description": "When this fact ceases to be valid (T_valid end).",
+      "type": "string"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "description": "When this fact was transacted/recorded in the system (T_tx).",
+      "type": "string"
+    },
+    "refresh_cadence": {
+      "anyOf": [
+        {
+          "const": "realtime_stream",
+          "type": "string"
+        },
+        {
+          "const": "hourly_tick",
+          "type": "string"
+        },
+        {
+          "const": "daily_close",
+          "type": "string"
+        },
+        {
+          "const": "event_driven",
+          "type": "string"
+        },
+        {
+          "const": "static_immutable",
+          "type": "string"
+        }
+      ]
+    },
+    "ttl_seconds": {
+      "minimum": 0,
+      "description": "Expected time-to-live before revalidation is required.",
+      "type": "integer"
+    },
+    "max_staleness_seconds": {
+      "minimum": 1,
+      "description": "Ratchet 2: Hard ceiling. If (T_now - T_valid) > max_staleness_seconds, execution must fail-closed.",
+      "type": "integer"
+    }
+  }
+}
