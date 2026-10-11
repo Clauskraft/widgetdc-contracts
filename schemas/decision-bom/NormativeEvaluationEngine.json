@@ -1,0 +1,30 @@
+{
+  "$id": "NormativeEvaluationEngine",
+  "anyOf": [
+    {
+      "description": "Deterministic Open Policy Agent / Rego policy bytecode.",
+      "const": "rego_opa",
+      "type": "string"
+    },
+    {
+      "description": "Deterministic JSON Logic predicate tree.",
+      "const": "json_logic",
+      "type": "string"
+    },
+    {
+      "description": "Compiled pure function predicate.",
+      "const": "deterministic_predicate",
+      "type": "string"
+    },
+    {
+      "description": "Explicitly linked cognitive agent with pinned prompt-hash and model.",
+      "const": "linked_cognitive_agent",
+      "type": "string"
+    },
+    {
+      "description": "Requires direct human gate evaluation.",
+      "const": "human_verification_only",
+      "type": "string"
+    }
+  ]
+}

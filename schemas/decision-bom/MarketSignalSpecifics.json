@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "required": [
+    "feed_source_uri",
+    "oracle_attestation_type"
+  ],
+  "properties": {
+    "feed_source_uri": {
+      "minLength": 1,
+      "description": "Authoritative URI or market symbol (e.g. LME-CU-CASH, NP-DK1-SPOT).",
+      "type": "string"
+    },
+    "oracle_attestation_type": {
+      "anyOf": [
+        {
+          "const": "tls_notary",
+          "type": "string"
+        },
+        {
+          "const": "signed_jwt_oracle",
+          "type": "string"
+        },
+        {
+          "const": "mutual_tls_direct",
+          "type": "string"
+        },
+        {
+          "const": "unattested_rest_poll",
+          "type": "string"
+        }
+      ]
+    },
+    "standard_lot_size": {
+      "minimum": 0,
+      "description": "Contract standard lot volume (e.g. 25 tonnes for LME copper).",
+      "type": "number"
+    },
+    "order_book_depth_checked": {
+      "default": false,
+      "type": "boolean"
+    }
+  },
+  "$id": "MarketSignalSpecifics"
+}

@@ -102,7 +102,7 @@ class AdapterManifestSchema(BaseModel):
         Field(..., min_length=1)
     )
     input_schema_ids: list[AnyUrl]
-    output_schema_ids: list[AnyUrl]
+    output_schema_ids: list[AnyUrl] = Field(..., min_length=1)
     required_env_names: list[RequiredEnvName]
     timeout_ms: int = Field(..., ge=1)
     cancellation_supported: bool
