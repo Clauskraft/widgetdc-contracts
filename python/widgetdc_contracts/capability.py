@@ -13,7 +13,7 @@ from pydantic import BeforeValidator
 from typing import Annotated
 from typing import Literal
 
-__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CanonicalIdentityEnvelopeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
+__all__ = ["AliasResolutionResultV1", "AuthorityGrantRefV1", "CanonicalIdentityEnvelopeV1", "CapabilityChainEdgeV1", "CapabilityDefinitionV1", "CapabilityIdentifierV1", "CapabilityRequirementV1"]
 
 def _reject_duplicate_items(value: object) -> object:
     if isinstance(value, list):
@@ -257,6 +257,43 @@ class CanonicalIdentityEnvelopeV1(_CapabilityContractDumpMixin, BaseModel):
         ...,
         description='Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.',
         pattern='^sha256:[0-9a-f]{64}$',
+    )
+
+class CanonicalIdentityEnvelopeV1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.canonical_identity_envelope.v1']
+    capability_id: str = Field(
+        ...,
+        description='Canonical capability URN. Aliases and compatibility identifiers are never valid here.',
+        pattern='^urn:wdc:capability:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*:v[1-9][0-9]*$',
+    )
+    canonical_document_hash: str = Field(
+        ...,
+        description='Canonical document hash copied from the authoritative CapabilityDefinitionV1. It is a reference hash, not this envelope document self-hash.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
+
+
+class CapabilityChainEdgeV1(_CapabilityContractDumpMixin, BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schema_version: Literal['wdc.capability_chain_edge.v1']
+    definition_version: Literal['1.0.0']
+    canonicalization_profile: Literal['jcs-rfc8785-v1']
+    hash_algorithm: Literal['sha256']
+    canonical_document_hash: str = Field(
+        ...,
+        description='SHA-256 identity over the canonical contract projection, excluding this field itself.',
+        pattern='^sha256:[0-9a-f]{64}$',
+    )
+    source: CanonicalIdentityEnvelopeV1
+    target: CanonicalIdentityEnvelopeV1
+    edge_property: Literal['requires'] = Field(
+        ...,
+        description='Capability-only dependency relation. The v1 vocabulary is intentionally closed and additive.',
     )
 
 class OperationRef(RootModel[str]):
