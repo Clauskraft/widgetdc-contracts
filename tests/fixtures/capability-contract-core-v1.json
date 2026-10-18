@@ -959,6 +959,51 @@
         "schema_version": "wdc.canonical_identity_envelope.v1",
         "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
       }
+    },
+    {
+      "name": "capability chain requires edge",
+      "schema": "CapabilityChainEdgeV1",
+      "valid": true,
+      "value": {
+        "schema_version": "wdc.capability_chain_edge.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "source": {
+          "schema_version": "wdc.canonical_identity_envelope.v1",
+          "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1",
+          "canonical_document_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        },
+        "target": {
+          "schema_version": "wdc.canonical_identity_envelope.v1",
+          "capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+          "canonical_document_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "edge_property": "requires"
+      }
+    },
+    {
+      "name": "capability chain edge rejects missing source definition hash",
+      "schema": "CapabilityChainEdgeV1",
+      "valid": false,
+      "value": {
+        "schema_version": "wdc.capability_chain_edge.v1",
+        "definition_version": "1.0.0",
+        "canonicalization_profile": "jcs-rfc8785-v1",
+        "hash_algorithm": "sha256",
+        "canonical_document_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "source": {
+          "schema_version": "wdc.canonical_identity_envelope.v1",
+          "capability_id": "urn:wdc:capability:reasoning:deep-plan:v1"
+        },
+        "target": {
+          "schema_version": "wdc.canonical_identity_envelope.v1",
+          "capability_id": "urn:wdc:capability:contracts:validate-schema:v1",
+          "canonical_document_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "edge_property": "requires"
+      }
     }
   ]
 }
