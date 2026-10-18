@@ -509,6 +509,47 @@ describe('Capability Chain Edge v1', () => {
     })
   })
 
+  it('rejects evidence for a different valid edge with the same source identity', () => {
+    const requiredEdge = capabilityChainEdgeWithValidHash()
+    const observedEdgeWithoutHash = {
+      ...capabilityChainEdge(),
+      target: {
+        ...canonicalIdentityEnvelope(),
+        capability_id: 'urn:wdc:capability:evidence:replay-event:v1',
+      },
+    }
+    const observedEdge = {
+      ...observedEdgeWithoutHash,
+      canonical_document_hash: canonicalCapabilityDocumentHashV1(
+        CAPABILITY_CONTRACT_SCHEMA_IDS.CapabilityChainEdgeV1,
+        observedEdgeWithoutHash,
+      ),
+    }
+    const sourceIdentity = {
+      source_ref: 'artifact:source',
+      source_hash: DEFINITION_HASH,
+    }
+
+    expect(
+      evaluateCapabilityChainEdgeCoverage(
+        [{ ...sourceIdentity, edge: requiredEdge }],
+        [
+          {
+            ...sourceIdentity,
+            edge: observedEdge,
+            routability_evidence_ref: 'eventspine:wrong-edge',
+          },
+        ],
+      ),
+    ).toEqual({
+      status: 'partial',
+      required_count: 1,
+      routable_count: 0,
+      coverage_rate: 0,
+      passes: false,
+    })
+  })
+
   it('fails closed for malformed references, evidence, and edge values', () => {
     const edge = capabilityChainEdgeWithValidHash()
     const malformedRequirement = {
