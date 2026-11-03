@@ -243,6 +243,111 @@
         "12 ",
         "34 56 78"
       ]
+    },
+    {
+      "name": "quoted passphrase with spaces",
+      "text_parts": [
+        "pass",
+        "word: \"",
+        "correct horse",
+        " battery staple",
+        "\""
+      ],
+      "secret_parts": [
+        "correct horse",
+        " battery staple"
+      ]
+    },
+    {
+      "name": "single-quoted passphrase with spaces",
+      "text_parts": [
+        "db_pass",
+        "phrase = '",
+        "violet",
+        " lantern ",
+        "orbit 42'"
+      ],
+      "secret_parts": [
+        "violet",
+        " lantern ",
+        "orbit 42"
+      ]
+    },
+    {
+      "name": "upper-case bearer scheme",
+      "text_parts": [
+        "Authorization: BEARER ",
+        "Qm9vT3",
+        "J4kL2pZ8"
+      ],
+      "secret_parts": [
+        "Qm9vT3",
+        "J4kL2pZ8"
+      ]
+    },
+    {
+      "name": "mixed-case bearer scheme",
+      "text_parts": [
+        "authorization: bEaReR ",
+        "Zx81Lm",
+        "Qp44Rt0a"
+      ],
+      "secret_parts": [
+        "Zx81Lm",
+        "Qp44Rt0a"
+      ]
+    },
+    {
+      "name": "python os.environ.get default argument",
+      "text_parts": [
+        "key = os.environ.get('SERVICE_KEY', '",
+        "fallback",
+        "Value77x",
+        "')"
+      ],
+      "secret_parts": [
+        "fallback",
+        "Value77x"
+      ]
+    },
+    {
+      "name": "python os.getenv default argument",
+      "text_parts": [
+        "os.getenv(\"DB_PASS\", \"",
+        "hunter",
+        "22xq",
+        "\")"
+      ],
+      "secret_parts": [
+        "hunter",
+        "22xq"
+      ]
+    },
+    {
+      "name": "numeric password",
+      "text_parts": [
+        "pass",
+        "word=",
+        "8812",
+        "3456"
+      ],
+      "secret_parts": [
+        "8812",
+        "3456"
+      ]
+    },
+    {
+      "name": "numeric client secret",
+      "text_parts": [
+        "client_sec",
+        "ret: ",
+        "9988",
+        "7766"
+      ],
+      "secret_parts": [
+        "9988",
+        "7766"
+      ]
     }
   ],
   "must_survive": [
@@ -309,6 +414,34 @@
     {
       "name": "not a blanket mask",
       "text": "Row 928 failed on CI; the fix went in at 22142bbc53b3cf3f0c3b47b183f34a995a806310."
+    },
+    {
+      "name": "numeric token limit",
+      "text": "max_tokens: 4096"
+    },
+    {
+      "name": "numeric token count",
+      "text": "token_count=12345678"
+    },
+    {
+      "name": "quoted env placeholder for a password",
+      "text": "password: \"${DB_PASSWORD}\""
+    },
+    {
+      "name": "password read from the environment",
+      "text": "password: process.env.DB_PASSWORD"
+    },
+    {
+      "name": "short quoted token",
+      "text": "token: \"abc\""
+    },
+    {
+      "name": "bearer in prose",
+      "text": "the bearer of the letter waited"
+    },
+    {
+      "name": "python os.environ.get without a default",
+      "text": "os.environ.get('SERVICE_KEY')"
     }
   ]
 }

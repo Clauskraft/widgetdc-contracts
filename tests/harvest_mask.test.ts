@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   HarvestMaskContract,
+  HarvestMaskInputTooLarge,
   HarvestMaskPolicyError,
   HarvestMaskRefusal,
   assertHarvestWriteMasked,
@@ -44,12 +45,14 @@ describe('harvest mask contract identity', () => {
     expect(HarvestMaskContract.refusal_code).toBe('HARVEST_MASK_UNMASKED_CONTENT')
   })
 
-  it('binds the policy and fixtures ported unchanged from the row 972 pilot', () => {
+  it('binds the 1.1.0 candidate policy, its fixtures and evaluator 1.1.0', () => {
     const identity = harvestMaskIdentity()
     expect(Object.keys(identity)).toEqual([...HarvestMaskContract.identity_fields])
     expect(identity.policy_schema).toBe('wdc.harvest-mask-policy.v1')
-    expect(identity.policy_sha256_jcs).toBe('0542273657e2b30c96916670a3d7dc8600280111fba129ea826a932edfbf78ec')
-    expect(identity.fixtures_sha256_jcs).toBe('bfe4154875585c9d83ac5edd5b7374411b55aa52194df487e9cec8dfe3c8f46c')
+    expect(identity.policy_version).toBe('1.1.0-candidate')
+    expect(identity.evaluator_version).toBe('1.1.0')
+    expect(identity.policy_sha256_jcs).toBe('dfc0e9ed5c9301c54374419358a4e1aed982781a1ad580276631c5ce11514ddb')
+    expect(identity.fixtures_sha256_jcs).toBe('505093821aa175186f4dbb4c2859f10801c06d687415038ae468870408758a64')
   })
 })
 
@@ -115,5 +118,140 @@ describe('harvest mask policy fails closed by name', () => {
   it('refuses a pattern that does not compile', () => {
     const broken = { ...policy, rules: [{ ...policy.rules[0], pattern: '(' }] }
     expect(() => createHarvestMask(broken)).toThrow(/HARVEST_MASK_POLICY_UNSUPPORTED_PATTERN/)
+  })
+})
+
+// Row 970 successor: Codex PR110-F1 and PR110-F2, the size cap and malformed input.
+const clonePolicy = (): HarvestMaskPolicy => JSON.parse(JSON.stringify(policy))
+const evaluatorFor = (p: HarvestMaskPolicy) => createHarvestMask(p)
+
+describe('rule names that collide with Object.prototype (PR110-F1)', () => {
+  for (const name of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    it(`a rule named ${name} reports its hit, refuses the raw text and passes it masked`, () => {
+      const p = clonePolicy()
+      p.rules = [{ name, pattern: 'canary-[0-9]{6}', flags: 'g', keep_prefix_group: null, value_group: null }, ...p.rules]
+      const gate = evaluatorFor(p)
+      const raw = 'value canary-' + '481516' + ' end'
+      const scan = gate.scan(raw)
+      expect(scan.clean).toBe(false)
+      expect(Object.prototype.hasOwnProperty.call(scan.counts, name)).toBe(true)
+      expect(scan.counts[name]).toBe(1)
+      expect(() => gate.assertMasked(raw)).toThrow(HarvestMaskRefusal)
+      const masked = gate.mask(raw)
+      expect(masked.text).not.toContain('481516')
+      expect(() => gate.assertMasked(masked.text)).not.toThrow()
+    })
+
+    it(`a high-entropy rule named ${name} reports its hit, refuses the raw text and passes it masked`, () => {
+      const p = clonePolicy()
+      p.high_entropy = { ...p.high_entropy, rule_name: name }
+      const gate = evaluatorFor(p)
+      const raw = 'opaque ' + 'Qz7Lx2Vb9Np4Rk6Tm1' + 'Hd8Fs3Gw5Jc0Ye' + ' end'
+      const scan = gate.scan(raw)
+      expect(scan.clean).toBe(false)
+      expect(Object.prototype.hasOwnProperty.call(scan.counts, name)).toBe(true)
+      expect(() => gate.assertMasked(raw)).toThrow(HarvestMaskRefusal)
+      expect(() => gate.assertMasked(gate.mask(raw).text)).not.toThrow()
+    })
+  }
+})
+
+describe('one immutable policy snapshot binds evaluation and identity (PR110-F2)', () => {
+  it('mutating the caller\'s policy after creation changes neither the rules that run nor the identity', () => {
+    const original = clonePolicy()
+    const gate = evaluatorFor(original)
+    const hashBefore = gate.policy_sha256_jcs
+    const raw = `key ${plantedSecret}`
+    original.rules.length = 0
+    original.high_entropy.rule_name = 'changed'
+    expect(gate.policy.rules.length).toBe(policy.rules.length)
+    expect(gate.policy_sha256_jcs).toBe(hashBefore)
+    expect(gate.scan(raw).counts.anthropic_openai_key).toBe(1)
+  })
+
+  it('the exposed policy is frozen all the way down', () => {
+    const gate = evaluatorFor(clonePolicy())
+    expect(Object.isFrozen(gate.policy)).toBe(true)
+    expect(Object.isFrozen(gate.policy.rules)).toBe(true)
+    expect(Object.isFrozen(gate.policy.rules[0])).toBe(true)
+    expect(Object.isFrozen(gate.policy.high_entropy.exempt_patterns[0])).toBe(true)
+    expect(() => {
+      ;(gate.policy.rules as unknown as unknown[]).length = 0
+    }).toThrow(TypeError)
+    expect(() => {
+      ;(gate.policy.rules[0] as { pattern: string }).pattern = 'x'
+    }).toThrow(TypeError)
+    expect(gate.policy.rules.length).toBe(policy.rules.length)
+  })
+
+  it('the shipped identity hash is the hash of the snapshot the shipped evaluator runs', () => {
+    const identity = harvestMaskIdentity()
+    expect(identity.policy_sha256_jcs).toBe(evaluatorFor(clonePolicy()).policy_sha256_jcs)
+  })
+})
+
+describe('input size cap', () => {
+  it('the shipped policy names the cap', () => {
+    expect(policy.max_input_chars).toBe(4194304)
+  })
+
+  it('refuses input over the cap by name, and accepts input at the cap', () => {
+    const gate = evaluatorFor({ ...clonePolicy(), max_input_chars: 64 })
+    const atCap = 'a'.repeat(64)
+    expect(gate.mask(atCap).text).toBe(atCap)
+    const over = 'a'.repeat(65)
+    expect(() => gate.mask(over)).toThrow(HarvestMaskInputTooLarge)
+    expect(() => gate.mask(over)).toThrow(/HARVEST_MASK_INPUT_TOO_LARGE/)
+    expect(() => gate.assertMasked(over)).toThrow(HarvestMaskInputTooLarge)
+    expect(() => gate.scan(over)).toThrow(HarvestMaskInputTooLarge)
+  })
+})
+
+describe('worst-case input runs in linear time', () => {
+  const n = 262144
+  const fill = (unit: string) => unit.repeat(Math.ceil(n / unit.length)).slice(0, n)
+  const inputs: Record<string, string> = {
+    dotted: fill('a.'),
+    dashed: fill('a-'),
+    plus: fill('Ab1+'),
+    tokens: fill('token'),
+    jwt_run: fill('eyJa-'),
+    url_run: fill('a://a:'),
+    env_open: fill("os.environ.get('A', "),
+    quoted_open: fill('token="a '),
+  }
+  for (const [name, text] of Object.entries(inputs)) {
+    it(`${name} at ${n} characters stays well under a quadratic budget`, () => {
+      const started = performance.now()
+      maskHarvestText(text)
+      expect(performance.now() - started).toBeLessThan(3000)
+    })
+  }
+})
+
+describe('a malformed policy fails by name', () => {
+  const cases: Array<[string, (p: Record<string, unknown>) => unknown]> = [
+    ['not an object', () => 'policy'],
+    ['rules missing', (p) => ({ ...p, rules: undefined })],
+    ['a rule without a pattern', (p) => ({ ...p, rules: [{ name: 'x', flags: 'g', keep_prefix_group: null, value_group: null }] })],
+    ['a rule name that is not a string', (p) => ({ ...p, rules: [{ name: 7, pattern: 'x', flags: 'g', keep_prefix_group: null, value_group: null }] })],
+    ['numeric_value missing', (p) => ({ ...p, numeric_value: undefined })],
+    ['high_entropy missing', (p) => ({ ...p, high_entropy: undefined })],
+    ['a cap that is not a positive integer', (p) => ({ ...p, max_input_chars: 0 })],
+  ]
+  for (const [name, make] of cases) {
+    it(name, () => {
+      const bad = make(clonePolicy() as unknown as Record<string, unknown>) as HarvestMaskPolicy
+      expect(() => createHarvestMask(bad)).toThrow(HarvestMaskPolicyError)
+      expect(() => createHarvestMask(bad)).toThrow(/HARVEST_MASK_POLICY_MALFORMED/)
+    })
+  }
+})
+describe('quoted values are masked whole', () => {
+  it('a double-quoted passphrase with spaces loses every word, not only the first', () => {
+    const raw = 'pass' + 'word: "' + 'correct horse' + ' battery staple"'
+    const masked = maskHarvestText(raw).text
+    for (const word of ['correct', 'horse', 'battery', 'staple']) expect(masked).not.toContain(word)
+    expect(() => assertHarvestWriteMasked(masked)).not.toThrow()
   })
 })
