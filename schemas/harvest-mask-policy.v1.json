@@ -1,0 +1,178 @@
+{
+  "schema": "wdc.harvest-mask-policy.v1",
+  "policy_version": "1.0.0-pilot",
+  "status": "candidate_not_adopted",
+  "marker_form": "[REDACTED:<rule>]",
+  "input_normalization": "Input is a JavaScript string from UTF-8 decoded text. The caller folds CRLF to LF before masking when it keeps offsets. Masking does no other normalization.",
+  "evaluator_contract": "ECMAScript regular expressions with the flags stated per rule, applied in list order with replace-all. A missing or unsupported flag fails by name.",
+  "rules": [
+    {
+      "name": "private_key",
+      "pattern": "-----BEGIN [A-Z ]*PRIVATE KEY-----[\\s\\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "bearer",
+      "pattern": "\\b[Bb]earer\\s+[A-Za-z0-9._~+/=-]{8,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "jwt",
+      "pattern": "\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}(?:\\.[A-Za-z0-9_-]+)?",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "anthropic_openai_key",
+      "pattern": "\\bsk-[A-Za-z0-9_-]{16,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "google_key",
+      "pattern": "\\bAIza[0-9A-Za-z_-]{30,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "google_oauth",
+      "pattern": "\\bya29\\.[0-9A-Za-z_-]{16,}|\\bGOCSPX-[0-9A-Za-z_-]{16,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "github_token",
+      "pattern": "\\bgh[pousr]_[A-Za-z0-9]{20,}|\\bgithub_pat_[A-Za-z0-9_]{20,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "gitlab_token",
+      "pattern": "\\bglpat-[A-Za-z0-9_-]{16,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "slack_token",
+      "pattern": "\\bxox[abprs]-[A-Za-z0-9-]{8,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "aws_key",
+      "pattern": "\\b(?:AKIA|ASIA)[0-9A-Z]{16}\\b",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "wdc_session_secret",
+      "pattern": "\\bwdcs_[A-Za-z0-9_-]{4,}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "url_credentials",
+      "pattern": "\\b[a-z][a-z0-9+.-]*:\\/\\/[^\\s/:@'\"]+:[^\\s/@'\"]+@",
+      "flags": "gi",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "ping_url",
+      "pattern": "\\bhc-ping\\.com\\/[0-9a-fA-F-]{36}",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "named_value",
+      "pattern": "([A-Za-z0-9_.-]*(?:api[_-]?key|apikey|access[_-]?token|auth[_-]?token|refresh[_-]?token|client[_-]?secret|secret|password|passwd|pwd|token|bearer|private[_-]?key|credential|ping[_-]?url)[A-Za-z0-9_.-]*[\"'\\x60]?\\s*[:=]\\s*)([\"'\\x60]?)([^\\s\"'\\x60,;)}\\]]{6,})",
+      "flags": "gi",
+      "keep_prefix_group": 1,
+      "value_group": 3
+    },
+    {
+      "name": "env_fallback",
+      "pattern": "((?:process\\.env\\.[A-Za-z0-9_]+|process\\.env\\[[^\\]]+\\]|os\\.environ\\.get\\([^)]*\\)|\\$env:[A-Za-z0-9_]+)\\s*(?:\\|\\||\\?\\?|,|\\bor\\b)\\s*)[\"'\\x60]([^\"'\\x60\\s]{4,})[\"'\\x60]",
+      "flags": "g",
+      "keep_prefix_group": 1,
+      "value_group": null
+    },
+    {
+      "name": "email",
+      "pattern": "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,}\\b",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "cpr",
+      "pattern": "\\b[0-3]\\d[01]\\d\\d{2}-\\d{4}\\b",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    },
+    {
+      "name": "phone_dk",
+      "pattern": "\\+45[ -]?\\d{2}[ -]?\\d{2}[ -]?\\d{2}[ -]?\\d{2}\\b",
+      "flags": "g",
+      "keep_prefix_group": null,
+      "value_group": null
+    }
+  ],
+  "not_a_value": {
+    "pattern": "^(?:\\d+(?:\\.\\d+)?|true|false|null|none|undefined|\\$.*|<.*|process\\.env.*|\\[REDACTED.*)$",
+    "flags": "i",
+    "applies_to": "named_value"
+  },
+  "high_entropy": {
+    "rule_name": "high_entropy",
+    "token_pattern": "[A-Za-z0-9+/=_-]{32,}",
+    "token_flags": "g",
+    "exempt_patterns": [
+      {
+        "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64}|[0-9A-F]{40}|[0-9A-F]{64})$",
+        "flags": "",
+        "why": "git shas and sha256 pointers"
+      },
+      {
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        "flags": "",
+        "why": "session and run ids"
+      },
+      {
+        "pattern": "^(?:[a-z]+[/_-])+[a-z]+$",
+        "flags": "",
+        "why": "lower-case slugs and paths"
+      }
+    ],
+    "require_digit": true,
+    "separated_min_digit_share": {
+      "numerator": 1,
+      "denominator": 20
+    },
+    "min_entropy_bits_per_char": {
+      "numerator": 7,
+      "denominator": 2
+    }
+  },
+  "known_gaps": [
+    "A key that is pure 40 or 64 hex or shaped as a UUID, with no name before it",
+    "A short key with no name before it, and a cut key under 32 characters",
+    "Personal names; personal data covers e-mail, CPR and Danish phone numbers only",
+    "Worst-case regular expression run time has not been tested"
+  ]
+}

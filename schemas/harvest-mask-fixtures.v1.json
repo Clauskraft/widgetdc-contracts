@@ -1,0 +1,314 @@
+{
+  "schema": "wdc.harvest-mask-fixtures.v1",
+  "declared": "Synthetic values only. No value here was ever a credential. Parts are joined before use.",
+  "must_mask": [
+    {
+      "name": "sk key",
+      "text_parts": [
+        "sk-",
+        "ant-aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ],
+      "secret_parts": [
+        "sk-",
+        "ant-aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ]
+    },
+    {
+      "name": "sk bare",
+      "text_parts": [
+        "sk-",
+        "aZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ],
+      "secret_parts": [
+        "sk-",
+        "aZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ]
+    },
+    {
+      "name": "google",
+      "text_parts": [
+        "AIz",
+        "aaZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3"
+      ],
+      "secret_parts": [
+        "AIz",
+        "aaZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3"
+      ]
+    },
+    {
+      "name": "github classic",
+      "text_parts": [
+        "ghp",
+        "_aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3k"
+      ],
+      "secret_parts": [
+        "ghp",
+        "_aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3k"
+      ]
+    },
+    {
+      "name": "github fine",
+      "text_parts": [
+        "git",
+        "hub_pat_aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ],
+      "secret_parts": [
+        "git",
+        "hub_pat_aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP"
+      ]
+    },
+    {
+      "name": "gitlab",
+      "text_parts": [
+        "glp",
+        "at-aZ3kQ9xP2mL7vB4naZ3k"
+      ],
+      "secret_parts": [
+        "glp",
+        "at-aZ3kQ9xP2mL7vB4naZ3k"
+      ]
+    },
+    {
+      "name": "slack",
+      "text_parts": [
+        "xox",
+        "b-aZ3kQ9xP2mL7vB4naZ3k"
+      ],
+      "secret_parts": [
+        "xox",
+        "b-aZ3kQ9xP2mL7vB4naZ3k"
+      ]
+    },
+    {
+      "name": "aws",
+      "text_parts": [
+        "AKI",
+        "AABCD2345ABCD2345"
+      ],
+      "secret_parts": [
+        "AKI",
+        "AABCD2345ABCD2345"
+      ]
+    },
+    {
+      "name": "wdc",
+      "text_parts": [
+        "wdc",
+        "s_aZ3kQ9xP2mL7vB4naZ3k"
+      ],
+      "secret_parts": [
+        "wdc",
+        "s_aZ3kQ9xP2mL7vB4naZ3k"
+      ]
+    },
+    {
+      "name": "bearer",
+      "text_parts": [
+        "Aut",
+        "horization: Bearer aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB"
+      ],
+      "secret_parts": [
+        "aZ3",
+        "kQ9xP2mL7vB4naZ3kQ9xP2mL7vB"
+      ]
+    },
+    {
+      "name": "jwt",
+      "text_parts": [
+        "eyJ",
+        "aZ3kQ9xP2mL7vB4naZ3k.aZ3kQ9xP2mL7vB4naZ3k.aZ3kQ9xP2mL7vB4naZ3k"
+      ],
+      "secret_parts": [
+        "aZ3",
+        "kQ9xP2mL7vB4naZ3k"
+      ]
+    },
+    {
+      "name": "private key",
+      "text_parts": [
+        "---",
+        "--BEGIN RSA PRIVATE KEY-----\naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7\n-----END RSA PRIVATE KEY-----"
+      ],
+      "secret_parts": [
+        "aZ3",
+        "kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7"
+      ]
+    },
+    {
+      "name": "url credentials",
+      "text_parts": [
+        "pos",
+        "tgres://admin:hunter2aZ3k@db.example.test/x"
+      ],
+      "secret_parts": [
+        "hun",
+        "ter2aZ3k"
+      ]
+    },
+    {
+      "name": "ping url",
+      "text_parts": [
+        "htt",
+        "ps://hc-ping.com/7d0f1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b"
+      ],
+      "secret_parts": [
+        "7d0",
+        "f1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b"
+      ]
+    },
+    {
+      "name": "short named value",
+      "text_parts": [
+        "ORC",
+        "HESTRATOR_API_KEY=q7Wq7Wq7Wq7Wq7Wq7W"
+      ],
+      "secret_parts": [
+        "q7W",
+        "q7Wq7Wq7Wq7Wq7W"
+      ]
+    },
+    {
+      "name": "json named value",
+      "text_parts": [
+        "\"ap",
+        "i_key\": \"q7Wq7Wq7Wq7Wq7Wq7W\""
+      ],
+      "secret_parts": [
+        "q7W",
+        "q7Wq7Wq7Wq7Wq7W"
+      ]
+    },
+    {
+      "name": "short env fallback",
+      "text_parts": [
+        "con",
+        "st k = process.env.SOMETHING || 'q7Wq7Wq7Wq7Wq7Wq7W'"
+      ],
+      "secret_parts": [
+        "q7W",
+        "q7Wq7Wq7Wq7Wq7W"
+      ]
+    },
+    {
+      "name": "lowercase password",
+      "text_parts": [
+        "pas",
+        "sword: correcthorse"
+      ],
+      "secret_parts": [
+        "cor",
+        "recthorse"
+      ]
+    },
+    {
+      "name": "high entropy",
+      "text_parts": [
+        "val",
+        "ue aZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4n end"
+      ],
+      "secret_parts": [
+        "aZ3",
+        "kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4naZ3kQ9xP2mL7vB4n"
+      ]
+    },
+    {
+      "name": "email",
+      "text_parts": [
+        "mai",
+        "l someone@example.test now"
+      ],
+      "secret_parts": [
+        "som",
+        "eone@"
+      ]
+    },
+    {
+      "name": "cpr",
+      "text_parts": [
+        "cpr",
+        " 010203-1234 now"
+      ],
+      "secret_parts": [
+        "010",
+        "203-1234"
+      ]
+    },
+    {
+      "name": "phone",
+      "text_parts": [
+        "tlf",
+        " +45 12 34 56 78"
+      ],
+      "secret_parts": [
+        "12 ",
+        "34 56 78"
+      ]
+    }
+  ],
+  "must_survive": [
+    {
+      "name": "git sha",
+      "text": "head 22142bbc53b3cf3f0c3b47b183f34a995a806310 is green"
+    },
+    {
+      "name": "sha256",
+      "text": "sha256 a26c7a3c7421ccea6caa644442de24a589ed6e3b80c4cdea0c9d8efb8d44ae63 ok"
+    },
+    {
+      "name": "uuid",
+      "text": "run 7d0f1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b done"
+    },
+    {
+      "name": "iso time",
+      "text": "at 2026-11-03T00:09:25.123Z exactly"
+    },
+    {
+      "name": "sentence",
+      "text": "The gateway failed to become ready after 20000ms because the token was missing."
+    },
+    {
+      "name": "env name alone",
+      "text": "Set OPENCLAW_WATCH_PING_URL on the operator's word; WIDGETDC_BEARER_TOKEN is read by name."
+    },
+    {
+      "name": "slug path",
+      "text": "C--Users-claus-Projetcs-widgetdc-openclaw/memory/feedback-ledger-write-method-notes"
+    },
+    {
+      "name": "path with a row number",
+      "text": "widgetdc-openclaw-worktrees/row-928/src/capabilityWatchReportForScheduler"
+    },
+    {
+      "name": "long identifier",
+      "text": "getCapabilityWatchReportForSchedulerWithRetries"
+    },
+    {
+      "name": "danish",
+      "text": "Koordinatoren har afgjort, at runden sender et almindeligt kald."
+    },
+    {
+      "name": "pointer",
+      "text": "src/capabilityWatch.js:372 and row 928, LIN-3138"
+    },
+    {
+      "name": "http status",
+      "text": "HTTP 403 Request blocked by security filter"
+    },
+    {
+      "name": "token count",
+      "text": "\"cache_read_input_tokens\": 150000, \"output_tokens\": 1234567"
+    },
+    {
+      "name": "variable reference",
+      "text": "api_key=${OPENCLAW_KEY} and token: $env:WIDGETDC_TOKEN"
+    },
+    {
+      "name": "boolean",
+      "text": "secret_present: true"
+    },
+    {
+      "name": "not a blanket mask",
+      "text": "Row 928 failed on CI; the fix went in at 22142bbc53b3cf3f0c3b47b183f34a995a806310."
+    }
+  ]
+}
