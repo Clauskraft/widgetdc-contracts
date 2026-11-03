@@ -1,0 +1,80 @@
+{
+  "$id": "wdc.reviewer-identities.v1",
+  "version": "1.0.0",
+  "status": "read_by_review_broker_no_gate_in_this_repo",
+  "claim_ceiling": "L0",
+  "linear": "LIN-2373",
+  "design_source": "Clauskraft/WidgeTDC docs/governance/A2A_REVIEW_TASK_LIFECYCLE_DESIGN.md §4",
+  "content_source": "Clauskraft/widgetdc-openclaw config/governance/reviewer-identities.json at 2bd6b5e4 (route row 924, itself narrowed from Clauskraft/WidgeTDC at 53bcda349), with the evidence re-read for this repository. Route row 933, OP-499.",
+  "purpose": "Map immutable GitHub actor ids to peer-review roles for this repository, so that the backend's Codex review broker can post a registered review here. main has no branch protection and this repository has no peer-signoff workflow, so this file gives attribution of who approved an exact head. It does not hold a merge.",
+  "read_policy": {
+    "source_ref": "default_branch_only",
+    "rule": "A consumer MUST read this file from the repository's true default branch, never from a pull request head and never from a base branch that differs from the default. Reading it from the head would let an author edit their own reviewer registry in the change the registry is meant to police. This is a requirement on the consumer; this file cannot enforce its own provenance.",
+    "rationale": "gate-tamper (GAME-P1)"
+  },
+  "identity_policy": {
+    "key": "github_actor_id",
+    "key_rationale": "review.user.id is immutable and always exposed by GET /pulls/{n}/reviews. Logins are renameable and app slugs are not exposed on the review object, so neither can carry independence.",
+    "account_type_is_not_trust": "Entries are not pinned to type=Bot. Trust comes from the pinned actor id plus independent observation, never from the account type.",
+    "unknown_actor": "fail_closed",
+    "unknown_actor_rule": "An actor id absent from `reviewers` resolves to no role. A review from an unmapped actor is not a terminal verdict."
+  },
+  "reviewers": [
+    {
+      "github_actor_id": 199175422,
+      "login_at_registration": "chatgpt-codex-connector[bot]",
+      "role": "codex",
+      "status": "active",
+      "evidence": "Observed as the review author on Clauskraft/widgetdc-contracts#110 review 5749941988 (commit 01933c867cfedfc53047deecd82fd3b9e10ab426). Id read again through GET /users on 2026-11-03.",
+      "verified_at": "2026-11-03"
+    },
+    {
+      "github_actor_id": 339042081,
+      "login_at_registration": "widgetdc-codex-reviewer[bot]",
+      "role": "codex",
+      "status": "active",
+      "evidence": "Dedicated Codex reviewer App (LIN-2782), registered in Clauskraft/WidgeTDC, where its key custody is recorded. Bot user resolved through GET /users/widgetdc-codex-reviewer%5Bbot%5D on 2026-11-03 -> id 339042081, type Bot. Reviews are submitted only by the backend broker for a terminal Codex verdict on the canonical A2A bus. No review by this actor has been observed in this repository yet, and its installation on this repository has not been read.",
+      "verified_at": "2026-11-03"
+    },
+    {
+      "github_actor_id": 175728472,
+      "login_at_registration": "copilot-pull-request-reviewer[bot]",
+      "role": "advisory",
+      "status": "active",
+      "evidence": "Observed as the review author on Clauskraft/widgetdc-contracts#110 review 5750008585 (commit 01933c867cfedfc53047deecd82fd3b9e10ab426). Id read again through GET /users on 2026-11-03.",
+      "verified_at": "2026-11-03",
+      "note": "role=advisory is not a terminal-verdict role. Copilot findings are evidence; they can never satisfy a peer signoff."
+    }
+  ],
+  "unassigned_actors": [
+    {
+      "github_actor_id": 151408552,
+      "login_at_registration": "Clauskraft",
+      "role": null,
+      "status": "deliberately_unmapped",
+      "reason": "This account is the repository owner and the account under which agent-authored pull requests are opened. Mapping it to a reviewer role would make reviewer == author on those pull requests, which is the independence violation this registry exists to prevent."
+    }
+  ],
+  "required_peer_routing": {
+    "note": "Routing consumes the ATTESTED author role, never `author_agent` or the branch prefix. A claude-authored PR on a codex/* branch still resolves required_peer=codex.",
+    "exceptions": {
+      "codex": "claude"
+    },
+    "default_required_peer": "codex",
+    "independence_rule": "reject when resolved_reviewer_role == attested_author_role"
+  },
+  "operator_actor_id": 151408552,
+  "operator_actor_id_note": "Same numeric id as the Clauskraft entry in `unassigned_actors`. Not a reviewer role: never added to `reviewers`, and it can never satisfy peer-review independence. The broker refuses to post as this actor.",
+  "terminal_verdict_roles": [
+    "codex",
+    "claude"
+  ],
+  "author_roles": [
+    "claude",
+    "codex",
+    "gemini",
+    "qwen"
+  ],
+  "author_roles_note": "Roles accepted as an attested author of a pull request. Attestation only: a role here gains no reviewer identity and no verdict authority.",
+  "claim_boundary": "This registry binds reviewer identity only. It is not runtime proof, not a receipt, and does not make any gate authoritative. No actor holds role claude here, so a codex-authored pull request in this repository cannot get a registered terminal approval yet."
+}
